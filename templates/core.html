@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriPath - हिंदी Voice Assistant</title>
+    {% load static %}
+
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+   
+    <link rel="stylesheet" href="/static/style.css">
+
+    <!-- Specific Styles/Overrides for AI Assistant Page -->
+    <style>
+        /* Override container padding if needed for this layout */
+        .ai-container {
+            padding: 2rem;
+            max-width: 650px; /* Adjust max-width for this specific layout */
+            text-align: center;
+        }
+
+        /* Styling for the main action button */
+        #startButton {
+            background: linear-gradient(135deg, var(--grad-green-3), var(--grad-green-2)); /* Gradient background */
+            color: var(--text-light);
+            border: none;
+            padding: 1rem 2.5rem; /* Adjust padding */
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 30px; /* Pill shape */
+            cursor: pointer;
+            transition: all 0.3s ease; /* Smooth transitions */
+            margin-bottom: 1.5rem;
+            display: inline-flex; /* Align icon and text */
+            align-items: center;
+            gap: 10px; /* Space between icon and text */
+            box-shadow: 0 4px 15px rgba(0, 77, 64, 0.4); /* Themed shadow */
+            border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+        }
+
+        #startButton:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(0, 77, 64, 0.5); /* Enhanced hover shadow */
+        }
+
+        #startButton:disabled {
+            background: linear-gradient(135deg, var(--grad-green-4), var(--grad-green-3)); /* Lighter gradient when disabled */
+            cursor: not-allowed;
+            opacity: 0.7;
+            box-shadow: 0 2px 5px rgba(0, 77, 64, 0.2);
+        }
+
+         /* Listening Animation (Adapted for the button) */
+        @keyframes pulse-border { /* Changed animation */
+             0% { box-shadow: 0 4px 15px rgba(0, 77, 64, 0.4), 0 0 0 0px var(--glow-green); }
+             70% { box-shadow: 0 4px 15px rgba(0, 77, 64, 0.4), 0 0 0 10px rgba(102, 255, 153, 0); } /* Use glow color with alpha */
+             100% { box-shadow: 0 4px 15px rgba(0, 77, 64, 0.4), 0 0 0 0px rgba(102, 255, 153, 0); }
+        }
+
+        #startButton.listening {
+             animation: pulse-border 1.5s infinite; /* Apply new animation */
+        }
+
+
+        /* Styling for Status/Output/Response Boxes */
+        #status {
+            margin-bottom: 1.5rem; /* Increased margin */
+            font-style: italic;
+            color: var(--grad-green-accent); /* Lighter green for status */
+            min-height: 1.2em;
+            font-size: 0.95rem;
+        }
+
+        /* Labels for output/response */
+        .info-label {
+             display: block; /* Ensure it takes full width */
+             margin-top: 1.5rem;
+             margin-bottom: 0.5rem;
+             color: var(--grad-green-accent);
+             font-weight: 600;
+             font-size: 1rem;
+             text-align: left; /* Align labels left */
+        }
+
+        /* Shared style for output and response boxes */
+        .info-box {
+            margin-top: 0; /* Reset margin */
+            border: 1px solid var(--card-border);
+            background-color: var(--card-bg); /* Use card background */
+            padding: 1rem 1.5rem;
+            min-height: 80px; /* Slightly larger min-height */
+            border-radius: 12px; /* Match card radius */
+            line-height: 1.6;
+            text-align: left; /* Keep text left aligned */
+            color: var(--text-light); /* Ensure text is light */
+            backdrop-filter: blur(8px); /* Apply glass effect */
+            -webkit-backdrop-filter: blur(8px);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.2); /* Subtle inner shadow */
+        }
+
+        /* Talking Animation (Adapted for the info-box) */
+        @keyframes talking-glow { /* Use border glow instead of just color change */
+             0%, 100% {
+                 border-color: var(--card-border);
+                 box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+             }
+             50% {
+                 border-color: var(--glow-green); /* Bright green border */
+                 box-shadow: inset 0 1px 3px rgba(0,0,0,0.2), 0 0 8px var(--glow-green); /* Add outer glow */
+             }
+        }
+        /* Background pulse remains subtle */
+        @keyframes talking-bg-pulse {
+             0%, 100% { background-color: var(--card-bg); }
+             50% { background-color: rgba(76, 175, 80, 0.15); } /* Slightly greener tint */
+        }
+
+        #response.talking {
+             animation: talking-glow 1.3s infinite ease-in-out, talking-bg-pulse 1.3s infinite ease-in-out;
+             /* border-width: 1px; */ /* Keep border width consistent */
+        }
+
+        /* Ensure SVG icon inside button is white */
+         #startButton svg {
+             fill: var(--text-light);
+         }
+
+    </style>
+</head>
+<body>
+    <!-- Use the general container class, but add specific one for overrides -->
+    <div class="container ai-container">
+
+        <!-- Title with Backdrop -->
+        <div class="title-container">
+             <h1 class="main-title">AI सहायक</h1> <!-- Hindi Title -->
+        </div>
+
+        <!-- AI Controls and Display -->
+        <button id="startButton">
+             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="bi bi-mic-fill" viewBox="0 0 16 16">
+               <path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0z"/>
+               <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5"/>
+             </svg>
+            <span id="buttonText">सुनना शुरू करें</span>
+        </button>
+
+        <div id="status">Status: तैयार (Ready)</div>
+
+        <label for="output" class="info-label">आपने कहा (You said):</label>
+        <div id="output" class="info-box">...</div>
+
+        <label for="response" class="info-label">जवाब (Response):</label>
+        <div id="response" class="info-box">...</div>
+
+         <!-- Optional Back Button -->
+         <div class="back-button-container" style="margin-top: 2.5rem;">
+             <a href="/" class="back-button">Back to Home</a>
+         </div>
+
+    </div> <!-- /ai-container -->
+
+    <!-- JavaScript (TTS/STT Logic - Remains Unchanged) -->
+    <script>
+        // --- ALL JAVASCRIPT FROM THE PREVIOUS AI ASSISTANT PAGE GOES HERE ---
+        // Including:
+        // const startButton = ...;
+        // const buttonText = ...;
+        // ... all const declarations
+        // SpeechRecognition setup
+        // TTS setup (loadVoices, chunkText, splitByLength, cancelSpeech, speak, speakNextChunk)
+        // sendTextToBackend function
+        // resetUIState function
+        // Event Listeners (startButton click, DOMContentLoaded)
+        // triggerGreeting function
+        // ... etc.
+         const startButton = document.getElementById('startButton');
+        const buttonText = document.getElementById('buttonText');
+        const outputDiv = document.getElementById('output');
+        const responseDiv = document.getElementById('response');
+        const statusDiv = document.getElementById('status');
+        const csrfToken = '{{ csrf_token }}';
+
+        // --- Speech Recognition (STT) ---
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition;
+
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'hi-IN';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
+
+            recognition.onstart = () => {
+                statusDiv.textContent = 'Status: सुन रहा हूँ... (Listening...)';
+                startButton.classList.add('listening');
+                buttonText.textContent = 'सुन रहा हूँ...';
+                startButton.disabled = true;
+                outputDiv.textContent = '...';
+                if (!responseDiv.classList.contains('initial-greeting')) {
+                    responseDiv.textContent = '...';
+                }
+                responseDiv.classList.remove('talking', 'initial-greeting');
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                outputDiv.textContent = transcript;
+                sendTextToBackend(transcript);
+            };
+
+            recognition.onerror = (event) => {
+                statusDiv.textContent = `Error: ${event.error}`;
+                console.error("Speech Recognition Error:", event);
+                resetUIState();
+            };
+
+            recognition.onend = () => {
+                 statusDiv.textContent = 'Status: प्रसंस्करण (Processing)...';
+            };
+        } else {
+            statusDiv.textContent = "Status: Speech Recognition समर्थित नहीं है।";
+            startButton.disabled = true;
+            buttonText.textContent = 'असमर्थित';
+        }
+
+        // --- Text To Speech (TTS) ---
+        const synth = window.speechSynthesis;
+        let hindiVoice = null;
+        let voicesLoaded = false;
+        let speechChunkQueue = [];
+        let isSpeakingGreeting = false;
+        let currentSpeechTimeout = null; // <-- Variable to hold the setTimeout ID
+
+        function loadVoices() {
+             const voices = synth.getVoices();
+             hindiVoice = voices.find(voice => voice.lang === 'hi-IN') || voices.find(voice => voice.lang.startsWith('hi'));
+             console.log("Selected Hindi voice:", hindiVoice);
+             voicesLoaded = true;
+        }
+
+        if (synth.onvoiceschanged !== undefined) {
+            synth.onvoiceschanged = loadVoices;
+        }
+        loadVoices();
+
+        function chunkText(text) {
+            const maxLength = 200; // Max characters per chunk
+            const chunks = [];
+            let remainingText = text.replace(/\n\n/g, "\n"); // Replace double newlines for better splitting
+
+            const newlineChunks = remainingText.split('\n');
+            let tempChunks = [];
+
+            newlineChunks.forEach(nlChunk => {
+                if (nlChunk.trim().length === 0) return;
+                const sentenceEndings = /([.?!।])\s*/g;
+                let sentences = nlChunk.split(sentenceEndings);
+                let currentChunk = "";
+
+                for (let i = 0; i < sentences.length; i += 2) {
+                    let sentence = sentences[i];
+                    let delimiter = sentences[i+1] || "";
+                    let part = sentence + delimiter;
+                    if (part.trim().length === 0) continue;
+                    if (currentChunk.length + part.length <= maxLength) {
+                        currentChunk += part;
+                    } else {
+                        if (currentChunk.trim().length > 0) { tempChunks.push(currentChunk.trim()); }
+                        if (part.length > maxLength) {
+                            let subParts = splitByLength(part, maxLength);
+                            subParts.forEach(sp => tempChunks.push(sp.trim()));
+                            currentChunk = "";
+                        } else { currentChunk = part; }
+                    }
+                }
+                if (currentChunk.trim().length > 0) { tempChunks.push(currentChunk.trim()); }
+            });
+
+            if (tempChunks.length === 0 && text.trim().length > 0) {
+                 console.warn("Sentence/Newline splitting failed, falling back to length.");
+                 tempChunks = splitByLength(text, maxLength);
+             }
+            return tempChunks.filter(chunk => chunk.length > 0);
+        }
+
+        function splitByLength(text, maxLength) {
+             const chunks = []; let i = 0;
+             while (i < text.length) { chunks.push(text.substring(i, i + maxLength)); i += maxLength; }
+             return chunks;
+         }
+
+        function cancelSpeech() {
+            if (currentSpeechTimeout) { clearTimeout(currentSpeechTimeout); currentSpeechTimeout = null; }
+            if (synth.speaking || synth.pending) { console.log('Cancelling ongoing/pending speech'); speechChunkQueue = []; synth.cancel(); }
+            responseDiv.classList.remove('talking', 'initial-greeting');
+        }
+
+        function speak(textToSpeak, isGreeting = false) {
+            cancelSpeech();
+            isSpeakingGreeting = isGreeting;
+            responseDiv.textContent = textToSpeak && textToSpeak.trim() !== '' ? textToSpeak : (isGreeting ? "" : "मुझे कहने के लिए कुछ नहीं मिला।");
+            if (responseDiv.textContent === "") { if (!isGreeting) resetUIState(); return; }
+            speechChunkQueue = chunkText(textToSpeak);
+            console.log("Speech chunks:", speechChunkQueue);
+            if (speechChunkQueue.length > 0) { speakNextChunk(); }
+            else { console.warn("No speech chunks generated for:", textToSpeak); if (!isGreeting) resetUIState(); }
+        }
+
+        function speakNextChunk() {
+            if (speechChunkQueue.length === 0) {
+                console.log("Speech queue empty, finishing sequence.");
+                if (!isSpeakingGreeting) { resetUIState(); }
+                else { startButton.disabled = false; statusDiv.textContent = 'Status: तैयार (Ready)'; }
+                responseDiv.classList.remove('talking', 'initial-greeting'); return;
+            }
+            const chunk = speechChunkQueue.shift();
+            if (chunk && chunk.trim() !== '') {
+                if (synth.speaking || synth.pending) {
+                    console.warn("Synth busy, delaying next chunk slightly...");
+                    speechChunkQueue.unshift(chunk); currentSpeechTimeout = setTimeout(speakNextChunk, 250); return;
+                }
+                const utterThis = new SpeechSynthesisUtterance(chunk);
+                utterThis.lang = 'hi-IN';
+                if (hindiVoice) { utterThis.voice = hindiVoice; }
+                else { if (!voicesLoaded) loadVoices(); if (hindiVoice) utterThis.voice = hindiVoice; else console.warn("Speaking chunk without specific hi-IN voice."); }
+                utterThis.pitch = 1; utterThis.rate = 0.95;
+
+                utterThis.onstart = () => {
+                    if (!responseDiv.classList.contains('talking')) { console.log(`TTS started chunk (Greeting: ${isSpeakingGreeting})`); responseDiv.classList.add('talking'); if(isSpeakingGreeting) responseDiv.classList.add('initial-greeting'); }
+                    statusDiv.textContent = 'Status: बोल रहा हूँ... (Speaking...)'; if (!isSpeakingGreeting) startButton.disabled = true;
+                };
+                utterThis.onend = () => {
+                    console.log("TTS chunk finished.");
+                    if (speechChunkQueue.length > 0) {
+                        currentSpeechTimeout = setTimeout(() => { currentSpeechTimeout = null; speakNextChunk(); }, 75);
+                    } else {
+                        console.log(`TTS finished completely (Greeting: ${isSpeakingGreeting})`);
+                        responseDiv.classList.remove('talking', 'initial-greeting'); statusDiv.textContent = 'Status: तैयार (Ready)';
+                        if (!isSpeakingGreeting) { resetUIState(); }
+                        else { startButton.disabled = false; }
+                    }
+                };
+                utterThis.onerror = (event) => {
+                    console.error('TTS onerror on chunk:', event); speechChunkQueue = [];
+                    if (currentSpeechTimeout) { clearTimeout(currentSpeechTimeout); currentSpeechTimeout = null; }
+                    resetUIState();
+                };
+                try { synth.speak(utterThis); }
+                catch(e) { console.error("Error calling synth.speak:", e); speechChunkQueue = []; if (currentSpeechTimeout) { clearTimeout(currentSpeechTimeout); currentSpeechTimeout = null; } resetUIState(); }
+            } else { console.log("Skipping empty chunk"); speakNextChunk(); }
+        }
+
+        async function sendTextToBackend(text) {
+            statusDiv.textContent = 'Status: प्रसंस्करण (Processing)...';
+            try {
+                const response = await fetch("{% url 'process_voice' %}", { method: 'POST', headers: {'Content-Type': 'application/json','X-CSRFToken': csrfToken }, body: JSON.stringify({ text: text }) });
+                if (!response.ok) { const errorData = await response.json().catch(() => ({})); throw new Error(`HTTP error! status: ${response.status} - ${errorData.error || response.statusText}`); }
+                const data = await response.json();
+                statusDiv.textContent = 'Status: जवाब मिल गया (Response received)'; speak(data.response, false);
+            } catch (error) {
+                console.error('Error sending/receiving backend data:', error); statusDiv.textContent = `Status: त्रुटि - ${error.message}`; responseDiv.textContent = "क्षमा करें, सर्वर से कनेक्ट करने में कोई त्रुटि हुई।"; resetUIState();
+            }
+        }
+
+        function resetUIState() {
+             startButton.classList.remove('listening'); startButton.disabled = false; buttonText.textContent = 'फिर से सुनें'; statusDiv.textContent = 'Status: तैयार (Ready)';
+             cancelSpeech();
+        }
+
+        startButton.addEventListener('click', () => {
+            if (recognition) {
+                 try { cancelSpeech(); recognition.start(); }
+                 catch (e) { console.error("Error starting recognition:", e); statusDiv.textContent = `Status: शुरू करने में त्रुटि - ${e.message}`; resetUIState(); }
+            } else { statusDiv.textContent = "Status: Speech Recognition उपलब्ध नहीं है।"; }
+        });
+
+        function triggerGreeting() {
+            if (!synth) { console.warn("Speech Synthesis not available."); return; }
+            const greetingMessage = "नमस्ते! मैं आपकी मदद के लिए तैयार हूँ। सवाल पूछने के लिए माइक्रोफ़ोन बटन दबाएँ।";
+            setTimeout(() => { speak(greetingMessage, true); }, 500);
+        }
+
+        document.addEventListener('DOMContentLoaded', (event) => { buttonText.textContent = 'सुनना शुरू करें'; triggerGreeting(); });
+
+    </script>
+
+</body>
+</html>

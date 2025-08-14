@@ -1,0 +1,198 @@
+
+
+/* --- Base Resets and Variables --- */
+*,
+*::before,
+*::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Green Gradient Colors */
+    --grad-green-1: #004d40; /* Dark Teal/Forest Green */
+    --grad-green-2: #00796b; /* Medium Teal Green */
+    --grad-green-3: #4caf50; /* Standard Material Green */
+    --grad-green-4: #81c784; /* Lighter Pastel Green */
+    --grad-green-accent: #a5d6a7; /* Very Light Green */
+    --glow-green: #66ff99; /* Neonish green for glow */
+
+    /* Text & UI Colors */
+    --text-light: #f8fafc; /* Off-white */
+    --text-dark: #00332e; /* Very Dark Green/ quase black */
+    --card-bg: rgba(255, 255, 255, 0.1);
+    --card-border: rgba(200, 230, 201, 0.3);
+    --shadow-color: rgba(0, 0, 0, 0.2);
+
+    /* Title Backdrop */
+    --title-backdrop-bg: rgba(0, 51, 46, 0.3); /* Semi-transparent dark green */
+    --title-backdrop-border: rgba(76, 175, 80, 0.4); /* Slightly brighter green border */
+    --title-backdrop-shadow: rgba(0, 0, 0, 0.3);
+}
+
+/* --- Body Styling --- */
+body {
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+    color: var(--text-light);
+    background: linear-gradient(135deg, var(--grad-green-1) 0%, var(--grad-green-2) 50%, var(--grad-green-3) 100%);
+    background-size: cover;
+    background-attachment: fixed;
+    overflow-x: hidden; /* Prevent horizontal scroll if backdrop shadow is large */
+}
+
+/* --- Container --- */
+.container {
+    width: 100%;
+    max-width: 900px;
+    text-align: center;
+}
+
+/* --- New Title Container (Backdrop) Styling --- */
+.title-container {
+    display: inline-block; /* Make container wrap the title width */
+    padding: 1.5rem 3rem; /* Padding inside the backdrop */
+    margin-bottom: 4rem; /* Increased space below title */
+    background-color: var(--title-backdrop-bg);
+    border-radius: 12px; /* Slightly different rounding */
+    border: 1px solid var(--title-backdrop-border);
+    box-shadow: 0 6px 20px var(--title-backdrop-shadow);
+    backdrop-filter: blur(10px); /* Slightly stronger blur */
+    -webkit-backdrop-filter: blur(10px);
+    position: relative; /* Needed if you add absolute positioned elements inside later */
+    transition: background-color 0.3s ease; /* Smooth transition */
+}
+
+/* Optional: Slightly change backdrop on hover */
+.title-container:hover {
+    background-color: rgba(0, 51, 46, 0.4);
+}
+
+/* --- Main Title Styling (Enhanced) --- */
+.main-title {
+    font-size: clamp(3rem, 7vw, 5.5rem); /* Slightly larger font */
+    font-weight: 800; /* Bolder weight */
+    letter-spacing: 1.5px; /* Wider spacing */
+    margin: 0; /* Remove default h1 margin, use container margin */
+
+    /* Stronger Text Gradient - White to Brighter Green */
+    background: linear-gradient(90deg, var(--text-light) 10%, var(--grad-green-3) 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--text-light); /* Fallback */
+
+    /* Enhanced Text Shadow for Glow/Outline Effect */
+    text-shadow:
+        0 0 8px rgba(255, 255, 255, 0.6), /* White inner glow */
+        0 0 20px var(--glow-green),      /* Bright green outer glow */
+        0 0 35px var(--grad-green-2),    /* Softer teal ambient glow */
+        3px 3px 3px var(--text-dark);    /* Dark offset shadow for definition */
+
+    /* Optional: Add subtle animation */
+    /* animation: pulse-glow 5s infinite alternate ease-in-out; */
+}
+
+/* Optional Glow Animation Keyframes */
+@keyframes pulse-glow {
+    from {
+        text-shadow:
+            0 0 6px rgba(255, 255, 255, 0.5),
+            0 0 15px var(--glow-green),
+            0 0 25px var(--grad-green-2),
+            3px 3px 3px var(--text-dark);
+    }
+    to {
+        text-shadow:
+            0 0 10px rgba(255, 255, 255, 0.7),
+            0 0 25px var(--glow-green),
+            0 0 45px var(--grad-green-2),
+            3px 3px 3px var(--text-dark);
+    }
+}
+
+
+/* --- Grid Container --- */
+.state-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 2rem;
+    width: 100%;
+}
+
+/* --- State Button / Card Styling (Remains the same) --- */
+.state-button {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1.5rem;
+    text-decoration: none;
+    color: var(--text-light);
+    background-color: var(--card-bg);
+    border-radius: 15px;
+    border: 1px solid var(--card-border);
+    box-shadow: 0 4px 15px var(--shadow-color);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    overflow: hidden;
+    position: relative;
+    min-height: 180px;
+}
+
+.state-button img {
+    width: 60px;
+    height: 60px;
+    margin-bottom: 1rem;
+    object-fit: contain;
+    filter: brightness(0) invert(1);
+}
+
+.state-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.state-button:hover {
+    transform: translateY(-8px) scale(1.03);
+    box-shadow: 0 8px 25px var(--shadow-color);
+    background-color: rgba(76, 175, 80, 0.2);
+}
+
+.state-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(110deg, transparent 25%, rgba(165, 214, 167, 0.25) 50%, transparent 75%);
+    transition: left 0.5s ease-in-out;
+}
+
+.state-button:hover::before {
+    left: 100%;
+}
+
+/* --- Responsive Adjustments (Remain the same) --- */
+@media (max-width: 768px) {
+    .title-container { padding: 1rem 2rem; margin-bottom: 3rem; }
+    .state-grid-container { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1.5rem; }
+    .state-button { padding: 1.5rem 1rem; min-height: 160px; }
+    .state-button img { width: 50px; height: 50px; }
+    .state-name { font-size: 1rem; }
+}
+
+@media (max-width: 480px) {
+    body { padding: 1rem; }
+    .title-container { padding: 0.8rem 1.5rem; margin-bottom: 2.5rem; }
+    .state-grid-container { grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .state-button { min-height: 140px; }
+}

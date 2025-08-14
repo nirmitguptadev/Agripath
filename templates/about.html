@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About AgriPath - Green Gradient</title>
+    <!-- Link to Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Link to Swiper's CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+
+    <!-- Link to your MAIN CSS file (shared theme) -->
+    <link rel="stylesheet" href="/static/style.css">
+
+    <!-- Add specific styles for About page if needed, or embed here -->
+    <style>
+        /* Add specific overrides or new styles for the About page here */
+        .carousel-container {
+            width: 100%;
+            max-width: 900px; /* Match container width */
+            margin: 0 auto 3rem auto; /* Center and add space below */
+            border-radius: 15px; /* Match card radius */
+            overflow: hidden; /* Ensure corners are clipped */
+            box-shadow: 0 6px 20px var(--shadow-color); /* Consistent shadow */
+        }
+
+        .swiper {
+            width: 100%;
+            height: auto; /* Adjust height based on content */
+            aspect-ratio: 16 / 7; /* Responsive aspect ratio (adjust as needed) */
+            background-color: rgba(0, 0, 0, 0.2); /* Fallback background */
+        }
+
+        .swiper-slide {
+            text-align: center;
+            font-size: 18px;
+            background: #fff; /* Fallback background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .swiper-slide img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Cover the slide area */
+        }
+
+        /* Customize Swiper Navigation/Pagination to match theme */
+        .swiper-button-prev,
+        .swiper-button-next {
+            color: var(--text-light); /* White arrows */
+            background-color: rgba(0, 77, 64, 0.4); /* Semi-transparent dark green background */
+            border-radius: 50%;
+            width: 40px; /* Override default size */
+            height: 40px;
+            transition: background-color 0.3s ease;
+        }
+        .swiper-button-prev:hover,
+        .swiper-button-next:hover {
+             background-color: rgba(0, 77, 64, 0.7);
+        }
+
+        /* Adjust arrow size inside the button */
+        .swiper-button-prev::after,
+        .swiper-button-next::after {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .swiper-pagination-bullet {
+            background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent white */
+            opacity: 1;
+            transition: background-color 0.3s ease;
+        }
+
+        .swiper-pagination-bullet-active {
+            background-color: var(--grad-green-accent); /* Light green active bullet */
+        }
+
+
+        /* Content Styling */
+        .about-title {
+            font-size: clamp(2rem, 5vw, 3.5rem); /* Slightly smaller than main title */
+            font-weight: 700;
+            margin-bottom: 2rem;
+            letter-spacing: 1px;
+            /* Gradient text (same as main title or slightly different) */
+            background: linear-gradient(90deg, var(--text-light) 0%, var(--grad-green-accent) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: var(--text-light);
+            text-shadow: 1px 1px 5px rgba(0, 77, 64, 0.5);
+            text-align: center;
+        }
+
+        .about-content {
+            background-color: var(--card-bg); /* Use card background for content area */
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 2rem 2.5rem;
+            max-width: 800px; /* Limit text width for readability */
+            margin: 0 auto 2rem auto; /* Center content block */
+            text-align: left; /* Justify looks bad often, left is safer */
+            color: var(--text-light);
+            line-height: 1.7;
+            font-size: 1rem;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .about-content p {
+            margin-bottom: 1.5em; /* Space between paragraphs */
+        }
+        .about-content p:last-child {
+             margin-bottom: 0;
+        }
+
+        /* Back Button Style (Optional) */
+        .back-button {
+             display: inline-block;
+             margin-top: 1rem;
+             padding: 0.8rem 1.8rem;
+             background: linear-gradient(135deg, var(--grad-green-3), var(--grad-green-2));
+             color: var(--text-light);
+             text-decoration: none;
+             border-radius: 25px;
+             font-weight: 600;
+             transition: transform 0.2s ease, box-shadow 0.2s ease;
+             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+        .back-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+         @media (max-width: 768px) {
+            .about-content { padding: 1.5rem; }
+            .swiper { aspect-ratio: 16 / 8; } /* Adjust aspect ratio for smaller screens */
+             .swiper-button-prev, .swiper-button-next { width: 35px; height: 35px; }
+             .swiper-button-prev::after, .swiper-button-next::after { font-size: 16px; }
+         }
+         @media (max-width: 480px) {
+            .about-content { padding: 1.5rem 1rem; font-size: 0.95rem; }
+            .swiper { aspect-ratio: 16 / 9; } /* Adjust aspect ratio for mobile */
+         }
+
+    </style>
+</head>
+<body>
+
+    <div class="container about-page-container"> <!-- Add specific class if needed -->
+
+        <!-- Carousel Section -->
+        <div class="carousel-container">
+            <!-- Slider main container -->
+            <div class="swiper">
+                <!-- Additional required wrapper -->
+                <div class="swiper-wrapper">
+                    <!-- Slides -->
+                    <div class="swiper-slide"><img src="/static/carousel-image-1.jpg" alt="Farmer in field"></div>
+                    <div class="swiper-slide"><img src="/static/carousel-image-2.jpg" alt="Agriculture Technology"></div>
+                    <div class="swiper-slide"><img src="/static/carousel-image-3.jpg" alt="Government Policy Document Concept"></div>
+                    <div class="swiper-slide"><img src="/static/carousel-image-4.jpg" alt="Healthy Crops"></div>
+                    <!-- Add more slides as needed -->
+                </div>
+                <!-- If we need pagination -->
+                <div class="swiper-pagination"></div>
+
+                <!-- If we need navigation buttons -->
+                <div class="swiper-button-prev"></div>
+                <div class="swiper-button-next"></div>
+            </div>
+        </div><!-- /carousel-container -->
+
+
+        <!-- About Us Content Section -->
+        <h2 class="about-title">About AgriPath</h2>
+
+        <div class="about-content">
+            <p>
+                Welcome to AgriPath, your dedicated partner in navigating the complex world of agricultural policies and support systems in India. Our mission is to empower farmers by providing clear, accessible, and timely information about the government schemes and resources available to them.
+            </p>
+            <p>
+                Farming is the backbone of our nation, yet accessing crucial information about beneficial policies, subsidies, and welfare programs can often be challenging. AgriPath was born out of a desire to bridge this information gap, leveraging technology to bring knowledge directly to the hands of those who need it most.
+            </p>
+            <p>
+                Through our platform, you can easily explore various central and state-specific schemes designed for farmer welfare. Our AI-powered assistant is here to answer your questions in simple terms, helping you understand eligibility criteria, application processes, and the potential benefits relevant to your location and needs.
+            </p>
+            <p>
+                We envision a future where every farmer in India has the knowledge and tools to thrive. AgriPath is committed to continuously improving and expanding our resources, ensuring that you stay informed and empowered on your agricultural journey.
+            </p>
+        </div>
+
+        <!-- Optional Back Button -->
+         <a href="/" class="back-button">Back to Home</a>
+
+    </div> <!-- /container -->
+
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+    <!-- Initialize Swiper -->
+    <script>
+        const swiper = new Swiper('.swiper', {
+            // Optional parameters
+            loop: true, // Enable continuous loop mode
+            autoplay: {
+                delay: 4000, // Delay between transitions (in ms)
+                disableOnInteraction: false, // Autoplay will not be disabled after user interactions
+                pauseOnMouseEnter: true, // Pause autoplay on mouse hover
+            },
+            effect: 'fade', // Add fade effect (optional)
+             fadeEffect: {
+                 crossFade: true
+             },
+
+            // If we need pagination
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true, // Allow clicking on pagination bullets
+            },
+
+            // Navigation arrows
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+
+            // Optional: Add keyboard navigation
+            keyboard: {
+                enabled: true,
+                onlyInViewport: false,
+            },
+        });
+    </script>
+
+</body>
+</html>
