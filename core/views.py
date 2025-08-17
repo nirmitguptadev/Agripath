@@ -1,190 +1,173 @@
-from django.shortcuts import render
-from django.http import JsonResponse
-# from django.views.decorators.csrf import csrf_exempt # Keep CSRF protection if possible
-from django.views.decorators.http import require_http_methods
+# In your 'assistant' app's views.py file
+
+import os
 import json
-import datetime
-import random
-import requests # Import the requests library
-import re # Import the regular expression library
+import requests
+import google.generativeai as genai
+from django.conf import settings
+from django.http import JsonResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_exempt
 
-# Your OpenWeatherMap API Key
-OWM_API_KEY = "be2251445f1416c5fa4698a4a939b328"
+# --- API Configuration (remains the same) ---
+MODEL = None
+try:
+    GEMINI_API_KEY = settings.GEMINI_API_KEY
+    OPENWEATHER_API_KEY = settings.OPENWEATHER_API_KEY
+    genai.configure(api_key=GEMINI_API_KEY)
+    MODEL = genai.GenerativeModel('gemini-2.5-flash') # Using the stable model name
+    print("✅ Successfully configured Gemini and Weather APIs.")
+except (AttributeError, Exception) as e:
+    print(f"🔴 FATAL ERROR: Could not configure API keys. Error: {e}")
+    GEMINI_API_KEY = None
+    OPENWEATHER_API_KEY = None
 
-# --- Helper function to get weather ---
-def get_weather(city):
-    if not city:
-        return "कृपया मौसम जानने के लिए शहर का नाम बताएं।" # Please specify a city name
+# --- Centralized Gemini Response Function (remains the same) ---
+def generate_gemini_response(prompt_text):
+    if not MODEL:
+        print("🔴 Attempted to call Gemini, but the model is not configured.")
+        return "क्षमा करें, मेरा AI कनेक्शन ठीक से काम नहीं कर रहा है।"
+    try:
+        response = MODEL.generate_content(prompt_text)
+        return response.text
+    except Exception as e:
+        print(f"🔴🔴🔴 GEMINI API ERROR 🔴🔴🔴: {e}")
+        return "क्षमा करें, AI से कनेक्ट करते समय एक त्रुटि हुई।"
 
+# --- Weather Helper Function (remains the same) ---
+def get_weather_data(city_name):
+    # ... (no changes in this function)
+    if not OPENWEATHER_API_KEY:
+        return None, "Weather API key not configured."
     base_url = "http://api.openweathermap.org/data/2.5/weather"
-    params = {
-        'q': city,
-        'appid': OWM_API_KEY,
-        'units': 'metric', # Get temperature in Celsius
-        'lang': 'hi'      # Request Hindi descriptions
-    }
+    params = {'q': city_name, 'appid': OPENWEATHER_API_KEY, 'units': 'metric', 'lang': 'hi'}
     try:
         response = requests.get(base_url, params=params)
-        response.raise_for_status() # Raises an HTTPError for bad responses (4XX or 5XX)
+        if response.status_code == 404: return None, f"City '{city_name}' not found."
+        response.raise_for_status()
         data = response.json()
-
-        # Check if the API returned valid data
-        if data.get("cod") != 200:
-            error_message = data.get("message", "अज्ञात त्रुटि")
-            print(f"OpenWeatherMap API Error for city '{city}': {error_message}")
-            # Try to provide a more user-friendly message for common errors
-            if data.get("cod") == "404":
-                 return f"क्षमा करें, मुझे '{city}' शहर नहीं मिला।"
-            else:
-                 return f"मौसम की जानकारी प्राप्त करने में एक समस्या हुई: {error_message}"
-
-        # Extract information
-        description = data['weather'][0]['description']
-        temp = round(data['main']['temp']) # Round temperature to nearest whole number
-        feels_like = round(data['main']['feels_like'])
-        humidity = data['main']['humidity']
-        city_name_from_api = data['name'] # Use the name returned by the API
-
-        # Format the response in Hindi
-        weather_response = (
-            f"{city_name_from_api} में अभी मौसम: {description}. "
-            f"तापमान {temp}°C है, लेकिन {feels_like}°C जैसा महसूस हो रहा है। "
-            f"हवा में नमी {humidity}% है।"
-        )
-        return weather_response
-
+        return {
+            "city": data.get("name"), "temperature": data["main"]["temp"],
+            "description": data["weather"][0]["description"], "humidity": data["main"]["humidity"],
+            "wind_speed": data["wind"]["speed"],
+        }, None
     except requests.exceptions.RequestException as e:
-        print(f"Network or API request error: {e}")
-        return "क्षमा करें, मौसम सेवा से संपर्क करने में असमर्थ। कृपया अपनी इंटरनेट जांचें या बाद में प्रयास करें।"
-    except (KeyError, IndexError) as e:
-        print(f"Error parsing weather data: {e}")
-        print("Received data:", data) # Log the problematic data
-        return "मौसम डेटा को समझने में त्रुटि हुई।"
-    except Exception as e: # Catch any other unexpected errors
-         print(f"An unexpected error occurred during weather fetch: {e}")
-         return "मौसम की जानकारी प्राप्त करते समय एक अप्रत्याशित त्रुटि हुई।"
+        print(f"🔴 Weather API request error: {e}")
+        return None, "Could not connect to the weather service."
 
 
-# --- Main function to process commands ---
-def process_hindi_command(text):
-    text_lower = text.lower().strip() # Convert to lower case and remove leading/trailing spaces
-    response = "माफ़ कीजिये, मैं आपकी बात पूरी तरह समझ नहीं पाया।" # Default response
+# ==============================================================================
+#  HANDLER FUNCTIONS WITH MODIFIED PROMPTS
+# ==============================================================================
 
-    # Simple Keyword Spotting NLU
+def handle_weather_query(user_prompt):
+    city_extraction_prompt = f"इस वाक्य से केवल शहर का नाम निकालें: '{user_prompt}'. केवल एक शब्द में उत्तर दें।"
+    city_name = generate_gemini_response(city_extraction_prompt).strip()
 
-    # --- Greetings ---
-    if any(greet in text_lower for greet in ["नमस्ते", "हेलो", "हैलो", "नमस्कार"]):
-        response = random.choice(["नमस्ते! आप कैसे हैं?", "नमस्कार! क्या सहायता कर सकता हूँ?", "हेलो!"])
+    if not city_name or "क्षमा करें" in city_name or len(city_name.split()) > 3:
+        return "कृपया एक स्पष्ट शहर का नाम बताएं ताकि मैं मौसम की जांच कर सकूं।"
 
-    # --- Time ---
-    elif "समय" in text_lower and ("क्या" in text_lower or "बताओ" in text_lower or "कितना हुआ" in text_lower):
-        now = datetime.datetime.now()
-        current_time = now.strftime("%I:%M %p") # Use %I for 12-hour format, %p for AM/PM
-        response = f"अभी समय है {current_time}"
+    weather_data, error = get_weather_data(city_name)
+    if error:
+        return f"क्षमा करें, मुझे '{city_name}' शहर नहीं मिला।"
 
-    # --- Date ---
-    elif any(date_word in text_lower for date_word in ["तारीख", "दिनांक", "आज क्या दिन है"]):
-         now = datetime.datetime.now()
-         # You might need to set locale for full Hindi month names on the server
-         # import locale
-         # try:
-         #     locale.setlocale(locale.LC_TIME, 'hi_IN.UTF-8')
-         # except locale.Error:
-         #      print("Warning: Hindi locale 'hi_IN.UTF-8' not available. Using default.")
-         # current_date = now.strftime("%d %B %Y") # Requires Hindi locale support on server
-         current_date = now.strftime("%d/%m/%Y") # Safer default format
-         response = f"आज तारीख है {current_date}"
+    final_prompt = f"""
+    आप एक सहायक कृषि मित्र हैं। केवल हिंदी में उत्तर दें।
+    एक किसान ने '{city_name}' के मौसम के बारे में पूछा है। यहाँ वास्तविक मौसम डेटा है:
+    - तापमान: {weather_data['temperature']}°C
+    - विवरण: {weather_data['description']}
+    - नमी (Humidity): {weather_data['humidity']}%
 
-    # --- Assistant Identity ---
-    elif "आपका नाम क्या है" in text_lower or "तुम कौन हो" in text_lower:
-         response = random.choice(["मेरा नाम सहायक है। मैं आपकी मदद के लिए यहाँ हूँ।", "आप मुझे सहायक कह सकते हैं।"])
+    # --- CHANGE: Added instruction for a short response ---
+    इस डेटा के आधार पर, किसान को एक बहुत छोटा और सीधा सारांश (1-2 वाक्यों में) प्रदान करें।
+    """
+    return generate_gemini_response(final_prompt)
 
-    # --- Weather ---
-    elif "मौसम" in text_lower:
-        # Try to extract city name using simple patterns
-        city = None
-        # Pattern 1: "दिल्ली में मौसम" or "जयपुर का मौसम"
-        match = re.search(r"(.+?)\s+(?:में|का)\s+मौसम", text_lower)
-        if match:
-            city = match.group(1).strip()
-        else:
-            # Pattern 2: "मौसम बताओ दिल्ली का" or "मौसम कैसा है जयपुर में"
-            match = re.search(r"मौसम\s+(?:बताओ|कैसा है)\s+(?:.*?)\s*(\w+)", text_lower)
-            if match:
-                city = match.group(1).strip()
-            else:
-                # Pattern 3: Simplest - Assume city is the word before "मौसम" if patterns fail
-                 words = text_lower.split()
-                 try:
-                     weather_index = words.index("मौसम")
-                     if weather_index > 0:
-                         city = words[weather_index - 1]
-                 except ValueError:
-                     # "मौसम" wasn't found as a separate word, maybe part of another word.
-                     pass # Fall through to asking for city
+def handle_crop_recommendation(user_prompt):
+    final_prompt = f"""
+    आप एक विशेषज्ञ भारतीय कृषि वैज्ञानिक हैं।
+    एक किसान हिंदी में पूछता है: "{user_prompt}"
 
-        if city:
-            print(f"Extracted city for weather: {city}") # For debugging
-            response = get_weather(city)
-        else:
-            # If no city could be extracted, ask for it
-            response = "आप किस शहर का मौसम जानना चाहते हैं?"
+    # --- CHANGE: Added instruction for a short response ---
+    उसके प्रश्न का विश्लेषण करें और केवल मुख्य फसल सिफारिशों की सूची दें। उत्तर संक्षिप्त और बिंदुवार (to-the-point) रखें।
+    """
+    return generate_gemini_response(final_prompt)
 
-    # --- Jokes ---
-    elif any(joke_word in text_lower for joke_word in ["मजाक", "जोक", "चुटकुला"]):
-        jokes_hindi = [
-            "टीचर: अगर पृथ्वी के अंदर LAVA है तो बाहर क्या है? स्टूडेंट: बाहर ओप्पो और वीवो है सर!",
-            "ग्राहक: भैयाजी, इस आईने की गारंटी क्या है? दुकानदार: आप इसे यहां से ले जाकर गिरा मत देना, तब तक की गारंटी है!",
-            "संता: यार बंता, मेरा सिर दर्द कर रहा है। बंता: अरे इसमें क्या? मेरा तो पूरा शरीर ही 'दर्द' का बना है!",
-            "पति: ये कैसी दाल बनाई है? ना नमक है, ना मिर्च! पत्नी: अरे गुस्सा क्यों होते हो जी? इसे बनाते समय मैं आपको ही याद कर रही थी, तो सोचा कहीं आपके गुस्से जैसा तीखा ना हो जाए!",
-        ]
-        response = random.choice(jokes_hindi)
+def handle_government_scheme(user_prompt):
+    final_prompt = f"""
+    आप भारत सरकार की कृषि योजनाओं के विशेषज्ञ हैं।
+    एक किसान हिंदी में पूछता है: "{user_prompt}"
 
-    # --- How are you? ---
-    elif any(how_are_you in text_lower for how_are_you in ["कैसे हो", "क्या हाल है", "सब ठीक"]):
-         response = random.choice(["मैं ठीक हूँ, पूछने के लिए धन्यवाद!", "मैं बढ़िया हूँ, आपकी क्या सेवा कर सकता हूँ?", "सब कुशल मंगल!"])
+    # --- CHANGE: Added instruction for a short response ---
+    उस योजना के बारे में केवल मुख्य लाभ और पात्रता बताएं। उत्तर को 2-3 वाक्यों में संक्षिप्त रखें।
+    """
+    return generate_gemini_response(final_prompt)
 
-    # --- Gratitude ---
-    elif any(thanks in text_lower for thanks in ["धन्यवाद", "शुक्रिया", "थैंक यू"]):
-        response = random.choice(["कोई बात नहीं!", "आपकी मदद करके खुशी हुई।", "स्वागत है!"])
+def handle_general_conversation(user_prompt):
+    final_prompt = f"""
+    आप 'AgriPath' नाम के एक AI कृषि मित्र हैं। आप केवल हिंदी में संवाद करते हैं।
+    
+    # --- CHANGE: Added instruction for a short response ---
+    संक्षिप्त और सीधे तरीके से उत्तर दें। अपने उत्तरों को अधिकतम 2 वाक्यों तक सीमित रखें।
 
-    # --- Add more commands here using elif ---
-    # elif "लाइट बंद करो" in text_lower:
-    #     # Add logic to interact with smart home devices (requires more setup)
-    #     response = "ठीक है, लाइट बंद कर रहा हूँ।"
+    किसान का प्रश्न: "{user_prompt}"
+    आपका उत्तर:
+    """
+    return generate_gemini_response(final_prompt)
 
-    return response
 
-# --- Django Views (Keep as before) ---
+# ==============================================================================
+#  MAIN DJANGO VIEWS (No changes needed below this line)
+# ==============================================================================
 
-# Basic view to render the HTML page
-def index(request):
+def assistant_page(request):
     return render(request, 'core.html')
 
-# API endpoint to handle voice commands
-@require_http_methods(["POST"])
-def process_voice(request):
-    try:
-        # Ensure CSRF token is validated if not using @csrf_exempt
-        # (The JS code sends the token, so Django should validate it by default)
-        data = json.loads(request.body)
-        user_text = data.get('text', '')
+def get_greeting(request):
+    fallback_greeting = "नमस्ते! मैं आपकी मदद के लिए तैयार हूँ।"
+    # --- CHANGE: Added instruction for a short greeting ---
+    greeting_prompt = "आप AgriPath नाम के एक AI कृषि सहायक हैं। एक किसान के लिए एक छोटा और मैत्रीपूर्ण नमस्ते हिंदी में उत्पन्न करें। केवल एक वाक्य।"
+    greeting_text = generate_gemini_response(greeting_prompt)
+    if "क्षमा करें" in greeting_text:
+        return JsonResponse({'greeting': fallback_greeting})
+    return JsonResponse({'greeting': greeting_text})
 
-        if not user_text:
+@csrf_exempt
+def process_voice(request):
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    if not MODEL:
+        return JsonResponse({'response': 'क्षमा करें, मेरा AI कनेक्शन ठीक से काम नहीं कर रहा है।'}, status=500)
+
+    try:
+        data = json.loads(request.body)
+        user_prompt = data.get('text')
+        if not user_prompt:
             return JsonResponse({'error': 'No text provided'}, status=400)
 
-        print(f"Received text: {user_text}") # Log received text
+        # --- Step 1: Classification (no changes here) ---
+        classifier_prompt = f"""
+        User query: "{user_prompt}".
+        Classify this into: 'weather', 'crop_recommendation', 'government_scheme', 'general_conversation'.
+        Respond only with the category name.
+        """
+        category = generate_gemini_response(classifier_prompt).strip().lower()
 
-        # Process the command
-        assistant_response = process_hindi_command(user_text)
+        # --- Step 2: Routing (no changes here) ---
+        final_response_text = ""
+        if 'weather' in category:
+            final_response_text = handle_weather_query(user_prompt)
+        elif 'crop' in category:
+            final_response_text = handle_crop_recommendation(user_prompt)
+        elif 'scheme' in category or 'yojana' in category or 'sarkari' in category:
+            final_response_text = handle_government_scheme(user_prompt)
+        else:
+            final_response_text = handle_general_conversation(user_prompt)
 
-        print(f"Sending response: {assistant_response}") # Log the response
-
-        # Return the response as JSON
-        return JsonResponse({'response': assistant_response})
+        return JsonResponse({'response': final_response_text})
 
     except json.JSONDecodeError:
-        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+        return JsonResponse({'error': 'Invalid JSON in request body'}, status=400)
     except Exception as e:
-         print(f"Error processing voice command: {e}") # Log the error server-side
-         return JsonResponse({'error': 'An internal error occurred'}, status=500)
+        print(f"🔴 An unexpected error occurred in process_voice: {e}")
+        return JsonResponse({'error': 'Sorry, an internal server error occurred.'}, status=500)

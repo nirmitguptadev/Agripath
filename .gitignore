@@ -1,0 +1,9 @@
+# Ignore environment variables file
+.env
+
+# Other common Python/Django ignores
+__pycache__/
+*.pyc
+db.sqlite3
+/static/
+/media/

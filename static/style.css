@@ -120,9 +120,10 @@ body {
 /* --- Grid Container --- */
 .state-grid-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 2rem;
-    width: 100%;
+    grid-template-columns: repeat(3, 1fr); /* 3 buttons per row */
+    gap: 30px 20px; /* 30px row-gap, 20px column-gap */
+    justify-items: center; /* center buttons in grid cells */
+    margin-top: 20px;
 }
 
 /* --- State Button / Card Styling (Remains the same) --- */

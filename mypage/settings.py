@@ -9,12 +9,25 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+import os
+import environ
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
+# --- django-environ setup ---
+# Initialize the environ object
+env = environ.Env(
+    # set casting, default value
+    DEBUG=(bool, False)
+)
+
+# Take environment variables from .env file
+# This will search for the .env file in the parent directory of this file (i.e., the root)
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
+# --- End of django-environ setup ---
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -127,3 +140,8 @@ STATICFILES_DIRS = [
     BASE_DIR / "static",
     "/var/www/static/",
 ]
+
+# --- YOUR CUSTOM API KEYS ---
+# Use the env() object to read your custom variables
+GEMINI_API_KEY = env('GEMINI_API_KEY')
+OPENWEATHER_API_KEY = env('OPENWEATHER_API_KEY')

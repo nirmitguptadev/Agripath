@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-lang-key="title">Smart Fertilizer Assistant</title>
+
+    <!-- Google Font Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Modern CSS Styles -->
+    <style>
+        :root {
+            /* Green Gradient Colors from New Theme */
+            --grad-green-1: #004d40; /* Dark Teal/Forest Green */
+            --grad-green-2: #00796b; /* Medium Teal Green */
+            --grad-green-3: #4caf50; /* Standard Material Green */
+            --grad-green-4: #81c784; /* Lighter Pastel Green */
+            --grad-green-accent: #a5d6a7; /* Very Light Green for text accents */
+            --glow-green: #66ff99; /* Neonish green for glow */
+
+            /* Text & UI Colors from New Theme */
+            --text-light: #f8fafc; /* Off-white */
+            --text-dark: #00332e; /* Very Dark Green/ a.k.a. black */
+            --card-bg: rgba(0, 51, 46, 0.3); /* Semi-transparent dark green */
+            --card-border: rgba(76, 175, 80, 0.4);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --shadow-hover-color: rgba(0, 0, 0, 0.4);
+
+             /* Transitions */
+            --transition-speed: 0.3s;
+            --transition-ease: ease;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+             scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            line-height: 1.7;
+            color: var(--text-light); /* Default text is now light */
+            background: linear-gradient(135deg, var(--grad-green-1) 0%, var(--grad-green-2) 50%, var(--grad-green-3) 100%);
+            background-size: cover;
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        header {
+            background: rgba(0, 20, 15, 0.3); /* Dark, semi-transparent header */
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: var(--text-light);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 15px var(--shadow-color);
+            border-bottom: 1px solid var(--card-border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        header h1 {
+            font-size: 1.7em;
+            font-weight: 700;
+            text-shadow: 0 0 8px var(--glow-green);
+        }
+
+        .language-toggle button {
+            background: transparent;
+            border: 1px solid var(--card-border);
+            color: var(--text-light);
+            padding: 8px 14px;
+            cursor: pointer;
+            margin-left: 8px;
+            border-radius: 20px;
+            transition: all var(--transition-speed) var(--transition-ease);
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        .language-toggle button:hover {
+            background: var(--card-bg);
+            border-color: var(--grad-green-accent);
+        }
+         .language-toggle button.active-lang {
+             background: var(--grad-green-3);
+             color: var(--text-light);
+             border-color: var(--grad-green-3);
+             font-weight: 600;
+             box-shadow: 0 0 10px var(--grad-green-3);
+         }
+
+        main {
+            padding: 2rem 1.5rem;
+            max-width: 960px;
+            margin: 2rem auto;
+        }
+
+        /* Section Base Styling (Glassmorphism) */
+        .hero, .tool-section, .content-section {
+             background-color: var(--card-bg);
+             margin-bottom: 2.5rem;
+             border-radius: 16px;
+             box-shadow: 0 6px 20px var(--shadow-color);
+             border: 1px solid var(--card-border);
+             backdrop-filter: blur(10px);
+             -webkit-backdrop-filter: blur(10px);
+             padding: 2rem 2.5rem;
+             overflow: hidden;
+        }
+
+        .hero {
+            text-align: center;
+        }
+
+        .hero h2 {
+            font-size: 2.2em;
+             font-weight: 700;
+             background: linear-gradient(90deg, var(--text-light) 10%, var(--grad-green-3) 90%);
+             -webkit-background-clip: text;
+             -webkit-text-fill-color: transparent;
+             margin-bottom: 1rem;
+             line-height: 1.3;
+             text-shadow: 0 0 15px var(--grad-green-2);
+        }
+        .hero p {
+            font-size: 1.15em;
+            color: var(--grad-green-accent); /* Lighter text color for subtitle */
+            margin-bottom: 1.5rem;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Primary CTA Button */
+        .hero button, #find-recommendations-btn {
+            background: linear-gradient(90deg, var(--grad-green-3), var(--grad-green-2));
+            color: var(--text-light);
+            border: 1px solid var(--grad-green-4);
+            padding: 14px 35px;
+            font-size: 1.1em;
+            cursor: pointer;
+            border-radius: 25px;
+            margin-top: 1rem;
+            transition: all var(--transition-speed) var(--transition-ease);
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+            letter-spacing: 0.5px;
+        }
+        .hero button:hover, #find-recommendations-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.5);
+        }
+
+        .tool-section h3, .content-section h3 {
+             text-align: center;
+             color: var(--glow-green);
+             margin-top: 0;
+             margin-bottom: 2rem;
+             font-weight: 600;
+             font-size: 1.6em;
+             text-shadow: 0 0 5px var(--glow-green);
+        }
+
+        .input-choice {
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .input-choice label {
+            margin-right: 15px;
+            font-weight: 500;
+            color: var(--grad-green-accent);
+            font-size: 1.05em;
+        }
+        .choice-btn {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid var(--card-border);
+            background-color: transparent;
+            margin: 5px 8px;
+            border-radius: 8px;
+            transition: all var(--transition-speed) var(--transition-ease);
+            font-size: 1em;
+            font-weight: 500;
+             color: var(--text-light);
+        }
+        .choice-btn.active {
+            background: linear-gradient(90deg, var(--grad-green-3), var(--grad-green-2));
+            color: var(--text-light);
+            border-color: var(--grad-green-4);
+            box-shadow: 0 3px 10px rgba(76, 175, 80, 0.4);
+            transform: scale(1.03);
+        }
+         .choice-btn:not(.active):hover {
+             background-color: var(--card-bg);
+             border-color: var(--grad-green-accent);
+         }
+
+        .input-area {
+            margin-bottom: 1.5rem;
+            padding: 1.5rem;
+            background-color: rgba(0, 0, 0, 0.2); /* Darker inlay */
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+        }
+        .input-area label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: var(--grad-green-accent);
+            font-size: 1.05em;
+        }
+        .input-area input[type="number"],
+        .input-area select,
+        .filters select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            box-sizing: border-box;
+            margin-top: 4px;
+            background-color: var(--card-bg);
+            font-size: 1em;
+             color: var(--text-light);
+             transition: all var(--transition-speed) var(--transition-ease);
+        }
+        .input-area input[type="number"]:focus,
+        .input-area select:focus,
+        .filters select:focus {
+             outline: none;
+             border-color: var(--glow-green);
+             box-shadow: 0 0 0 2px rgba(102, 255, 153, 0.3);
+        }
+        .input-area input::placeholder { color: var(--grad-green-accent); opacity: 0.7; }
+
+        #crop-info-display {
+            margin-top: 1.5rem;
+            padding: 1.2rem 1.5rem;
+            background-color: rgba(0, 121, 107, 0.3);
+            border: 1px solid var(--grad-green-2);
+            border-radius: 12px;
+        }
+         #crop-info-display h5 { margin: 0 0 0.8rem 0; color: var(--glow-green); }
+          #crop-info-display p { margin: 0.5rem 0; font-size: 0.98em; color: var(--text-light); }
+         #crop-info-display p strong { color: var(--grad-green-accent); font-weight: 600; }
+
+        .filters {
+            margin-top: 2rem; margin-bottom: 2rem; border-top: 1px solid var(--card-border);
+            padding-top: 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.8rem;
+        }
+        .filters h4 {
+            grid-column: 1 / -1; margin-bottom: 1rem; margin-top: 0; color: var(--grad-green-accent);
+            font-size: 1.2em; font-weight: 600; border-bottom: 1px solid var(--card-border); padding-bottom: 0.5rem;
+        }
+        .filters label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-light); }
+
+        #find-recommendations-btn { display: block; width: 100%; margin-top: 1.5rem; }
+
+        #results-area { margin-top: 3rem; }
+        #results-area h4 { color: var(--glow-green); text-shadow: 0 0 5px var(--glow-green); }
+         #results-list p {
+            text-align: center; color: var(--grad-green-accent); padding: 1.5rem; font-size: 1.05em;
+             background-color: rgba(0,0,0,0.2); border-radius: 8px;
+         }
+
+        .product-card {
+            border: 1px solid var(--card-border);
+            padding: 1.5rem 1.8rem;
+            margin-bottom: 1.5rem;
+            background-color: transparent;
+            border-radius: 12px;
+            box-shadow: 0 3px 8px var(--shadow-color);
+            transition: all var(--transition-speed) var(--transition-ease);
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px var(--shadow-hover-color);
+            background-color: var(--card-bg);
+            border-color: var(--grad-green-accent);
+        }
+        .product-card h5 {
+            margin-top: 0; margin-bottom: 0.8rem; font-size: 1.3em; font-weight: 600;
+             background: linear-gradient(90deg, var(--glow-green), var(--grad-green-3));
+             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+         .product-card p { margin: 0.5rem 0; font-size: 0.98em; color: var(--grad-green-accent); }
+         .product-card p strong { color: var(--text-light); font-weight: 600; }
+         .product-card .price-info { font-weight: 600; color: var(--glow-green); }
+         .product-card .unit-note { font-size: 0.9em; color: var(--grad-green-accent); }
+
+
+        .product-card button.view-details-btn {
+            background-color: transparent; color: var(--glow-green);
+            padding: 8px 18px; font-size: 0.95em; border: 2px solid var(--grad-green-3);
+            cursor: pointer; border-radius: 20px; margin-top: 1rem;
+            transition: all var(--transition-speed) var(--transition-ease); font-weight: 600;
+        }
+        .product-card button.view-details-btn:hover {
+             background-color: var(--grad-green-3);
+             color: var(--text-light);
+             transform: scale(1.03);
+             box-shadow: 0 0 10px var(--grad-green-3);
+        }
+
+        .content-section h3 {
+             text-align: left; border-bottom: 2px solid var(--grad-green-3);
+             padding-bottom: 0.5rem; display: inline-block;
+        }
+         .content-section ul, .content-section ol { padding-left: 25px; margin-top: 1rem; }
+         .content-section li { margin-bottom: 0.8rem; color: var(--text-light); }
+          .content-section li::marker { color: var(--glow-green); font-weight: bold; }
+          .content-section li strong { color: var(--grad-green-accent); font-weight: 600; }
+
+        footer {
+            text-align: center; margin-top: 4rem; padding: 2rem;
+            background-color: rgba(0,0,0,0.2); font-size: 0.95em;
+            color: var(--grad-green-accent); border-top: 1px solid var(--card-border);
+        }
+        footer a { color: var(--glow-green); text-decoration: none; margin: 0 8px; font-weight: 500; }
+         footer a:hover { color: var(--text-light); text-decoration: underline; }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%;
+            overflow: auto; background-color: rgba(0, 0, 0, 0.75);
+            display: flex; align-items: center; justify-content: center; padding: 1rem;
+        }
+        .modal-content {
+            background-color: var(--grad-green-1);
+            border: 1px solid var(--glow-green);
+            margin: auto; padding: 30px 35px; width: 95%; max-width: 700px;
+            border-radius: 16px; position: relative;
+            box-shadow: 0 0 30px var(--glow-green);
+            max-height: 90vh; overflow-y: auto;
+        }
+        .close-btn {
+            color: var(--grad-green-accent); position: absolute; top: 15px; right: 20px;
+            font-size: 32px; font-weight: 300; background: none; border: none; cursor: pointer;
+            transition: color var(--transition-speed) var(--transition-ease);
+        }
+        .close-btn:hover, .close-btn:focus { color: var(--text-light); }
+
+        .modal h4 {
+            margin: 0 0 1.5rem 0; text-align: center;
+             background: linear-gradient(90deg, var(--glow-green), var(--grad-green-3));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-size: 1.8em; font-weight: 600;
+        }
+        .modal h5 {
+            margin-top: 1.5rem; margin-bottom: 0.8rem; color: var(--glow-green);
+            font-size: 1.2em; border-bottom: 1px solid var(--card-border); padding-bottom: 0.5rem;
+        }
+         .modal p { margin: 0.6rem 0; color: var(--text-light); line-height: 1.7; font-size: 1em; }
+         .modal p strong { color: var(--grad-green-accent); font-weight: 600; }
+          .modal .price-info { font-weight: 600; color: var(--glow-green); }
+          .modal .price-unit-note { font-size: 0.9em; color: var(--grad-green-accent); }
+
+        .hidden { display: none !important; }
+
+         /* Responsive adjustments */
+         @media (max-width: 768px) {
+             header { padding: 0.8rem 1rem; }
+             header h1 { font-size: 1.4em; }
+             main { padding: 1.5rem 1rem; margin: 1.5rem auto; }
+             .hero { padding: 1.5rem; } .hero h2 { font-size: 1.8em; } .hero p { font-size: 1.05em; }
+             .tool-section, .content-section { padding: 1.5rem; }
+             .tool-section h3, .content-section h3 { font-size: 1.4em; }
+             .product-card { padding: 1.2rem; }
+         }
+         @media (max-width: 480px) {
+            header { flex-direction: column; text-align: center; }
+            header h1 { margin-bottom: 0.8rem; }
+            .hero h2 { font-size: 1.6em; }
+            .filters { grid-template-columns: 1fr; }
+         }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1 data-lang-key="main_heading">Smart Fertilizer Assistant</h1>
+        <div class="language-toggle">
+            <button id="lang-en" data-lang-key="lang_en">English</button> |
+            <button id="lang-hi" data-lang-key="lang_hi">हिंदी</button>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h2 data-lang-key="hero_title">Smart Farming Starts Here</h2>
+            <p data-lang-key="hero_subtitle">Personalized Fertilizer & Pesticide Advice Based on Soil TDS or Crop Type.</p>
+            <button id="get-started-btn" data-lang-key="get_started_btn">Get Recommendations Now</button>
+        </section>
+
+        <section id="recommendation-tool" class="tool-section">
+            <h3 data-lang-key="tool_heading">Find Your Recommendations</h3>
+
+            <div class="input-choice">
+                <label data-lang-key="choose_method">Recommend based on:</label><br>
+                <button id="choose-tds" class="choice-btn active" data-lang-key="btn_soil_tds">Soil TDS</button>
+                <button id="choose-crop" class="choice-btn" data-lang-key="btn_crop_type">Crop Type</button>
+            </div>
+
+            <!-- TDS Input Area -->
+            <div id="tds-input-area" class="input-area">
+                <label for="tds-level" data-lang-key="label_tds">Enter Soil TDS (ppm):</label>
+                <input type="number" id="tds-level" placeholder="e.g., 750">
+            </div>
+
+            <!-- Crop Input Area -->
+            <div id="crop-input-area" class="input-area hidden">
+                <label for="crop-type" data-lang-key="label_crop">Select Primary Crop:</label>
+                <select id="crop-type">
+                    <option value="" data-lang-key="select_option">-- Select Crop --</option>
+                </select>
+                <div id="crop-info-display" class="hidden">
+                     <h5 data-lang-key="crop_info_heading">Crop Information</h5>
+                     <p><strong data-lang-key="optimal_tds_label">Optimal TDS:</strong> <span id="crop-info-tds"></span></p>
+                     <p><strong data-lang-key="preferred_soil_label">Preferred Soil:</strong> <span id="crop-info-soil"></span></p>
+                     <p><strong data-lang-key="general_advice_label">General Advice:</strong> <span id="crop-info-advice"></span></p>
+                </div>
+            </div>
+
+            <div class="filters">
+                <h4 data-lang-key="filter_heading">Refine Results:</h4>
+                <div>
+                    <label for="price-filter" data-lang-key="filter_price_inr">Price (Approx. INR per Unit):</label>
+                    <select id="price-filter">
+                        <option value="all" data-lang-key="filter_all">All</option>
+                        <option value="0-500" data-lang-key="price_under_500">Under ₹500</option>
+                        <option value="500-1000" data-lang-key="price_500_1000">₹500 - ₹1000</option>
+                        <option value="1000-2000" data-lang-key="price_1000_2000">₹1000 - ₹2000</option>
+                        <option value="2000+" data-lang-key="price_over_2000">Over ₹2000</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="soil-type-filter" data-lang-key="filter_soil">Your Soil Type:</label>
+                    <select id="soil-type-filter">
+                        <option value="all" data-lang-key="filter_all">All</option>
+                        <option value="Loamy" data-lang-key="soil_loamy">Loamy</option>
+                        <option value="Clay" data-lang-key="soil_clay">Clay</option>
+                        <option value="Sandy" data-lang-key="soil_sandy">Sandy</option>
+                        <option value="Silt" data-lang-key="soil_silt">Silt</option>
+                        <option value="Peat" data-lang-key="soil_peat">Peat</option>
+                        <option value="Saline" data-lang-key="soil_saline">Saline</option>
+                        <option value="Alkaline" data-lang-key="soil_alkaline">Alkaline</option>
+                    </select>
+                </div>
+                <div id="crop-filter-area">
+                     <label for="crop-filter" data-lang-key="filter_crop">Target Crop (Optional):</label>
+                     <select id="crop-filter">
+                         <option value="all" data-lang-key="filter_all_crops">All Crops</option>
+                     </select>
+                </div>
+            </div>
+
+            <button id="find-recommendations-btn" data-lang-key="find_btn">Find Recommendations</button>
+
+            <div id="results-area">
+                <h4 data-lang-key="results_heading">Recommendations</h4>
+                <div id="results-list">
+                    <p data-lang-key="results_placeholder">Enter your details above and click 'Find Recommendations'.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section">
+            <h3 data-lang-key="features_heading">Key Features</h3>
+            <ul id="features-list-ul">
+                 <li data-lang-key="feature_tds"><strong>TDS-Based Recommendations:</strong> Avoid overuse, protect soil health by matching products to soil salinity.</li>
+                 <li data-lang-key="feature_crop"><strong>Crop-Specific Suggestions:</strong> Get fertilizers and pesticides tailored for optimal growth of your specific crop, along with cultivation tips.</li>
+                 <li data-lang-key="feature_filters"><strong>Smart Filters:</strong> Easily find affordable options (INR Price Filter) and refine suggestions based on your Soil Type.</li>
+                 <li data-lang-key="feature_lang"><strong>Multilingual Support:</strong> Access all features and instructions clearly in both English and Hindi.</li>
+                 <li data-lang-key="feature_usage"><strong>Clear Usage Instructions:</strong> Apply products correctly and safely for maximum effectiveness and yield boost.</li>
+            </ul>
+        </section>
+
+         <section class="content-section">
+            <h3 data-lang-key="how_heading">How It Works</h3>
+            <ol>
+                <li data-lang-key="how_step1"><strong>Choose Method:</strong> Select recommendations based on Soil TDS or Crop Type.</li>
+                <li data-lang-key="how_step2"><strong>Enter Details:</strong> Input TDS value (ppm) or select crop. View basic info if selecting crop.</li>
+                <li data-lang-key="how_step3"><strong>Apply Filters (Optional):</strong> Narrow results by Price (₹), Soil Type, or Target Crop.</li>
+                <li data-lang-key="how_step4"><strong>Get Recommendations:</strong> Click 'Find Recommendations' for suitable products.</li>
+                <li data-lang-key="how_step5"><strong>View Details:</strong> Click a product for detailed usage, safety, and suitability notes.</li>
+            </ol>
+        </section>
+
+        <div id="details-modal" class="modal hidden">
+            <div class="modal-content">
+                <button id="close-modal-btn" class="close-btn" title="Close">×</button>
+                <h4 id="modal-product-name">Product Name</h4>
+                <p><strong><span data-lang-key="modal_type">Type:</span></strong> <span id="modal-product-type"></span></p>
+                 <p><strong data-lang-key="modal_price_inr">Price (Approx. INR):</strong> <span id="modal-product-price" class="price-info"></span> <span data-lang-key="price_unit_note" class="price-unit-note"></span></p>
+                <p><strong><span data-lang-key="modal_suitability">Suitability Notes:</span></strong> <span id="modal-product-suitability"></span></p>
+
+                <h5 data-lang-key="modal_desc_heading">Description</h5>
+                <p id="modal-product-description"></p>
+
+                <h5 data-lang-key="modal_usage_heading">Usage Instructions</h5>
+                <p id="modal-product-usage"></p>
+
+                <h5 data-lang-key="modal_safety_heading">Safety Precautions</h5>
+                <p id="modal-product-safety"></p>
+            </div>
+        </div>
+
+    </main>
+
+    <footer>
+        <p>© 2024 Smart Fertilizer Assistant.
+           <a href="#" data-lang-key="footer_privacy">Privacy Policy</a> |
+           <a href="#" data-lang-key="footer_terms">Terms of Service</a> |
+           <a href="#" data-lang-key="footer_contact">Contact Us</a>
+        </p>
+    </footer>
+
+    <!-- JavaScript Embedded Below -->
+    <script>
+        // --- DATA Definitions ---
+        const allProducts = [
+            // ** Basic / Low Cost **
+            {
+                id: "fert_urea_basic", name_en: "Standard Urea (46% N)", name_hi: "मानक यूरिया (46% एन)", type_en: "Nitrogen Fertilizer", type_hi: "नाइट्रोजन उर्वरक", priceINR: { min: 300, max: 400 }, unit_en: "per 45kg bag", unit_hi: "प्रति 45 किग्रा बैग", suitableSoilTypes: ["All"], suitableCrops: ["Wheat", "Rice", "Maize", "Sugarcane", "Cotton"], tdsRange: { min: 0, max: 900 },
+                description_en: "Basic, cost-effective Nitrogen source for vegetative growth.", description_hi: "वानस्पतिक विकास के लिए नाइट्रोजन का बुनियादी, लागत प्रभावी स्रोत।", usage_en: "Top dress 25-40kg/acre.", usage_hi: "25-40 किग्रा/एकड़ टॉप ड्रेसिंग करें।", safety_en: "Avoid contact with wet leaves.", safety_hi: "गीली पत्तियों पर संपर्क से बचें।"
+            },
+            {
+                id: "fert_ssp_basic", name_en: "Single Super Phosphate (SSP)", name_hi: "सिंगल सुपर फॉस्फेट (एसएसपी)", type_en: "Phosphorus & Sulphur Fertilizer", type_hi: "फास्फोरस और सल्फर उर्वरक", priceINR: { min: 400, max: 550 }, unit_en: "per 50kg bag", unit_hi: "प्रति 50 किग्रा बैग", suitableSoilTypes: ["Loamy", "Silt", "Clay", "Acidic"],
+                suitableCrops: ["Pulses", "Groundnut", "Soybean", "Vegetables"], tdsRange: { min: 0, max: 1200 },
+                description_en: "Provides Phosphorus, Sulphur, and Calcium. Good for root development, especially in pulses and oilseeds.", description_hi: "फास्फोरस, सल्फर और कैल्शियम प्रदान करता है। जड़ विकास के लिए अच्छा है, खासकर दालों और तिलहनों में।", usage_en: "Basal dose 100-150kg/acre.", usage_hi: "आधार खुराक 100-150 किग्रा/एकड़।", safety_en: "Standard handling.", safety_hi: "मानक हैंडलिंग।"
+            },
+             // ** Balanced NPK - Various Price/TDS **
+            {
+                id: "fert_npk_19_std", name_en: "NPK 19-19-19 (Standard)", name_hi: "एनपीके 19-19-19 (मानक)", type_en: "Balanced Water-Soluble Fertilizer", type_hi: "संतुलित पानी में घुलनशील उर्वरक", priceINR: { min: 600, max: 850 }, unit_en: "per 25kg bag", unit_hi: "प्रति 25 किग्रा बैग", suitableSoilTypes: ["Loamy", "Silt", "Clay", "Peat"], suitableCrops: ["Vegetables", "Fruits", "Flowers", "Potato"], tdsRange: { min: 0, max: 1200 },
+                description_en: "Standard balanced NPK for general growth stages.", description_hi: "सामान्य विकास चरणों के लिए मानक संतुलित एनपीके।", usage_en: "Foliar spray 3-5g/L, Drip 2-4kg/acre.", usage_hi: "पर्णीय छिड़काव 3-5 ग्राम/लीटर, ड्रिप 2-4 किग्रा/एकड़।", safety_en: "Store dry.", safety_hi: "सूखा स्टोर करें।"
+            },
+             {
+                id: "fert_npk_19_prem", name_en: "NPK 19-19-19 (Premium Grade)", name_hi: "एनपीके 19-19-19 (प्रीमियम ग्रेड)", type_en: "Balanced Water-Soluble Fertilizer", type_hi: "संतुलित पानी में घुलनशील उर्वरक", priceINR: { min: 900, max: 1300 }, unit_en: "per 25kg bag", unit_hi: "प्रति 25 किग्रा बैग", suitableSoilTypes: ["All"], suitableCrops: ["All"], tdsRange: { min: 0, max: 1500 },
+                description_en: "High purity balanced NPK, suitable for wider conditions.", description_hi: "उच्च शुद्धता वाला संतुलित एनपीके, व्यापक परिस्थितियों के लिए उपयुक्त।", usage_en: "Foliar spray 3-5g/L, Drip 2-4kg/acre.", usage_hi: "पर्णीय छिड़काव 3-5 ग्राम/लीटर, ड्रिप 2-4 किग्रा/एकड़।", safety_en: "Store dry.", safety_hi: "सूखा स्टोर करें।"
+            },
+            {
+                id: "fert_npk_13_low_tds", name_en: "NPK 13-0-45 (Potassium Nitrate)", name_hi: "एनपीके 13-0-45 (पोटेशियम नाइट्रेट)", type_en: "High K Fertilizer", type_hi: "उच्च K उर्वरक", priceINR: { min: 1100, max: 1600 }, unit_en: "per 25kg bag", unit_hi: "प्रति 25 किग्रा बैग", suitableSoilTypes: ["All"], suitableCrops: ["Fruits", "Vegetables", "Potato", "Cotton", "Sugarcane"], tdsRange: { min: 0, max: 1000 },
+                description_en: "High Potassium source, ideal for fruiting/maturity stages. Low salt index.", description_hi: "उच्च पोटेशियम स्रोत, फलन/परिपक्वता चरणों के लिए आदर्श। कम नमक सूचकांक।", usage_en: "Foliar 5-7g/L, Drip 3-5kg/acre.", usage_hi: "पर्णीय 5-7 ग्राम/लीटर, ड्रिप 3-5 किग्रा/एकड़।", safety_en: "Store dry.", safety_hi: "सूखा स्टोर करें।"
+            },
+             // ** Saline / High TDS Specific **
+            {
+                id: "fert_sop_saline", name_en: "Potassium Sulphate (SOP - Saline Tolerant)", name_hi: "पोटेशियम सल्फेट (एसओपी - लवण सहिष्णु)", type_en: "Low Chloride K & S Fertilizer", type_hi: "कम क्लोराइड K और S उर्वरक", priceINR: { min: 1800, max: 2400 }, unit_en: "per 50kg bag", unit_hi: "प्रति 50 किग्रा बैग", suitableSoilTypes: ["Saline", "Alkaline", "Clay", "Loamy"], suitableCrops: ["Potato", "Tomato", "Onion", "Grapes", "Tobacco", "Fruits"], tdsRange: { min: 800, max: 2500 },
+                description_en: "Ideal Potassium source for chloride-sensitive crops or saline/alkaline soils. Low salt index.", description_hi: "क्लोराइड-संवेदनशील फसलों या खारी/क्षारीय मिट्टी के लिए आदर्श पोटेशियम स्रोत। कम नमक सूचकांक।", usage_en: "Soil 50-100kg/acre, Foliar 3-5g/L.", usage_hi: "मिट्टी 50-100 किग्रा/एकड़, पर्णीय 3-5 ग्राम/लीटर।", safety_en: "Standard handling.", safety_hi: "मानक हैंडलिंग।"
+            },
+            {
+                id: "fert_canit_saline", name_en: "Calcium Nitrate (Soil Amendment Grade)", name_hi: "कैल्शियम नाइट्रेट (मिट्टी सुधार ग्रेड)", type_en: "Calcium & Nitrogen Fertilizer", type_hi: "कैल्शियम और नाइट्रोजन उर्वरक", priceINR: { min: 1600, max: 2300 }, unit_en: "per 25kg bag", unit_hi: "प्रति 25 किग्रा बैग", suitableSoilTypes: ["Saline", "Alkaline", "Sandy", "Loamy"], suitableCrops: ["Tomato", "Potato", "Fruits", "Vegetables"], tdsRange: { min: 600, max: 3000 },
+                description_en: "Provides Ca & N. Helps improve soil structure in saline/sodic soils and prevents Ca deficiency.", description_hi: "Ca और N प्रदान करता है। खारी/सोडिक मिट्टी में मिट्टी की संरचना में सुधार करने में मदद करता है और Ca की कमी को रोकता है।", usage_en: "Soil/Drip 15-30kg/acre.", usage_hi: "मिट्टी/ड्रिप 15-30 किग्रा/एकड़।", safety_en: "Hygroscopic, keep sealed.", safety_hi: "हाइग्रोस्कोपिक, सीलबंद रखें।"
+            },
+             {
+                id: "fert_gypsum_saline", name_en: "Agricultural Gypsum", name_hi: "कृषि जिप्सम", type_en: "Soil Conditioner (Ca + S)", type_hi: "मिट्टी कंडीशनर (Ca + S)", priceINR: { min: 200, max: 400 }, unit_en: "per 50kg bag", unit_hi: "प्रति 50 किग्रा बैग", suitableSoilTypes: ["Saline", "Alkaline", "Clay"], suitableCrops: ["Groundnut", "Pulses", "Rice", "Wheat"], tdsRange: { min: 1000, max: 5000 },
+                description_en: "Calcium Sulphate used for reclaiming sodic/alkaline soils and as a source of Ca and S.", description_hi: "कैल्शियम सल्फेट का उपयोग सोडिक/क्षारीय मिट्टी को पुनः प्राप्त करने और Ca और S के स्रोत के रूप में किया जाता है।", usage_en: "Apply 200-500kg/acre based on soil test for reclamation.", usage_hi: "सुधार के लिए मिट्टी परीक्षण के आधार पर 200-500 किग्रा/एकड़ डालें।", safety_en: "Avoid dust inhalation.", safety_hi: "धूल साँस लेने से बचें।"
+            },
+             // ** Organic / Soil Health **
+            {
+                id: "fert_vermi_gen", name_en: "Vermicompost (Enriched)", name_hi: "वर्मीकम्पोस्ट (समृद्ध)", type_en: "Organic Manure & Conditioner", type_hi: "जैविक खाद और कंडीशनर", priceINR: { min: 500, max: 900 }, unit_en: "per 40kg bag", unit_hi: "प्रति 40 किग्रा बैग", suitableSoilTypes: ["All"], suitableCrops: ["All"], tdsRange: { min: 0, max: 5000 },
+                description_en: "Excellent organic manure, improves soil structure, aeration, water retention, and microbial activity.", description_hi: "उत्कृष्ट जैविक खाद, मिट्टी की संरचना, वातन, जल धारण और सूक्ष्मजीव गतिविधि में सुधार करता है।", usage_en: "Apply 500-2000kg/acre as basal dose.", usage_hi: "आधार खुराक के रूप में 500-2000 किग्रा/एकड़ डालें।", safety_en: "Store in shade.", safety_hi: "छाया में स्टोर करें।"
+            },
+             {
+                id: "fert_neemcake_fert", name_en: "Neem Cake Powder (Fertilizer Grade)", name_hi: "नीम खली पाउडर (उर्वरक ग्रेड)", type_en: "Organic NPK & Nematicide", type_hi: "जैविक NPK और सूत्रकृमिनाशक", priceINR: { min: 800, max: 1200 }, unit_en: "per 50kg bag", unit_hi: "प्रति 50 किग्रा बैग", suitableSoilTypes: ["All"], suitableCrops: ["Vegetables", "Fruits", "Sugarcane", "Potato"], tdsRange: { min: 0, max: 5000 },
+                description_en: "Organic manure providing slow-release NPK and acts as a natural nematicide and soil conditioner.", description_hi: "जैविक खाद जो धीमी गति से निकलने वाला NPK प्रदान करती है और प्राकृतिक सूत्रकृमिनाशक और मिट्टी कंडीशनर के रूप में कार्य करती है।", usage_en: "Basal application 100-200kg/acre.", usage_hi: "आधार अनुप्रयोग 100-200 किग्रा/एकड़।", safety_en: "Store dry.", safety_hi: "सूखा स्टोर करें।"
+            },
+             {
+                id: "fert_seaweed_liq", name_en: "Seaweed Extract Liquid", name_hi: "समुद्री शैवाल अर्क तरल", type_en: "Organic Growth Promoter", type_hi: "जैविक विकास प्रमोटर", priceINR: { min: 1000, max: 1800 }, unit_en: "per Litre", unit_hi: "प्रति लीटर", suitableSoilTypes: ["All"], suitableCrops: ["All"], tdsRange: { min: 0, max: 5000 },
+                description_en: "Contains natural plant hormones, amino acids, and micronutrients. Boosts growth and stress tolerance.", description_hi: "प्राकृतिक पौधे हार्मोन, अमीनो एसिड और सूक्ष्म पोषक तत्व शामिल हैं। विकास और तनाव सहनशीलता को बढ़ाता है।", usage_en: "Foliar spray 2-3ml/L.", usage_hi: "पर्णीय छिड़काव 2-3 मिली/लीटर।", safety_en: "Store cool and dark.", safety_hi: "ठंडा और अंधेरा स्टोर करें।"
+            },
+             // ** Crop Specific Examples **
+             {
+                id: "fert_cotton_k", name_en: "Cotton King (High K Mix)", name_hi: "कॉटन किंग (उच्च K मिश्रण)", type_en: "Crop Specific Fertilizer", type_hi: "फसल विशिष्ट उर्वरक", priceINR: { min: 1300, max: 1900 }, unit_en: "per 50kg bag", unit_hi: "प्रति 50 किग्रा बैग", suitableSoilTypes: ["Clay", "Loamy", "Silt"], suitableCrops: ["Cotton"], tdsRange: { min: 500, max: 1800 },
+                description_en: "Special formulation with high Potassium and micronutrients for Cotton boll development.", description_hi: "कपास बोल विकास के लिए उच्च पोटेशियम और सूक्ष्म पोषक तत्वों के साथ विशेष सूत्रीकरण।", usage_en: "Apply during flowering/boll development stage.", usage_hi: "फूल आने/बोल विकास अवस्था के दौरान लगाएं।", safety_en: "Standard handling.", safety_hi: "मानक हैंडलिंग।"
+            },
+             {
+                id: "fert_veg_boost", name_en: "Vegetable Booster (Micro Mix)", name_hi: "सब्जी बूस्टर (माइक्रो मिक्स)", type_en: "Micronutrient Mix", type_hi: "माइक्रोन्यूट्रिएंट मिक्स", priceINR: { min: 700, max: 1100 }, unit_en: "per 10kg Pail", unit_hi: "प्रति 10 किग्रा बाल्टी", suitableSoilTypes: ["All"], suitableCrops: ["Vegetables", "Tomato", "Chilli", "Okra"], tdsRange: { min: 0, max: 1600 },
+                description_en: "Chelated micronutrient mix (Fe, Zn, Mn, B, Cu) essential for vegetable crops.", description_hi: "सब्जी फसलों के लिए आवश्यक चेलेटेड माइक्रोन्यूट्रिएंट मिक्स (Fe, Zn, Mn, B, Cu)।", usage_en: "Foliar spray 1-2g/L or soil application 5-10kg/acre.", usage_hi: "पर्णीय छिड़काव 1-2 ग्राम/लीटर या मिट्टी अनुप्रयोग 5-10 किग्रा/एकड़।", safety_en: "Store dry.", safety_hi: "सूखा स्टोर करें।"
+            },
+             {
+                id: "fert_dap_basic", name_en: "DAP (Di-Ammonium Phosphate)", name_hi: "डीएपी (डाई-अमोनियम फॉस्फेट)", type_en: "Phosphorus & Nitrogen Fertilizer", type_hi: "फास्फोरस और नाइट्रोजन उर्वरक", priceINR: { min: 1200, max: 1500 }, unit_en: "per 50kg bag", unit_hi: "प्रति 50 किग्रा बैग", suitableSoilTypes: ["All"], suitableCrops: ["All"], tdsRange: { min: 0, max: 1500 },
+                description_en: "High analysis fertilizer providing both Phosphorus and Nitrogen, commonly used as a basal dose.", description_hi: "उच्च विश्लेषण वाला उर्वरक जो फास्फोरस और नाइट्रोजन दोनों प्रदान करता है, आमतौर पर आधार खुराक के रूप में उपयोग किया जाता है।", usage_en: "Basal application: 50-100kg per acre.", usage_hi: "आधार अनुप्रयोग: 50-100 किग्रा प्रति एकड़।", safety_en: "Keep away from seeds if possible.", safety_hi: "संभव हो तो बीजों से दूर रखें।"
+            },
+
+            // --- Pesticides (Expanded & Diversified) ---
+            // ** Basic / Low Cost **
+            {
+                id: "pest_chlorpy_basic", name_en: "Chlorpyrifos 20% EC", name_hi: "क्लोरपाइरीफॉस 20% ईसी", type_en: "Broad Spectrum Insecticide", type_hi: "व्यापक स्पेक्ट्रम कीटनाशक", priceINR: { min: 300, max: 450 }, unit_en: "per Litre", unit_hi: "प्रति लीटर", suitableSoilTypes: ["All"], suitableCrops: ["Cotton", "Rice", "Pulses", "Vegetables"], tdsRange: { min: 0, max: 5000 },
+                description_en: "Common contact and stomach insecticide for various chewing and sucking pests.", description_hi: "विभिन्न चबाने और चूसने वाले कीटों के लिए सामान्य संपर्क और पेट कीटनाशक।", usage_en: "2-3 ml/L water.", usage_hi: "2-3 मिली/लीटर पानी।", safety_en: "Toxic, wear PPE. Follow label.", safety_hi: "जहरीला, पीपीई पहनें। लेबल का पालन करें।"
+            },
+             {
+                id: "pest_copper_oxychloride", name_en: "Copper Oxychloride 50% WP", name_hi: "कॉपर ऑक्सीक्लोराइड 50% डब्ल्यूपी", type_en: "Broad Spectrum Fungicide/Bactericide", type_hi: "व्यापक स्पेक्ट्रम कवकनाशी/जीवाणुनाशक", priceINR: { min: 400, max: 600 }, unit_en: "per 500g pack", unit_hi: "प्रति 500 ग्राम पैक", suitableSoilTypes: ["All"], suitableCrops: ["Vegetables", "Fruits", "Potato", "Citrus", "Coffee"], tdsRange: { min: 0, max: 5000 },
+                description_en: "Protective fungicide and bactericide for various diseases.", description_hi: "विभिन्न रोगों के लिए सुरक्षात्मक कवकनाशी और जीवाणुनाशक।", usage_en: "2-3g/L water.", usage_hi: "2-3 ग्राम/लीटर पानी।", safety_en: "Avoid inhalation. Wear PPE.", safety_hi: "साँस लेने से बचें। पीपीई पहनें।"
+            },
+             {
+                id: "pest_mancozeb_basic", name_en: "Mancozeb 75% WP", name_hi: "मैन्कोजेब 75% डब्ल्यूपी", type_en: "Contact Fungicide", type_hi: "संपर्क कवकनाशी", priceINR: { min: 500, max: 800 }, unit_en: "per Kg", unit_hi: "प्रति किग्रा", suitableSoilTypes: ["All"], suitableCrops: ["Potato", "Tomato", "Grapes", "Chilli", "Groundnut", "Vegetables", "Fruits"], tdsRange: { min: 0, max: 5000 },
+                description_en: "Broad-spectrum contact fungicide for controlling fungal diseases.", description_hi: "फंगल रोगों को नियंत्रित करने के लिए व्यापक-स्पेक्ट्रम संपर्क कवकनाशी।", usage_en: "Mix 2-3g/L water.", usage_hi: "2-3 ग्राम/लीटर पानी में मिलाएं।", safety_en: "Avoid inhalation. Wear PPE.", safety_hi: "साँस लेने से बचें। पीपीई पहनें।"
+             },
+
+            // ** Systemic / Higher Cost / Specific Action **
+            {
+                id: "pest_imidacloprid_std", name_en: "Imidacloprid 17.8% SL", name_hi: "इमिडाक्लोप्रिड 17.8% एसएल", type_en: "Systemic Insecticide (Sucking Pests)", type_hi: "प्रणालीगत कीटनाशक (चूसने वाले कीट)", priceINR: { min: 250, max: 400 }, unit_en: "per 100ml", unit_hi: "प्रति 100 मिली", suitableSoilTypes: ["All"], suitableCrops: ["Cotton", "Rice", "Vegetables", "Sugarcane", "Mango", "Okra", "Brinjal", "Chilli"], tdsRange: { min: 0, max: 5000 },
+                description_en: "Effective against aphids, jassids, thrips, whiteflies.", description_hi: "एफिड्स, जैसिड्स, थ्रिप्स, व्हाइटफ्लाइज़ के खिलाफ प्रभावी।", usage_en: "0.3-0.5 ml/L water.", usage_hi: "0.3-0.5 मिली/लीटर पानी।", safety_en: "Toxic to bees. Wear PPE.", safety_hi: "मधुमक्खियों के लिए जहरीला। पीपीई पहनें।"
+            },
+            {
+                id: "pest_thiamethoxam_prem", name_en: "Thiamethoxam 25% WG", name_hi: "थियामेथोक्सम 25% डब्लूजी", type_en: "Systemic Insecticide (Advanced)", type_hi: "प्रणालीगत कीटनाशक (उन्नत)", priceINR: { min: 900, max: 1400 }, unit_en: "per 100g pack", unit_hi: "प्रति 100 ग्राम पैक", suitableSoilTypes: ["All"], suitableCrops: ["Cotton", "Rice", "Okra", "Mango", "Wheat", "Potato"], tdsRange: { min: 0, max: 5000 },
+                description_en: "Newer generation systemic insecticide, effective against sucking pests including resistant ones.", description_hi: "नई पीढ़ी का प्रणालीगत कीटनाशक, प्रतिरोधी सहित चूसने वाले कीटों के खिलाफ प्रभावी।", usage_en: "0.5g/L water.", usage_hi: "0.5 ग्राम/लीटर पानी।", safety_en: "Toxic to bees. Wear PPE.", safety_hi: "मधुमक्खियों के लिए जहरीला। पीपीई पहनें।"
+            },
+            {
+                id: "pest_hexaconazole_fung", name_en: "Hexaconazole 5% EC", name_hi: "हेक्साकोनाज़ोल 5% ईसी", type_en: "Systemic Fungicide", type_hi: "प्रणालीगत कवकनाशी", priceINR: { min: 500, max: 800 }, unit_en: "per 250ml", unit_hi: "प्रति 250 मिली", suitableSoilTypes: ["All"], suitableCrops: ["Rice", "Mango", "Groundnut", "Vegetables", "Chilli"], tdsRange: { min: 0, max: 5000 },
+                description_en: "Systemic fungicide effective against powdery mildew, rust, leaf spot.", description_hi: "पाउडरी मिल्ड्यू, रस्ट, लीफ स्पॉट के खिलाफ प्रभावी प्रणालीगत कवकनाशी।", usage_en: "1-2 ml/L water.", usage_hi: "1-2 मिली/लीटर पानी।", safety_en: "Wear PPE. Follow label.", safety_hi: "पीपीई पहनें। लेबल का पालन करें।"
+            },
+            {
+                id: "pest_azoxystrobin_prem", name_en: "Azoxystrobin 23% SC", name_hi: "एज़ोक्सिस्ट्रोबिन 23% एससी", type_en: "Broad Spectrum Systemic Fungicide", type_hi: "व्यापक स्पेक्ट्रम प्रणालीगत कवकनाशी", priceINR: { min: 1500, max: 2200 }, unit_en: "per 250ml", unit_hi: "प्रति 250 मिली", suitableSoilTypes: ["All"], suitableCrops: ["Grapes", "Potato", "Chilli", "Tomato", "Rice", "Wheat"], tdsRange: { min: 0, max: 5000 },
+                description_en: "Advanced systemic fungicide with protective and curative action against many diseases.", description_hi: "कई रोगों के खिलाफ सुरक्षात्मक और उपचारात्मक कार्रवाई के साथ उन्नत प्रणालीगत कवकनाशी।", usage_en: "1 ml/L water.", usage_hi: "1 मिली/लीटर पानी।", safety_en: "Wear PPE. Follow label.", safety_hi: "पीपीई पहनें। लेबल का पालन करें।"
+            },
+             {
+                id: "pest_spinosad_bio", name_en: "Spinosad 45% SC", name_hi: "स्पिनोसैड 45% एससी", type_en: "Biological Insecticide (Derived)", type_hi: "जैविक कीटनाशक (व्युत्पन्न)", priceINR: { min: 2000, max: 3000 }, unit_en: "per 100ml", unit_hi: "प्रति 100 मिली", suitableSoilTypes: ["All"], suitableCrops: ["Cotton", "Chilli", "Grapes", "Vegetables", "Pulses"], tdsRange: { min: 0, max: 5000 },
+                description_en: "Derived from fermentation, effective against lepidopteran larvae (caterpillars) and thrips.", description_hi: "किण्वन से व्युत्पन्न, लेपिडोप्टेरान लार्वा (कैटरपिलर) और थ्रिप्स के खिलाफ प्रभावी।", usage_en: "0.3-0.5 ml/L water.", usage_hi: "0.3-0.5 मिली/लीटर पानी।", safety_en: "Relatively safer, but follow label. Toxic to bees during application.", safety_hi: "अपेक्षाकृत सुरक्षित, लेकिन लेबल का पालन करें। आवेदन के दौरान मधुमक्खियों के लिए जहरीला।"
+            },
+
+             // ** Organic / Bio-pesticides **
+            {
+                id: "pest_neem_1500", name_en: "Neem Oil Concentrate (1500 ppm Azadirachtin)", name_hi: "नीम तेल कॉन्सेंट्रेट (1500 पीपीएम अज़ाडिरैक्टिन)", type_en: "Organic Insecticide/Miticide/Fungicide", type_hi: "जैविक कीटनाशक/माइटिसाइड/कवकनाशी", priceINR: { min: 400, max: 700 }, unit_en: "per Litre", unit_hi: "प्रति लीटर", suitableSoilTypes: ["All"], suitableCrops: ["All"], tdsRange: { min: 0, max: 5000 },
+                description_en: "Broad-spectrum botanical pesticide.", description_hi: "व्यापक-स्पेक्ट्रम वानस्पतिक कीटनाशक।", usage_en: "Mix 5-10ml/L water with emulsifier.", usage_hi: "5-10 मिली/लीटर पानी में इमल्सीफायर के साथ मिलाएं।", safety_en: "Generally safe. Avoid spraying on beneficials.", safety_hi: "आम तौर पर सुरक्षित। लाभकारी कीटों पर छिड़काव से बचें।"
+            },
+             {
+                id: "pest_neem_10k", name_en: "Neem Oil Concentrate (10000 ppm Azadirachtin)", name_hi: "नीम तेल कॉन्सेंट्रेट (10000 पीपीएम अज़ाडिरैक्टिन)", type_en: "Organic Insecticide (High Strength)", type_hi: "जैविक कीटनाशक (उच्च शक्ति)", priceINR: { min: 1200, max: 1800 }, unit_en: "per Litre", unit_hi: "प्रति लीटर", suitableSoilTypes: ["All"], suitableCrops: ["All"], tdsRange: { min: 0, max: 5000 },
+                description_en: "Higher concentration Azadirachtin for stronger pest control.", description_hi: "मजबूत कीट नियंत्रण के लिए उच्च सांद्रता वाला अज़ाडिरैक्टिन।", usage_en: "Mix 2-4ml/L water with emulsifier.", usage_hi: "2-4 मिली/लीटर पानी में इमल्सीफायर के साथ मिलाएं।", safety_en: "Generally safe. Avoid spraying on beneficials.", safety_hi: "आम तौर पर सुरक्षित। लाभकारी कीटों पर छिड़काव से बचें।"
+            },
+             {
+                id: "pest_beauveria", name_en: "Beauveria Bassiana Bio-pesticide", name_hi: "ब्यूवेरिया बेसियाना जैव-कीटनाशक", type_en: "Bio-Insecticide (Fungal)", type_hi: "जैव-कीटनाशक (फंगल)", priceINR: { min: 600, max: 1000 }, unit_en: "per Kg powder", unit_hi: "प्रति किग्रा पाउडर", suitableSoilTypes: ["All"], suitableCrops: ["All"], tdsRange: { min: 0, max: 5000 },
+                description_en: "Entomopathogenic fungus that infects various insects like whiteflies, thrips, aphids.", description_hi: "एंटिमोपैथोजेनिक कवक जो व्हाइटफ्लाइज़, थ्रिप्स, एफिड्स जैसे विभिन्न कीड़ों को संक्रमित करता है।", usage_en: "Mix 5-10g/L water. Spray in evening.", usage_hi: "5-10 ग्राम/लीटर पानी में मिलाएं। शाम को स्प्रे करें।", safety_en: "Safe. Store cool.", safety_hi: "सुरक्षित। ठंडा स्टोर करें।"
+            },
+              {
+                id: "pest_trichoderma", name_en: "Trichoderma Viride Bio-fungicide", name_hi: "ट्राइकोडर्मा विरिडी जैव-कवकनाशी", type_en: "Bio-Fungicide", type_hi: "जैव-कवकनाशी", priceINR: { min: 500, max: 800 }, unit_en: "per Kg powder", unit_hi: "प्रति किग्रा पाउडर", suitableSoilTypes: ["All"], suitableCrops: ["All"], tdsRange: { min: 0, max: 5000 },
+                description_en: "Antagonistic fungus used for controlling soil-borne fungal diseases like root rot, wilt.", description_hi: "विरोधी कवक जिसका उपयोग मिट्टी जनित फंगल रोगों जैसे जड़ सड़न, विल्ट को नियंत्रित करने के लिए किया जाता है।", usage_en: "Soil application: Mix 1-2kg with compost/FYM per acre. Seed treatment: 5-10g/kg seed.", usage_hi: "मिट्टी अनुप्रयोग: 1-2 किग्रा प्रति एकड़ खाद/FYM के साथ मिलाएं। बीज उपचार: 5-10 ग्राम/किग्रा बीज।", safety_en: "Safe. Store cool.", safety_hi: "सुरक्षित। ठंडा स्टोर करें।"
+            }
+        ];
+
+
+        // --- Crop Information Data ---
+        const cropInfoData = [
+            { value: "Wheat", optimalTDS_en: "Prefers TDS below 1200 ppm. Sensitive to high salinity during early growth.", optimalTDS_hi: "1200 पीपीएम से कम टीडीएस पसंद करता है। शुरुआती विकास के दौरान उच्च लवणता के प्रति संवेदनशील।", preferredSoil_en: "Well-drained loamy soils are ideal. Avoid waterlogged conditions.", preferredSoil_hi: "अच्छी जल निकासी वाली दोमट मिट्टी आदर्श है। जलभराव की स्थिति से बचें।", generalAdvice_en: "Requires good nitrogen supply, especially during tillering and stem elongation. Manage irrigation carefully.", generalAdvice_hi: "अच्छी नाइट्रोजन आपूर्ति की आवश्यकता है, खासकर टिलरिंग और तने के विस्तार के दौरान। सिंचाई का ध्यानपूर्वक प्रबंधन करें।" },
+            { value: "Rice", optimalTDS_en: "Tolerant to higher TDS (up to 1500-2000 ppm in some varieties) but yields may reduce. Prefers lower TDS for optimal growth.", optimalTDS_hi: "उच्च टीडीएस (कुछ किस्मों में 1500-2000 पीपीएम तक) के प्रति सहिष्णु लेकिन उपज कम हो सकती है। इष्टतम विकास के लिए कम टीडीएस पसंद करता है।", preferredSoil_en: "Clayey loam or clay soils with good water retention. Can grow in slightly acidic to neutral soils.", preferredSoil_hi: "अच्छी जल धारण क्षमता वाली चिकनी दोमट या चिकनी मिट्टी। थोड़ी अम्लीय से तटस्थ मिट्टी में उग सकता है।", generalAdvice_en: "Requires standing water during most growth stages. Nutrient needs (N, P, K, Zn) are high.", generalAdvice_hi: "अधिकांश विकास चरणों के दौरान खड़े पानी की आवश्यकता होती है। पोषक तत्वों (एन, पी, के, जेडएन) की जरूरतें अधिक होती हैं।" },
+            { value: "Cotton", optimalTDS_en: "Moderately tolerant to salinity (up to 1500-1800 ppm), but sensitive during germination. Good drainage is crucial.", optimalTDS_hi: "लवणता के प्रति मध्यम रूप से सहिष्णु (1500-1800 पीपीएम तक), लेकिन अंकुरण के दौरान संवेदनशील। अच्छी जल निकासी महत्वपूर्ण है।", preferredSoil_en: "Deep, well-drained loamy or clay-loam soils (like Black Cotton Soil).", preferredSoil_hi: "गहरी, अच्छी जल निकासी वाली दोमट या चिकनी-दोमट मिट्टी (जैसे काली कपास मिट्टी)।", generalAdvice_en: "Requires warm temperatures. High Potassium (K) demand during boll development. Prone to sucking pests.", generalAdvice_hi: "गर्म तापमान की आवश्यकता है। बोल विकास के दौरान उच्च पोटेशियम (K) की मांग। चूसने वाले कीटों का खतरा।" },
+            { value: "Tomato", optimalTDS_en: "Moderately sensitive to salinity (ideal < 1000 ppm, tolerates up to 1600 ppm with yield loss).", optimalTDS_hi: "लवणता के प्रति मध्यम रूप से संवेदनशील (आदर्श <1000 पीपीएम, उपज हानि के साथ 1600 पीपीएम तक सहन करता है)।", preferredSoil_en: "Well-drained loamy or sandy loam soils, rich in organic matter. pH 6.0-7.0.", preferredSoil_hi: "अच्छी जल निकासी वाली दोमट या रेतीली दोमट मिट्टी, कार्बनिक पदार्थ से भरपूर। पीएच 6.0-7.0।", generalAdvice_en: "Requires consistent moisture. High Calcium (Ca) demand to prevent Blossom End Rot. Support (staking) is often needed.", generalAdvice_hi: "लगातार नमी की आवश्यकता है। ब्लॉसम एंड रोट को रोकने के लिए उच्च कैल्शियम (Ca) की मांग। सहारे (स्टेकिंग) की अक्सर आवश्यकता होती है।" },
+            { value: "Sugarcane", optimalTDS_en: "Moderately tolerant (up to 1700 ppm). High water requirement.", optimalTDS_hi: "मध्यम रूप से सहिष्णु (1700 पीपीएम तक)। उच्च पानी की आवश्यकता।", preferredSoil_en: "Well-drained heavy soils - clay loam or loam.", preferredSoil_hi: "अच्छी जल निकासी वाली भारी मिट्टी - चिकनी दोमट या दोमट।", generalAdvice_en: "Long duration crop with high nutrient needs, especially Nitrogen and Potassium. Ratooning is common.", generalAdvice_hi: "लंबे समय तक चलने वाली फसल जिसमें उच्च पोषक तत्वों की जरूरत होती है, खासकर नाइट्रोजन और पोटेशियम। पेड़ी लेना आम है।" },
+            { value: "Potato", optimalTDS_en: "Sensitive to salinity (ideal < 800 ppm, yield reduction above 1200 ppm).", optimalTDS_hi: "लवणता के प्रति संवेदनशील (आदर्श < 800 पीपीएम, 1200 पीपीएम से ऊपर उपज में कमी)।", preferredSoil_en: "Well-drained sandy loam or loamy soils. Avoid heavy clay.", preferredSoil_hi: "अच्छी जल निकासी वाली रेतीली दोमट या दोमट मिट्टी। भारी चिकनी मिट्टी से बचें।", generalAdvice_en: "Requires good soil aeration. High Potassium (K) requirement for tuber development. Susceptible to blight.", generalAdvice_hi: "अच्छी मिट्टी वातन की आवश्यकता है। कंद विकास के लिए उच्च पोटेशियम (K) की आवश्यकता। ब्लाइट के प्रति संवेदनशील।" },
+            { value: "Groundnut", optimalTDS_en: "Moderately sensitive (ideal < 1000 ppm). Requires good Calcium supply for pod filling.", optimalTDS_hi: "मध्यम रूप से संवेदनशील (आदर्श <1000 पीपीएम)। फली भरने के लिए अच्छी कैल्शियम आपूर्ति की आवश्यकता होती है।", preferredSoil_en: "Well-drained sandy loam or sandy soils.", preferredSoil_hi: "अच्छी जल निकासी वाली रेतीली दोमट या रेतीली मिट्टी।", generalAdvice_en: "Use Gypsum at pegging stage for Calcium. Avoid water stress during pod development.", generalAdvice_hi: "कैल्शियम के लिए पेगिंग अवस्था में जिप्सम का प्रयोग करें। फली विकास के दौरान पानी के तनाव से बचें।" },
+            { value: "Chilli", optimalTDS_en: "Moderately sensitive (ideal < 900 ppm). Tolerant to slightly higher TDS during later stages.", optimalTDS_hi: "मध्यम रूप से संवेदनशील (आदर्श <900 पीपीएम)। बाद के चरणों के दौरान थोड़े उच्च टीडीएस के प्रति सहिष्णु।", preferredSoil_en: "Well-drained loamy soils rich in organic matter.", preferredSoil_hi: "कार्बनिक पदार्थ से भरपूर अच्छी जल निकासी वाली दोमट मिट्टी।", generalAdvice_en: "Requires balanced nutrition. Susceptible to viral diseases and sucking pests.", generalAdvice_hi: "संतुलित पोषण की आवश्यकता है। वायरल रोगों और चूसने वाले कीटों के प्रति संवेदनशील।" }
+        ];
+
+        const cropOptions = [
+            { value: "Wheat", name_en: "Wheat", name_hi: "गेहूँ" }, { value: "Rice", name_en: "Rice", name_hi: "चावल" }, { value: "Maize", name_en: "Maize (Corn)", name_hi: "मक्का" }, { value: "Barley", name_en: "Barley", name_hi: "जौ" }, { value: "Sorghum", name_en: "Sorghum (Jowar)", name_hi: "ज्वार" }, { value: "Millet", name_en: "Millet (Bajra)", name_hi: "बाजरा" }, { value: "Chickpea", name_en: "Chickpea (Gram)", name_hi: "चना" }, { value: "Pigeonpea", name_en: "Pigeonpea (Arhar)", name_hi: "अरहर" }, { value: "Lentil", name_en: "Lentil (Masoor)", name_hi: "मसूर" }, { value: "Mungbean", name_en: "Mung Bean (Moong)", name_hi: "मूंग" }, { value: "Mustard", name_en: "Mustard/Rapeseed", name_hi: "सरसों/राई" }, { value: "Groundnut", name_en: "Groundnut (Peanut)", name_hi: "मूंगफली" }, { value: "Soybean", name_en: "Soybean", name_hi: "सोयाबीन" }, { value: "Sunflower", name_en: "Sunflower", name_hi: "सूरजमुखी" }, { value: "Cotton", name_en: "Cotton", name_hi: "कपास" }, { value: "Jute", name_en: "Jute", name_hi: "जूट" }, { value: "Sugarcane", name_en: "Sugarcane", name_hi: "गन्ना" }, { value: "Tea", name_en: "Tea", name_hi: "चाय" }, { value: "Coffee", name_en: "Coffee", name_hi: "कॉफ़ी" }, { value: "Tobacco", name_en: "Tobacco", name_hi: "तम्बाकू" }, { value: "Tomato", name_en: "Tomato", name_hi: "टमाटर" }, { value: "Potato", name_en: "Potato", name_hi: "आलू" }, { value: "Onion", name_en: "Onion", name_hi: "प्याज" }, { value: "Garlic", name_en: "Garlic", name_hi: "लहसुन" }, { value: "Brinjal", name_en: "Brinjal (Eggplant)", name_hi: "बैंगन" }, { value: "Okra", name_en: "Okra (Lady's Finger)", name_hi: "भिंडी" }, { value: "Chilli", name_en: "Chilli/Pepper", name_hi: "मिर्च" }, { value: "Cabbage", name_en: "Cabbage", name_hi: "पत्तागोभी" }, { value: "Cauliflower", name_en: "Cauliflower", name_hi: "फूलगोभी" }, { value: "Cucumber", name_en: "Cucumber", name_hi: "खीरा" }, { value: "Gourd", name_en: "Gourds (Bottle/Ridge etc.)", name_hi: "लौकी/तुरई आदि" }, { value: "Spinach", name_en: "Spinach (Palak)", name_hi: "पालक" }, { value: "Vegetables", name_en: "Other Vegetables", name_hi: "अन्य सब्जियां" }, { value: "Mango", name_en: "Mango", name_hi: "आम" }, { value: "Banana", name_en: "Banana", name_hi: "केला" }, { value: "Guava", name_en: "Guava", name_hi: "अमरूद" }, { value: "Papaya", name_en: "Papaya", name_hi: "पपीता" }, { value: "Citrus", name_en: "Citrus (Orange, Lemon etc.)", name_hi: "नींबू वर्गीय (संतरा, नींबू आदि)" }, { value: "Grapes", name_en: "Grapes", name_hi: "अंगूर" }, { value: "Apple", name_en: "Apple", name_hi: "सेब" }, { value: "Pomegranate", name_en: "Pomegranate", name_hi: "अनार" }, { value: "Fruits", name_en: "Other Fruits", name_hi: "अन्य फल" }
+        ];
+
+        // --- LOCALIZATION Definitions ---
+        const translations = {
+             en: { title: "Smart Fertilizer Assistant", main_heading: "Smart Fertilizer Assistant", lang_en: "English", lang_hi: "हिंदी", hero_title: "Smart Farming Starts Here", hero_subtitle: "Personalized Fertilizer & Pesticide Advice Based on Soil TDS or Crop Type.", get_started_btn: "Get Recommendations Now", tool_heading: "Find Your Recommendations", choose_method: "Recommend based on:", btn_soil_tds: "Soil TDS", btn_crop_type: "Crop Type", label_tds: "Enter Soil TDS (ppm):", label_crop: "Select Primary Crop:", select_option: "-- Select Crop --", crop_info_heading: "Crop Information", optimal_tds_label: "Optimal TDS:", preferred_soil_label: "Preferred Soil:", general_advice_label: "General Advice:", filter_heading: "Refine Results:", filter_price_inr: "Price (Approx. INR per Unit):", filter_soil: "Your Soil Type:", filter_crop: "Target Crop (Optional):", filter_all: "All", filter_all_crops: "All Crops", price_under_500: "Under ₹500", price_500_1000: "₹500 - ₹1000", price_1000_2000: "₹1000 - ₹2000", price_over_2000: "Over ₹2000", soil_loamy: "Loamy", soil_clay: "Clay", soil_sandy: "Sandy", soil_silt: "Silt", soil_peat: "Peat", soil_saline: "Saline", soil_alkaline: "Alkaline", find_btn: "Find Recommendations", results_heading: "Recommendations", results_placeholder: "Enter your details above and click 'Find Recommendations'.", no_results: "No products found matching your criteria. Please adjust filters or input.", product_type: "Type", product_suitability: "Suitability Notes", product_price_inr: "Price (Approx. INR)", price_unit_note: "(per unit)", view_details_btn: "View Details & Usage", modal_type: "Type", modal_price_inr: "Price (Approx. INR)", modal_suitability: "Suitability Notes", modal_desc_heading: "Description", modal_usage_heading: "Usage Instructions", modal_safety_heading: "Safety Precautions", features_heading: "Key Features", feature_tds: "<strong>TDS-Based Recommendations:</strong> Avoid overuse, protect soil health by matching products to soil salinity.", feature_crop: "<strong>Crop-Specific Suggestions:</strong> Get fertilizers and pesticides tailored for optimal growth of your specific crop, along with cultivation tips.", feature_filters: "<strong>Smart Filters:</strong> Easily find affordable options (INR Price Filter) and refine suggestions based on your Soil Type.", feature_lang: "<strong>Multilingual Support:</strong> Access all features and instructions clearly in both English and Hindi.", feature_usage: "<strong>Clear Usage Instructions:</strong> Apply products correctly and safely for maximum effectiveness and yield boost.", how_heading: "How It Works", how_step1: "<strong>Choose Method:</strong> Select recommendations based on Soil TDS or Crop Type.", how_step2: "<strong>Enter Details:</strong> Input TDS value (ppm) or select crop. View basic info if selecting crop.", how_step3: "<strong>Apply Filters (Optional):</strong> Narrow results by Price (₹), Soil Type, or Target Crop.", how_step4: "<strong>Get Recommendations:</strong> Click 'Find Recommendations' for suitable products.", how_step5: "<strong>View Details:</strong> Click a product for detailed usage, safety, and suitability notes.", footer_privacy: "Privacy Policy", footer_terms: "Terms of Service", footer_contact: "Contact Us", },
+             hi: { title: "स्मार्ट उर्वरक सहायक", main_heading: "स्मार्ट उर्वरक सहायक", lang_en: "English", lang_hi: "हिंदी", hero_title: "स्मार्ट खेती यहीं से शुरू", hero_subtitle: "मिट्टी के टीडीएस या फसल के प्रकार के आधार पर व्यक्तिगत उर्वरक और कीटनाशक सलाह।", get_started_btn: "सिफ़ारिशें अभी प्राप्त करें", tool_heading: "अपनी सिफ़ारिशें खोजें", choose_method: "इसके आधार पर सिफ़ारिश करें:", btn_soil_tds: "मिट्टी TDS", btn_crop_type: "फसल प्रकार", label_tds: "मिट्टी TDS (ppm) दर्ज करें:", label_crop: "मुख्य फसल चुनें:", select_option: "-- फसल चुनें --", crop_info_heading: "फसल जानकारी", optimal_tds_label: "इष्टतम TDS:", preferred_soil_label: "पसंदीदा मिट्टी:", general_advice_label: "सामान्य सलाह:", filter_heading: "परिणाम परिष्कृत करें:", filter_price_inr: "मूल्य (लगभग ₹ प्रति इकाई):", filter_soil: "आपकी मिट्टी का प्रकार:", filter_crop: "लक्षित फसल (वैकल्पिक):", filter_all: "सभी", filter_all_crops: "सभी फसलें", price_under_500: "₹500 से कम", price_500_1000: "₹500 - ₹1000", price_1000_2000: "₹1000 - ₹2000", price_over_2000: "₹2000 से अधिक", soil_loamy: "दोमट", soil_clay: "चिकनी", soil_sandy: "रेतीली", soil_silt: "गाद", soil_peat: "पीट", soil_saline: "खारी/लवणीय", soil_alkaline: "क्षारीय", find_btn: "सिफ़ारिशें खोजें", results_heading: "सिफ़ारिशें", results_placeholder: "ऊपर अपना विवरण दर्ज करें और 'सिफारिशें खोजें' पर क्लिक करें।", no_results: "आपके मानदंडों से मेल खाने वाले कोई उत्पाद नहीं मिले। कृपया फ़िल्टर या इनपुट समायोजित करें।", product_type: "प्रकार", product_suitability: "उपयुक्तता नोट्स", product_price_inr: "मूल्य (लगभग ₹)", price_unit_note: "(प्रति इकाई)", view_details_btn: "विवरण और उपयोग देखें", modal_type: "प्रकार", modal_price_inr: "मूल्य (लगभग ₹)", modal_suitability: "उपयुक्तता नोट्स", modal_desc_heading: "विवरण", modal_usage_heading: "उपयोग निर्देश", modal_safety_heading: "सुरक्षा सावधानियां", features_heading: "प्रमुख विशेषताऐं", feature_tds: "<strong>TDS-आधारित सिफ़ारिशें:</strong> मिट्टी की लवणता के अनुसार उत्पादों का मिलान करके अत्यधिक उपयोग से बचें, मिट्टी के स्वास्थ्य की रक्षा करें।", feature_crop: "<strong>फसल-विशिष्ट सुझाव:</strong> अपनी विशिष्ट फसल के इष्टतम विकास के लिए तैयार उर्वरक और कीटनाशक प्राप्त करें, साथ ही खेती युक्तियाँ।", feature_filters: "<strong>स्मार्ट फिल्टर:</strong> आसानी से किफायती विकल्प (₹ मूल्य फ़िल्टर) खोजें और अपनी मिट्टी के प्रकार के आधार पर सुझावों को परिष्कृत करें।", feature_lang: "<strong>बहुभाषी समर्थन:</strong> अंग्रेजी और हिंदी दोनों में सभी सुविधाओं और निर्देशों तक स्पष्ट रूप से पहुँचें।", feature_usage: "<strong>स्पष्ट उपयोग निर्देश:</strong> अधिकतम प्रभावशीलता और उपज वृद्धि के लिए उत्पादों को सही और सुरक्षित रूप से लागू करें।", how_heading: "यह कैसे काम करता है", how_step1: "<strong>विधि चुनें:</strong> मिट्टी TDS या फसल प्रकार के आधार पर सिफारिशें चुनें।", how_step2: "<strong>विवरण दर्ज करें:</strong> TDS मान (ppm) इनपुट करें या फसल चुनें। यदि फसल चुन रहे हैं, तो बुनियादी जानकारी देखें।", how_step3: "<strong>फ़िल्टर लागू करें (वैकल्पिक):</strong> मूल्य (₹), मिट्टी के प्रकार, या लक्षित फसल द्वारा परिणामों को सीमित करें।", how_step4: "<strong>सिफारिशें प्राप्त करें:</strong> उपयुक्त उत्पादों के लिए 'सिफारिशें खोजें' पर क्लिक करें।", how_step5: "<strong>विवरण देखें:</strong> विस्तृत उपयोग, सुरक्षा और उपयुक्तता नोट के लिए उत्पाद पर क्लिक करें।", footer_privacy: "गोपनीयता नीति", footer_terms: "सेवा की शर्तें", footer_contact: "संपर्क करें", }
+        };
+
+
+        // --- SCRIPT Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            let currentLang = 'en';
+            let currentInputMethod = 'tds';
+            const langEnBtn = document.getElementById('lang-en');
+            const langHiBtn = document.getElementById('lang-hi');
+            const getStartedBtn = document.getElementById('get-started-btn');
+            const recommendationToolSection = document.getElementById('recommendation-tool');
+            const chooseTdsBtn = document.getElementById('choose-tds');
+            const chooseCropBtn = document.getElementById('choose-crop');
+            const tdsInputArea = document.getElementById('tds-input-area');
+            const cropInputArea = document.getElementById('crop-input-area');
+            const tdsLevelInput = document.getElementById('tds-level');
+            const cropTypeSelect = document.getElementById('crop-type');
+            const priceFilterSelect = document.getElementById('price-filter');
+            const soilTypeFilterSelect = document.getElementById('soil-type-filter');
+            const cropFilterArea = document.getElementById('crop-filter-area');
+            const cropFilterSelect = document.getElementById('crop-filter');
+            const findRecommendationsBtn = document.getElementById('find-recommendations-btn');
+            const resultsListDiv = document.getElementById('results-list');
+            const cropInfoDisplayDiv = document.getElementById('crop-info-display');
+            const cropInfoTDS = document.getElementById('crop-info-tds');
+            const cropInfoSoil = document.getElementById('crop-info-soil');
+            const cropInfoAdvice = document.getElementById('crop-info-advice');
+            const detailsModal = document.getElementById('details-modal');
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            const modalProductName = document.getElementById('modal-product-name');
+            const modalProductType = document.getElementById('modal-product-type');
+            const modalProductSuitability = document.getElementById('modal-product-suitability');
+            const modalProductPrice = document.getElementById('modal-product-price');
+            const modalPriceUnitNote = detailsModal.querySelector('.price-unit-note');
+            const modalProductDescription = document.getElementById('modal-product-description');
+            const modalProductUsage = document.getElementById('modal-product-usage');
+            const modalProductSafety = document.getElementById('modal-product-safety');
+
+             const setLanguage = (lang) => {
+                if (!translations[lang]) return;
+                currentLang = lang;
+                document.documentElement.lang = lang;
+                langEnBtn.classList.toggle('active-lang', lang === 'en');
+                langHiBtn.classList.toggle('active-lang', lang === 'hi');
+                document.querySelectorAll('[data-lang-key]').forEach(el => {
+                    const key = el.getAttribute('data-lang-key');
+                    if (translations[lang][key]) {
+                        el.innerHTML = translations[lang][key];
+                    }
+                });
+                populateCropDropdowns();
+                updateCropInfoDisplay();
+                if (resultsListDiv.querySelector('.product-card')) {
+                    findRecommendations();
+                } else {
+                    clearResults();
+                }
+             };
+
+             const populateCropDropdowns = () => {
+                const populate = (selectElement, defaultKey) => {
+                    const currentValue = selectElement.value;
+                    selectElement.innerHTML = '';
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = "";
+                    if (defaultKey === 'select_option') defaultOption.value = "";
+                    if (defaultKey === 'filter_all_crops') defaultOption.value = "all";
+                    defaultOption.textContent = translations[currentLang][defaultKey] || '...';
+                    selectElement.appendChild(defaultOption);
+
+                    [...cropOptions].sort((a, b) => (a[`name_${currentLang}`] || a.name_en).localeCompare(b[`name_${currentLang}`] || b.name_en, currentLang))
+                        .forEach(crop => {
+                            const option = document.createElement('option');
+                            option.value = crop.value;
+                            option.textContent = crop[`name_${currentLang}`] || crop.name_en;
+                            selectElement.appendChild(option);
+                        });
+                    selectElement.value = currentValue;
+                };
+                populate(cropTypeSelect, 'select_option');
+                populate(cropFilterSelect, 'filter_all_crops');
+             };
+
+             const displayCropInfo = (cropValue) => {
+                 if (!cropValue) { cropInfoDisplayDiv.classList.add('hidden'); return; }
+                 const info = cropInfoData.find(c => c.value === cropValue);
+                 if (info) {
+                    cropInfoTDS.textContent = info[`optimalTDS_${currentLang}`] || 'N/A';
+                    cropInfoSoil.textContent = info[`preferredSoil_${currentLang}`] || 'N/A';
+                    cropInfoAdvice.textContent = info[`generalAdvice_${currentLang}`] || 'N/A';
+                    cropInfoDisplayDiv.classList.remove('hidden');
+                 } else { cropInfoDisplayDiv.classList.add('hidden'); }
+             };
+
+             const updateCropInfoDisplay = () => {
+                 if (currentInputMethod === 'crop' && !cropInfoDisplayDiv.classList.contains('hidden')) {
+                     displayCropInfo(cropTypeSelect.value);
+                 }
+             };
+
+             const setInputMethod = (method) => {
+                currentInputMethod = method;
+                chooseTdsBtn.classList.toggle('active', method === 'tds');
+                chooseCropBtn.classList.toggle('active', method === 'crop');
+                tdsInputArea.classList.toggle('hidden', method !== 'tds');
+                cropInputArea.classList.toggle('hidden', method !== 'crop');
+                cropFilterArea.classList.toggle('hidden', method !== 'tds');
+                if(method === 'crop') displayCropInfo(cropTypeSelect.value);
+                else cropInfoDisplayDiv.classList.add('hidden');
+                clearResults();
+             };
+
+            const findRecommendations = () => {
+                let filteredProducts = [...allProducts];
+                if (currentInputMethod === 'tds') {
+                    const tdsValue = parseInt(tdsLevelInput.value, 10);
+                    if (!isNaN(tdsValue)) filteredProducts = filteredProducts.filter(p => tdsValue >= p.tdsRange.min && tdsValue <= p.tdsRange.max);
+                    else if (tdsLevelInput.value) filteredProducts = [];
+                    const cropFilter = cropFilterSelect.value;
+                    if (cropFilter !== 'all') filteredProducts = filteredProducts.filter(p => p.suitableCrops.includes("All") || p.suitableCrops.includes(cropFilter));
+                } else {
+                    const crop = cropTypeSelect.value;
+                    if (crop) filteredProducts = filteredProducts.filter(p => p.suitableCrops.includes("All") || p.suitableCrops.includes(crop));
+                    else filteredProducts = [];
+                }
+
+                const priceRange = priceFilterSelect.value;
+                if (priceRange !== 'all') {
+                     const [min, max] = priceRange.split('-').map(p => parseInt(p.replace('+', ''), 10));
+                     filteredProducts = filteredProducts.filter(p => p.priceINR.max >= min && (p.priceINR.min < (max || Infinity)));
+                }
+
+                const soil = soilTypeFilterSelect.value;
+                if (soil !== 'all') {
+                    filteredProducts = filteredProducts.filter(p => p.suitableSoilTypes.includes("All") || p.suitableSoilTypes.includes(soil));
+                }
+                displayResults(filteredProducts);
+            };
+
+            const displayResults = (products) => {
+                resultsListDiv.innerHTML = '';
+                if (products.length === 0) {
+                    resultsListDiv.innerHTML = `<p data-lang-key="no_results">${translations[currentLang].no_results}</p>`; return;
+                }
+                products.forEach(p => {
+                    const card = document.createElement('div'); card.className = 'product-card';
+                    const unitText = p[`unit_${currentLang}`] || '';
+                    card.innerHTML = `
+                        <h5>${p[`name_${currentLang}`]}</h5>
+                        <p><strong>${translations[currentLang].product_type}:</strong> ${p[`type_${currentLang}`]}</p>
+                        <p><strong>${translations[currentLang].product_price_inr}:</strong> <span class="price-info">₹${p.priceINR.min} - ₹${p.priceINR.max}</span> <span class="unit-note">${unitText ? `(${unitText})` : ''}</span></p>
+                        <button class="view-details-btn" data-product-id="${p.id}">${translations[currentLang].view_details_btn}</button>`;
+                    resultsListDiv.appendChild(card);
+                });
+                resultsListDiv.querySelectorAll('.view-details-btn').forEach(b => b.addEventListener('click', e => showDetailsModal(e.target.dataset.productId)));
+            };
+
+            const clearResults = () => { resultsListDiv.innerHTML = `<p data-lang-key="results_placeholder">${translations[currentLang].results_placeholder}</p>`; }
+
+            const showDetailsModal = (productId) => {
+                const p = allProducts.find(prod => prod.id === productId); if (!p) return;
+                modalProductName.textContent = p[`name_${currentLang}`];
+                modalProductType.textContent = p[`type_${currentLang}`];
+                modalProductPrice.textContent = `₹${p.priceINR.min} - ₹${p.priceINR.max}`;
+                modalPriceUnitNote.textContent = p[`unit_${currentLang}`] || '';
+                modalProductSuitability.textContent = `${p.suitableSoilTypes.join(', ')} | TDS: ${p.tdsRange.min}-${p.tdsRange.max}ppm`;
+                modalProductDescription.textContent = p[`description_${currentLang}`];
+                modalProductUsage.textContent = p[`usage_${currentLang}`];
+                modalProductSafety.textContent = p[`safety_${currentLang}`];
+                detailsModal.classList.remove('hidden');
+            };
+
+            const hideDetailsModal = () => detailsModal.classList.add('hidden');
+
+            langEnBtn.addEventListener('click', () => setLanguage('en'));
+            langHiBtn.addEventListener('click', () => setLanguage('hi'));
+            getStartedBtn.addEventListener('click', () => recommendationToolSection.scrollIntoView({ behavior: 'smooth' }));
+            chooseTdsBtn.addEventListener('click', () => setInputMethod('tds'));
+            chooseCropBtn.addEventListener('click', () => setInputMethod('crop'));
+            cropTypeSelect.addEventListener('change', (e) => displayCropInfo(e.target.value));
+            findRecommendationsBtn.addEventListener('click', findRecommendations);
+            closeModalBtn.addEventListener('click', hideDetailsModal);
+            detailsModal.addEventListener('click', e => { if(e.target === detailsModal) hideDetailsModal() });
+            document.addEventListener('keydown', e => { if (e.key === 'Escape') hideDetailsModal() });
+
+            populateCropDropdowns();
+            setLanguage(currentLang);
+            setInputMethod(currentInputMethod);
+        });
+    </script>
+
+</body>
+</html>

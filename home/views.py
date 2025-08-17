@@ -18,3 +18,7 @@ def Uttar(request):
 
 def Har(request):
     return render(request,'Haryana.html')
+
+def Fertilizer(request):
+    return render(request,'SFR.html')
+
