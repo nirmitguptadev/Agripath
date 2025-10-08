@@ -78,8 +78,10 @@ def handle_weather_query(user_prompt):
     - विवरण: {weather_data['description']}
     - नमी (Humidity): {weather_data['humidity']}%
 
-    # --- CHANGE: Added instruction for a short response ---
     इस डेटा के आधार पर, किसान को एक बहुत छोटा और सीधा सारांश (1-2 वाक्यों में) प्रदान करें।
+    
+    # --- EDIT: Added instruction to avoid special characters ---
+    कृपया अपने उत्तर में किसी भी विशेष वर्ण जैसे !,@,#,$,* आदि का प्रयोग न करें।
     """
     return generate_gemini_response(final_prompt)
 
@@ -88,8 +90,10 @@ def handle_crop_recommendation(user_prompt):
     आप एक विशेषज्ञ भारतीय कृषि वैज्ञानिक हैं।
     एक किसान हिंदी में पूछता है: "{user_prompt}"
 
-    # --- CHANGE: Added instruction for a short response ---
     उसके प्रश्न का विश्लेषण करें और केवल मुख्य फसल सिफारिशों की सूची दें। उत्तर संक्षिप्त और बिंदुवार (to-the-point) रखें।
+
+    # --- EDIT: Added instruction to avoid special characters ---
+    सूची बनाने के लिए किसी भी विशेष वर्ण जैसे * या - का प्रयोग न करें। प्रत्येक फसल का नाम एक नई लाइन पर दें।
     """
     return generate_gemini_response(final_prompt)
 
@@ -98,8 +102,10 @@ def handle_government_scheme(user_prompt):
     आप भारत सरकार की कृषि योजनाओं के विशेषज्ञ हैं।
     एक किसान हिंदी में पूछता है: "{user_prompt}"
 
-    # --- CHANGE: Added instruction for a short response ---
     उस योजना के बारे में केवल मुख्य लाभ और पात्रता बताएं। उत्तर को 2-3 वाक्यों में संक्षिप्त रखें।
+    
+    # --- EDIT: Added instruction to avoid special characters ---
+    कृपया अपने उत्तर में किसी भी विशेष वर्ण जैसे !,@,#,$,* आदि का प्रयोग न करें।
     """
     return generate_gemini_response(final_prompt)
 
@@ -107,15 +113,15 @@ def handle_general_conversation(user_prompt):
     final_prompt = f"""
     आप 'AgriPath' नाम के एक AI कृषि मित्र हैं। आप केवल हिंदी में संवाद करते हैं।
     
-    # --- CHANGE: Added instruction for a short response ---
     संक्षिप्त और सीधे तरीके से उत्तर दें। अपने उत्तरों को अधिकतम 2 वाक्यों तक सीमित रखें।
+
+    # --- EDIT: Added instruction to avoid special characters ---
+    कृपया अपने उत्तर में किसी भी विशेष वर्ण जैसे !,@,#,$,* आदि का प्रयोग न करें।
 
     किसान का प्रश्न: "{user_prompt}"
     आपका उत्तर:
     """
     return generate_gemini_response(final_prompt)
-
-
 # ==============================================================================
 #  MAIN DJANGO VIEWS (No changes needed below this line)
 # ==============================================================================

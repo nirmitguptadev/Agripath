@@ -20,8 +20,8 @@ from core import views as core_views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('home.urls')),
-    path('ai', core_views.assistant_page, name='ai'), # Serve the HTML page at root
+    path('home/', include('home.urls')),
+    path('', core_views.assistant_page, name='ai'), # Serve the HTML page at root
     path('process/', core_views.process_voice, name='process_voice'), # API endpoint
     path('api/get-greeting/', core_views.get_greeting, name='get_greeting'),
 ]

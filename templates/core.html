@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgriPath - हिंदी Voice Assistant</title>
+    <title>AgriPath</title>
     {% load static %}
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,16 +21,16 @@
 
         :root {
             /* Green Gradient Colors */
-            --grad-green-1: #004d40; /* Dark Teal/Forest Green */
-            --grad-green-2: #00796b; /* Medium Teal Green */
-            --grad-green-3: #4caf50; /* Standard Material Green */
-            --grad-green-4: #81c784; /* Lighter Pastel Green */
-            --grad-green-accent: #a5d6a7; /* Very Light Green */
-            --glow-green: #66ff99; /* Neonish green for glow */
+            --grad-green-1: #004d40;
+            --grad-green-2: #00796b;
+            --grad-green-3: #4caf50;
+            --grad-green-4: #81c784;
+            --grad-green-accent: #a5d6a7;
+            --glow-green: #66ff99;
 
             /* Text & UI Colors */
-            --text-light: #f8fafc; /* Off-white */
-            --text-dark: #00332e; /* Very Dark Green/ a bit black */
+            --text-light: #f8fafc;
+            --text-dark: #00332e;
             --card-bg: rgba(255, 255, 255, 0.1);
             --card-border: rgba(200, 230, 201, 0.3);
             --shadow-color: rgba(0, 0, 0, 0.2);
@@ -44,24 +44,137 @@
         /* --- Body Styling --- */
         body {
             font-family: 'Poppins', sans-serif;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column; /* Stack elements vertically */
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
+            height: 100vh;
+            width: 100vw;
             color: var(--text-light);
             background: linear-gradient(135deg, var(--grad-green-1) 0%, var(--grad-green-2) 50%, var(--grad-green-3) 100%);
             background-size: cover;
             background-attachment: fixed;
-            overflow-x: hidden;
+            overflow: hidden;
+        }
+
+        /* --- Main Page Layout --- */
+        .page-container {
+            display: flex;
+            height: 100%;
+            width: 100%;
+        }
+
+        /* --- Sidebar Styling --- */
+        .sidebar {
+            width: 260px;
+            height: 100%;
+            padding: 1.5rem 1rem;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--card-border);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: width 0.3s ease, padding 0.3s ease, transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+        .sidebar.collapsed {
+            width: 0;
+            padding: 1.5rem 0;
+            overflow: hidden;
+        }
+
+        /* --- Sidebar Content Fade Transition --- */
+        .sidebar > * {
+            white-space: nowrap;
+            transition: opacity 0.2s ease;
+        }
+        .sidebar.collapsed > * {
+            opacity: 0;
+        }
+
+        /* --- [MODIFIED] New Chat Button & Menu --- */
+        .sidebar-menu {
+            list-style: none;
+            flex-grow: 1;
+            margin-top: 2rem; /* Added margin to create space at the top */
+        }
+        .sidebar-menu .new-chat-item {
+            padding: 0 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .new-chat-btn {
+            color: var(--text-light);
+            background-color: transparent;
+            padding: 0.6rem 1rem;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            border: 1px solid var(--card-border);
+            cursor: pointer;
+            width: 100%; /* Fill the list item */
+            text-align: center;
+        }
+        .new-chat-btn:hover {
+            background-color: rgba(76, 175, 80, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .sidebar-menu a {
+            color: var(--text-light);
+            text-decoration: none;
+            display: block;
+            padding: 0.8rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+        .sidebar-menu a:hover {
+            background-color: rgba(76, 175, 80, 0.15);
+        }
+        .sidebar-footer {
+            padding: 0 0.5rem;
+        }
+
+        /* --- Main Content Area Styling --- */
+        .main-content {
+            flex-grow: 1;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            overflow-y: auto;
+        }
+
+        /* --- Sidebar Toggle Button --- */
+        .sidebar-toggle-btn {
+            position: absolute;
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 100;
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text-light);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+        }
+        .sidebar-toggle-btn:hover {
+             background-color: rgba(76, 175, 80, 0.2);
+        }
+        .sidebar-toggle-btn svg {
+            width: 20px;
+            height: 20px;
         }
 
         /* --- Back Button Styling --- */
         .back-button-container {
-            position: absolute;
-            top: 1.5rem;
-            left: 1.5rem;
+            margin-top: auto;
         }
         .back-button {
             color: var(--text-light);
@@ -76,6 +189,8 @@
             border: 1px solid var(--card-border);
             backdrop-filter: blur(8px);
             -webkit-backdrop-filter: blur(8px);
+            display: block;
+            text-align: center;
         }
         .back-button:hover {
             background-color: rgba(76, 175, 80, 0.2);
@@ -83,10 +198,10 @@
             box-shadow: 0 4px 12px var(--shadow-color);
         }
         
-        /* --- Title Styling (From New Stylesheet) --- */
+        /* --- Title Styling --- */
         .title-container {
             padding: 1rem 3rem;
-            margin-bottom: 2rem; /* Adjusted margin for AI layout */
+            margin-bottom: 2rem;
             background-color: var(--title-backdrop-bg);
             border-radius: 12px;
             border: 1px solid var(--title-backdrop-border);
@@ -95,7 +210,7 @@
             -webkit-backdrop-filter: blur(10px);
         }
         .main-title {
-            font-size: clamp(2rem, 5vw, 3rem); /* Adjusted for assistant page */
+            font-size: clamp(2rem, 5vw, 3rem);
             font-family: 'Montserrat', sans-serif;
             font-weight: 800;
             letter-spacing: 1.5px;
@@ -112,7 +227,7 @@
                 3px 3px 3px var(--text-dark);
         }
 
-        /* --- Main AI Container (Adapted Theme) --- */
+        /* --- Main AI Container --- */
         .ai-container {
             width: 100%;
             max-width: 800px;
@@ -126,7 +241,7 @@
             -webkit-backdrop-filter: blur(8px);
         }
         
-        /* --- Microphone Button (Adapted Theme) --- */
+        /* --- Microphone Button --- */
         #startButton {
             background-color: var(--grad-green-3);
             color: var(--text-light);
@@ -142,11 +257,7 @@
             justify-content: center;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
-        #startButton svg {
-            width: 40px;
-            height: 40px;
-            fill: var(--text-light);
-        }
+        #startButton svg { width: 40px; height: 40px; fill: var(--text-light); }
         #startButton:hover:not(:disabled) {
             transform: scale(1.05);
             background-color: var(--grad-green-4);
@@ -163,120 +274,122 @@
             70% { box-shadow: 0 0 0 15px rgba(102, 255, 153, 0); }
             100% { box-shadow: 0 0 0 0 rgba(102, 255, 153, 0); }
         }
-        #startButton.listening {
-            animation: pulse-border 1.5s infinite;
-        }
+        #startButton.listening { animation: pulse-border 1.5s infinite; }
 
-        /* --- Status and Chat Area (Adapted Theme) --- */
-        #status {
-            margin-bottom: 2rem;
-            color: var(--grad-green-accent);
-            min-height: 1.2em;
-            font-weight: 500;
-        }
-        .chat-area {
-            display: flex;
-            flex-direction: column;
-            gap: 1.5rem;
-            margin-top: 2rem;
-        }
+        /* --- Status and Chat Area --- */
+        #status { margin-bottom: 2rem; color: var(--grad-green-accent); min-height: 1.2em; font-weight: 500; }
+        .chat-area { display: flex; flex-direction: column; gap: 1.5rem; margin-top: 2rem; }
         .info-box {
-            padding: 1.25rem 1.75rem;
-            border-radius: 12px;
-            line-height: 1.6;
-            text-align: left;
-            position: relative;
-            word-wrap: break-word;
-            color: var(--text-light);
+            padding: 1.25rem 1.75rem; border-radius: 12px; line-height: 1.6; text-align: left;
+            position: relative; word-wrap: break-word; color: var(--text-light);
         }
         #output {
-            background-color: rgba(248, 250, 252, 0.15); /* Glassy white for user */
-            border: 1px solid rgba(248, 250, 252, 0.2);
-            align-self: flex-end;
-            max-width: 80%;
+            background-color: rgba(248, 250, 252, 0.15); border: 1px solid rgba(248, 250, 252, 0.2);
+            align-self: flex-end; max-width: 80%;
         }
         #response {
-            background-color: rgba(76, 175, 80, 0.25); /* Glassy green for AI */
-            border: 1px solid rgba(76, 175, 80, 0.4);
-            align-self: flex-start;
-            max-width: 80%;
+            background-color: rgba(76, 175, 80, 0.25); border: 1px solid rgba(76, 175, 80, 0.4);
+            align-self: flex-start; max-width: 80%;
         }
         #output::before {
-            content: 'You';
-            font-weight: 600;
-            font-size: 0.8rem;
-            color: var(--grad-green-accent);
-            position: absolute;
-            top: -1.2rem;
-            right: 0;
+            content: 'You'; font-weight: 600; font-size: 0.8rem; color: var(--grad-green-accent);
+            position: absolute; top: -1.2rem; right: 0;
         }
          #response::before {
-            content: 'AI Assistant';
-            font-weight: 600;
-            font-size: 0.8rem;
-            color: var(--glow-green);
-            position: absolute;
-            top: -1.2rem;
-            left: 0;
+            content: 'AI Assistant'; font-weight: 600; font-size: 0.8rem; color: var(--glow-green);
+            position: absolute; top: -1.2rem; left: 0;
         }
         @keyframes talking-glow {
             0%, 100% { border-color: rgba(76, 175, 80, 0.4); }
             50% { border-color: var(--glow-green); }
         }
-        #response.talking {
-            animation: talking-glow 1.3s infinite ease-in-out;
-        }
+        #response.talking { animation: talking-glow 1.3s infinite ease-in-out; }
 
         /* --- Responsive Adjustments --- */
         @media (max-width: 768px) {
-            body { padding: 1.5rem; }
+            .main-content { padding: 1.5rem; }
             .title-container { padding: 1rem 2rem; margin-bottom: 2rem; }
             .ai-container { padding: 1.5rem; }
+            .sidebar {
+                position: absolute;
+                z-index: 200;
+                height: 100%;
+            }
+            .sidebar:not(.collapsed) {
+                box-shadow: 5px 0px 15px rgba(0,0,0,0.2);
+            }
         }
         @media (max-width: 480px) {
-            body { padding: 1rem; }
-            .back-button-container { top: 1rem; left: 1rem; }
+            .main-content { padding: 1rem; }
+            .sidebar-toggle-btn { top: 1rem; left: 1rem; }
             .title-container { padding: 0.8rem 1.5rem; }
             .ai-container { padding: 1rem; }
         }
     </style>
 </head>
 <body>
-    <div class="back-button-container">
-        <a href="/" class="back-button">← Home</a>
+    
+    <button class="sidebar-toggle-btn" id="toggle-sidebar-btn" title="Toggle Sidebar">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+          <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
+        </svg>
+    </button>
+
+    <div class="page-container">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <ul class="sidebar-menu">
+                <!-- [MOVED] New Chat Button is now the first list item -->
+                
+                <li><a href="#">History</a></li>
+                <li><a href="home/Policies">Policies</a></li>
+                <li><a href="home/about">About us</a></li>
+                <li><a href="home/Fertilizer">Fertilizer</a></li>
+            </ul>
+            <div class="sidebar-footer">
+                <div class="back-button-container">
+                    <a href="#" class="back-button">New Chat</a>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Wrapper -->
+        <main class="main-content">
+            <div class="title-container">
+                <h1 class="main-title">AGRIPATH</h1>
+            </div>
+
+            <div class="ai-container">
+                <button id="startButton">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                      <path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0z"/>
+                      <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5"/>
+                    </svg>
+                </button>
+
+                <div id="status">Status: तैयार (Ready)</div>
+
+                <div class="chat-area">
+                    <div id="response" class="info-box">...</div>
+                    <div id="output" class="info-box">...</div>
+                </div>
+            </div>
+        </main>
     </div>
-
-    <!-- Main Content Wrapper -->
-    <div class="title-container">
-        <h1 class="main-title">AI Assistant</h1>
-    </div>
-
-    <div class="ai-container">
-        <button id="startButton">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-              <path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0z"/>
-              <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5"/>
-            </svg>
-        </button>
-
-        <div id="status">Status: तैयार (Ready)</div>
-
-        <div class="chat-area">
-            <div id="response" class="info-box">...</div>
-            <div id="output" class="info-box">...</div>
-        </div>
-    </div>
-    <!-- End of Main Content Wrapper -->
 
     <script>
         // ==============================================================================
-        //  ALL JAVASCRIPT LOGIC REMAINS UNCHANGED
+        //  ALL JAVASCRIPT LOGIC (MODIFIED FOR AUTOPLAY POLICY)
         // ==============================================================================
         const startButton = document.getElementById('startButton');
         const outputDiv = document.getElementById('output');
         const responseDiv = document.getElementById('response');
         const statusDiv = document.getElementById('status');
         const csrfToken = '{{ csrf_token }}';
+
+        // [NEW] Global variables to handle the initial greeting
+        let initialGreetingHasBeenSpoken = false;
+        let greetingTextToSpeak = "";
 
         // --- Speech Recognition (STT) ---
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -318,14 +431,12 @@
         // --- Text To Speech (TTS) ---
         const synth = window.speechSynthesis;
         let hindiVoice = null;
-        let voicesLoaded = false;
         let speechChunkQueue = [];
         let isSpeakingGreeting = false;
         let currentSpeechTimeout = null;
         function loadVoices() {
              const voices = synth.getVoices();
              hindiVoice = voices.find(voice => voice.lang === 'hi-IN') || voices.find(voice => voice.lang.startsWith('hi'));
-             voicesLoaded = true;
         }
         if (synth.onvoiceschanged !== undefined) {
             synth.onvoiceschanged = loadVoices;
@@ -382,9 +493,9 @@
         }
         function speakNextChunk() {
             if (speechChunkQueue.length === 0) {
-                if (!isSpeakingGreeting) { resetUIState(); }
-                else { startButton.disabled = false; statusDiv.textContent = 'Status: तैयार (Ready)'; }
-                responseDiv.classList.remove('talking', 'initial-greeting'); return;
+                // When speaking is done, reset the UI
+                resetUIState();
+                return;
             }
             const chunk = speechChunkQueue.shift();
             if (chunk && chunk.trim() !== '') {
@@ -396,16 +507,17 @@
                 if (hindiVoice) { utterThis.voice = hindiVoice; }
                 utterThis.pitch = 1; utterThis.rate = 0.95;
                 utterThis.onstart = () => {
-                    if (!responseDiv.classList.contains('talking')) { responseDiv.classList.add('talking'); if(isSpeakingGreeting) responseDiv.classList.add('initial-greeting'); }
-                    statusDiv.textContent = 'Status: बोल रहा हूँ... (Speaking...)'; if (!isSpeakingGreeting) startButton.disabled = true;
+                    responseDiv.classList.add('talking');
+                    if(isSpeakingGreeting) responseDiv.classList.add('initial-greeting');
+                    statusDiv.textContent = 'Status: बोल रहा हूँ... (Speaking...)';
+                    startButton.disabled = true; // Disable button while speaking
                 };
                 utterThis.onend = () => {
                     if (speechChunkQueue.length > 0) {
                         currentSpeechTimeout = setTimeout(() => { currentSpeechTimeout = null; speakNextChunk(); }, 75);
                     } else {
-                        responseDiv.classList.remove('talking', 'initial-greeting');
-                        if (!isSpeakingGreeting) { resetUIState(); }
-                        else { statusDiv.textContent = 'Status: तैयार (Ready)'; startButton.disabled = false; }
+                        // This is the important part: reset the UI after speaking finishes.
+                        resetUIState();
                     }
                 };
                 utterThis.onerror = (event) => {
@@ -442,37 +554,62 @@
              startButton.classList.remove('listening');
              startButton.disabled = false;
              statusDiv.textContent = 'Status: तैयार (Ready)';
+             responseDiv.classList.remove('talking', 'initial-greeting');
              cancelSpeech();
         }
+
+        // [MODIFIED] This is the main button click handler
         startButton.addEventListener('click', () => {
+            // If the greeting hasn't been spoken yet, this first click will play it.
+            if (!initialGreetingHasBeenSpoken) {
+                if (greetingTextToSpeak) {
+                    speak(greetingTextToSpeak, true);
+                    initialGreetingHasBeenSpoken = true;
+                }
+                return; // Stop here, don't start recognition yet.
+            }
+
+            // On all subsequent clicks, it will start speech recognition.
             if (recognition) {
                  try { cancelSpeech(); recognition.start(); }
                  catch (e) { console.error("Error starting recognition:", e); resetUIState(); }
             }
         });
-        async function fetchAndSpeakGreeting() {
+
+        // [MODIFIED] This function now only fetches and displays the greeting, it does not speak it.
+        async function fetchAndDisplayGreeting() {
             try {
                 const response = await fetch("{% url 'get_greeting' %}");
                 if (!response.ok) { throw new Error('Failed to fetch greeting.'); }
                 const data = await response.json();
-                const greetingMessage = data.greeting;
-                if (greetingMessage && window.speechSynthesis) {
-                    responseDiv.textContent = greetingMessage;
-                    setTimeout(() => {
-                        speak(greetingMessage, true);
-                    }, 500);
+                if (data.greeting) {
+                    greetingTextToSpeak = data.greeting; // Store text for later
+                    responseDiv.textContent = data.greeting; // Display text immediately
                 }
             } catch (error) {
                 console.error('Error fetching dynamic greeting:', error);
                 const fallbackGreeting = "नमस्ते! मैं आपकी मदद के लिए तैयार हूँ। सवाल पूछने के लिए माइक्रोफ़ोन बटन दबाएँ।";
+                greetingTextToSpeak = fallbackGreeting;
                 responseDiv.textContent = fallbackGreeting;
-                if (window.speechSynthesis) {
-                    setTimeout(() => { speak(fallbackGreeting, true); }, 500);
-                }
             }
         }
+
         document.addEventListener('DOMContentLoaded', (event) => {
-            fetchAndSpeakGreeting();
+            fetchAndDisplayGreeting(); // Call the modified function
+
+            // --- JAVASCRIPT LOGIC FOR SIDEBAR (UNCHANGED) ---
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('toggle-sidebar-btn');
+            
+            const toggleSidebar = () => {
+                sidebar.classList.toggle('collapsed');
+            };
+
+            if (window.innerWidth <= 768) {
+                sidebar.classList.add('collapsed');
+            }
+
+            toggleBtn.addEventListener('click', toggleSidebar);
         });
     </script>
 </body>
