@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>मौसम पूर्वानुमान - AgriPath</title>
+    {% load static %}
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <style>
+        /* --- General Theme Styles (From Policies.html) --- */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --grad-green-1: #004d40; --grad-green-2: #00796b; --grad-green-3: #4caf50;
+            --text-light: #f8fafc; --text-dark: #212121; --alert-red: #c94c4c;
+        }
+        body {
+            font-family: 'Poppins', sans-serif; min-height: 100vh; color: var(--text-light);
+            background: linear-gradient(135deg, var(--grad-green-1) 0%, var(--grad-green-2) 50%, var(--grad-green-3) 100%);
+            background-size: cover; background-attachment: fixed; padding: 2rem;
+        }
+        .main-container { max-width: 900px; margin: 0 auto; }
+        .header-area {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 2.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding-bottom: 1rem;
+        }
+        .back-button {
+            color: var(--text-light); background-color: rgba(255, 255, 255, 0.1);
+            padding: 0.6rem 1.2rem; border-radius: 20px; text-decoration: none;
+            font-weight: 600; font-size: 0.9rem; transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .back-button:hover { background-color: rgba(255, 255, 255, 0.2); }
+        .header-title h1 { font-family: 'Montserrat', sans-serif; font-size: 2.2rem; margin: 0; }
+        .header-title p { font-size: 1rem; opacity: 0.8; }
+        .card-container {
+            background-color: #ffffff; color: var(--text-dark); border-radius: 12px;
+            padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-bottom: 2rem;
+        }
+        .section-title {
+            font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--grad-green-1);
+            border-bottom: 1px solid #eee; padding-bottom: 0.5rem;
+        }
+        .error-msg { text-align: center; padding: 2rem; background: rgba(255, 255, 255, 0.9); border-radius: 12px; color: var(--text-dark); font-size: 1.1rem; }
+        
+        /* --- Current Weather Styles --- */
+        .current-weather {
+            display: flex; justify-content: space-around; align-items: center;
+            margin-bottom: 1.5rem; text-align: center;
+        }
+        .temp-main { font-size: 3.5rem; font-weight: 700; line-height: 1; }
+        .desc-main { font-size: 1.2rem; margin-top: 0.5rem; color: #666; }
+        
+        /* --- Forecast Grid Styles --- */
+        .forecast-grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem; margin-top: 1.5rem; text-align: center;
+        }
+        .forecast-day {
+            background-color: #f7f7f7; padding: 1rem 0.5rem; border-radius: 8px;
+            border: 1px solid #eee;
+        }
+        .forecast-day img { width: 50px; height: 50px; margin-bottom: 0.5rem; }
+        .forecast-day .day-date { font-weight: 600; font-size: 0.9rem; color: var(--grad-green-1); }
+        .forecast-day .temp-range { font-size: 1.1rem; font-weight: 700; margin: 0.5rem 0; }
+
+        /* --- Alert Styles --- */
+        .alert-box {
+            background-color: var(--alert-red); color: white; padding: 1.5rem;
+            border-radius: 8px; margin-top: 1.5rem;
+        }
+        .alert-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .alert-description { font-size: 1rem; line-height: 1.5; }
+
+        @media (max-width: 600px) {
+            .current-weather { flex-direction: column; }
+            .temp-main { font-size: 3rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <div class="header-area">
+            <div class="header-title">
+                <h1>मौसम पूर्वानुमान</h1>
+                {% if location %}
+                    <p>आपके क्षेत्र, **{{ location }}** के लिए</p>
+                {% endif %}
+            </div>
+            <a href="{% url 'ai' %}" class="back-button">← वापस AI पर जाएं</a>
+        </div>
+
+        {% if error %}
+            <div class="error-msg">
+                ⚠️ {{ error }} <br><br>
+                <a href="{% url 'view_profile' %}" style="color: var(--grad-green-3);">प्रोफाइल अपडेट करें (Update Profile)</a>
+            </div>
+        {% elif current_data %}
+            
+            <div class="card-container">
+                <h2 class="section-title">वर्तमान मौसम (Current Weather)</h2>
+                <div class="current-weather">
+                    <div style="flex-grow: 1;">
+                        <div class="temp-main">{{ current_data.temperature|floatformat:0 }}°C</div>
+                        <div class="desc-main">{{ current_data.description|capfirst }}</div>
+                    </div>
+                    <div style="text-align: left; flex-grow: 2;">
+                        <p><strong>नमी (Humidity):</strong> {{ current_data.humidity }}%</p>
+                    </div>
+                </div>
+
+                <h2 class="section-title" style="margin-top: 2rem;">अगले 5 दिनों का पूर्वानुमान (5-Day Forecast)</h2>
+                <div class="forecast-grid">
+                    {% for day in forecast %}
+                        <div class="forecast-day">
+                            <div class="day-date">{{ day.date|date:"D" }}</div>
+                            <img src="http://openweathermap.org/img/wn/{{ day.icon }}@2x.png" alt="{{ day.description }}" title="{{ day.description }}">
+                            <div class="temp-range">
+                                {{ day.max_temp|floatformat:0 }}°C / {{ day.min_temp|floatformat:0 }}°C
+                            </div>
+                            <div style="font-size: 0.85rem;">{{ day.description|capfirst }}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                {% if alerts %}
+                    <h2 class="section-title" style="margin-top: 2rem; color: var(--alert-red);">खराब मौसम की चेतावनी (Weather Alerts)</h2>
+                    {% for alert in alerts %}
+                        <div class="alert-box">
+                            <div class="alert-title">{{ alert.event|capfirst }}</div>
+                            <div class="alert-description">{{ alert.description }}</div>
+                            <div style="font-size: 0.8rem; margin-top: 0.5rem; opacity: 0.8;">स्रोत: {{ alert.sender }}</div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+            </div>
+        {% else %}
+            <div class="error-msg">
+                🔄 मौसम डेटा लोड किया जा रहा है... कृपया प्रतीक्षा करें।
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
