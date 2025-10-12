@@ -7,6 +7,7 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
 
 # --- API Configuration (no changes) ---
 MODEL = None
@@ -124,7 +125,7 @@ def handle_general_conversation(user_prompt, history):
 # ==============================================================================
 #  MAIN DJANGO VIEWS
 # ==============================================================================
-
+@login_required 
 def assistant_page(request):
     if 'chat_history' in request.session:
         del request.session['chat_history']

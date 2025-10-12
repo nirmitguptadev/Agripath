@@ -1,0 +1,86 @@
+<!-- accounts/templates/accounts/profile_detail.html -->
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Profile - AgriPath</title>
+    {% load static %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --grad-green-1: #004d40; --grad-green-2: #00796b; --grad-green-3: #4caf50;
+            --text-light: #f8fafc; --card-bg: rgba(255, 255, 255, 0.1);
+            --card-border: rgba(200, 230, 201, 0.3); --shadow-color: rgba(0, 0, 0, 0.2);
+        }
+        body {
+            font-family: 'Poppins', sans-serif; height: 100vh; display: flex;
+            justify-content: center; align-items: center; padding: 2rem;
+            color: var(--text-light);
+            background: linear-gradient(135deg, var(--grad-green-1) 0%, var(--grad-green-2) 50%, var(--grad-green-3) 100%);
+            background-size: cover; background-attachment: fixed;
+        }
+        .profile-container {
+            width: 100%; max-width: 500px; padding: 2.5rem; text-align: center;
+            background-color: var(--card-bg); border-radius: 15px;
+            border: 1px solid var(--card-border); box-shadow: 0 4px 15px var(--shadow-color);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+        .profile-title {
+            font-size: 2.5rem; font-family: 'Montserrat', sans-serif; margin-bottom: 2rem;
+            background: linear-gradient(90deg, var(--text-light) 10%, var(--grad-green-3) 90%);
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .detail-group {
+            text-align: left; margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+            padding-bottom: 1rem;
+        }
+        .detail-label {
+            font-weight: 300; font-size: 0.9rem;
+            color: var(--grad-green-accent);
+        }
+        .detail-value {
+            font-weight: 600; font-size: 1.2rem;
+        }
+        .action-buttons {
+            margin-top: 2rem;
+            display: flex;
+            gap: 1rem;
+        }
+        .action-btn {
+            flex-grow: 1; color: var(--text-light); background-color: var(--grad-green-3);
+            padding: 0.7rem 1.5rem; border-radius: 25px; text-decoration: none;
+            font-weight: 600; font-size: 1rem; transition: all 0.3s ease;
+            border: none; cursor: pointer;
+        }
+        .logout-btn { background-color: #c94c4c; }
+        .action-btn:hover { transform: translateY(-2px); }
+    </style>
+</head>
+<body>
+    <div class="profile-container">
+        <h1 class="profile-title">User Profile</h1>
+        
+        <div class="detail-group">
+            <p class="detail-label">Mobile Number</p>
+            <p class="detail-value">{{ profile.phone_number }}</p>
+        </div>
+
+        <div class="detail-group">
+            <p class="detail-label">Location</p>
+            <p class="detail-value">{{ profile.location }}</p>
+        </div>
+        
+        <div class="action-buttons">
+            <a href="{% url 'ai' %}" class="action-btn">Back to AI</a>
+            <a href="{% url 'logout' %}" class="action-btn logout-btn">Logout</a>
+        </div>
+    </div>
+</body>
+</html>

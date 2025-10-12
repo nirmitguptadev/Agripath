@@ -50,7 +50,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'core'
+    'core',
+    'accounts',
+    'phonenumber_field',
 ]
 
 MIDDLEWARE = [
@@ -61,6 +63,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'accounts.middleware.ProfileCompletionMiddleware',
 ]
 
 ROOT_URLCONF = 'mypage.urls'
@@ -145,3 +148,8 @@ STATICFILES_DIRS = [
 # Use the env() object to read your custom variables
 GEMINI_API_KEY = env('GEMINI_API_KEY')
 OPENWEATHER_API_KEY = env('OPENWEATHER_API_KEY')
+TWILIO_ACCOUNT_SID = env('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = env('TWILIO_AUTH_TOKEN')
+TWILIO_PHONE_NUMBER = env('TWILIO_PHONE_NUMBER')
+
+LOGIN_URL = '/accounts/login/'

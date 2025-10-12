@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setup Profile - AgriPath</title>
+    {% load static %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --grad-green-1: #004d40; --grad-green-2: #00796b; --grad-green-3: #4caf50;
+            --text-light: #f8fafc; --card-bg: rgba(255, 255, 255, 0.1);
+            --card-border: rgba(200, 230, 201, 0.3); --shadow-color: rgba(0, 0, 0, 0.2);
+        }
+        body {
+            font-family: 'Poppins', sans-serif; height: 100vh; display: flex;
+            justify-content: center; align-items: center; padding: 2rem;
+            color: var(--text-light);
+            background: linear-gradient(135deg, var(--grad-green-1) 0%, var(--grad-green-2) 50%, var(--grad-green-3) 100%);
+            background-size: cover; background-attachment: fixed;
+        }
+        .auth-container {
+            width: 100%; max-width: 450px; padding: 2.5rem; text-align: center;
+            background-color: var(--card-bg); border-radius: 15px;
+            border: 1px solid var(--card-border); box-shadow: 0 4px 15px var(--shadow-color);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+        }
+        .auth-title {
+            font-size: 2.5rem; font-family: 'Montserrat', sans-serif; margin-bottom: 1.5rem;
+            background: linear-gradient(90deg, var(--text-light) 10%, var(--grad-green-3) 90%);
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .form-group { margin-bottom: 1.5rem; text-align: left; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        input[type="text"] {
+            width: 100%; padding: 0.8rem 1rem; font-size: 1rem;
+            background-color: rgba(0, 0, 0, 0.2); border: 1px solid var(--card-border);
+            border-radius: 8px; color: var(--text-light); transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            outline: none; border-color: var(--grad-green-3);
+        }
+        .submit-btn {
+            color: var(--text-light); background-color: var(--grad-green-3);
+            padding: 0.8rem 1.5rem; border-radius: 25px; text-decoration: none;
+            font-weight: 600; font-size: 1.1rem; transition: all 0.3s ease;
+            border: none; cursor: pointer; width: 100%; margin-top: 1rem;
+        }
+        .submit-btn:hover { background-color: #45a049; transform: translateY(-2px); }
+        .error-message { color: #ffdddd; margin-top: 0.5rem; font-size: 0.9rem; }
+        
+        /* [NEW] Styles for the location detection button and status */
+        .detect-btn {
+            width: 100%; padding: 0.7rem 1rem; margin-bottom: 1rem;
+            background-color: rgba(255, 255, 255, 0.15); border: 1px solid var(--card-border);
+            color: var(--text-light); font-weight: 500; border-radius: 8px; cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .detect-btn:hover { background-color: rgba(255, 255, 255, 0.25); }
+        #location-status {
+            font-size: 0.9rem; min-height: 1.2em;
+            margin-bottom: 1rem; color: var(--grad-green-accent);
+        }
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <h1 class="auth-title">Complete Your Profile</h1>
+        <p style="margin-bottom: 1.5rem;">Please provide your location to get started.</p>
+        
+        <!-- [NEW] Button to trigger location detection -->
+        <button id="detect-location-btn" class="detect-btn">📍 Detect My Location</button>
+
+        <!-- [NEW] Element to show status messages to the user -->
+        <p id="location-status"></p>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="{{ form.location.id_for_label }}">Your City or District</label>
+                <!-- We will populate this input field using JavaScript -->
+                {{ form.location }}
+                 {% if form.location.errors %}
+                    <div class="error-message">{{ form.location.errors.0 }}</div>
+                {% endif %}
+            </div>
+            <button type="submit" class="submit-btn">Save & Continue</button>
+        </form>
+    </div>
+
+    <!-- [NEW] JavaScript for Geolocation and Reverse Geocoding -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const detectButton = document.getElementById('detect-location-btn');
+            const locationStatus = document.getElementById('location-status');
+            const locationInput = document.querySelector('input[name="location"]');
+
+            detectButton.addEventListener('click', () => {
+                if (!navigator.geolocation) {
+                    locationStatus.textContent = 'Geolocation is not supported by your browser.';
+                    return;
+                }
+
+                locationStatus.textContent = 'Detecting your location... Please allow permission.';
+                
+                navigator.geolocation.getCurrentPosition(handleSuccess, handleError);
+            });
+
+            async function handleSuccess(position) {
+                const latitude = position.coords.latitude;
+                const longitude = position.coords.longitude;
+
+                locationStatus.textContent = 'Coordinates found. Fetching address...';
+
+                // Use OpenStreetMap's free Nominatim API for reverse geocoding
+                const apiUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`;
+
+                try {
+                    const response = await fetch(apiUrl);
+                    const data = await response.json();
+
+                    if (data && data.address) {
+                        // Try to find the location name from the most specific to least specific
+                        const locationName = data.address.city || data.address.town || data.address.village || data.address.state_district || data.address.county || data.address.state;
+                        
+                        if (locationName) {
+                            locationInput.value = locationName;
+                            locationStatus.textContent = `Location found: ${locationName}`;
+                        } else {
+                            locationStatus.textContent = 'Could not determine city name. Please enter manually.';
+                        }
+                    } else {
+                        locationStatus.textContent = 'Could not fetch address details. Please enter manually.';
+                    }
+                } catch (error) {
+                    console.error('Reverse geocoding error:', error);
+                    locationStatus.textContent = 'Failed to fetch address. Please enter manually.';
+                }
+            }
+
+            function handleError(error) {
+                let message = '';
+                switch(error.code) {
+                    case error.PERMISSION_DENIED:
+                        message = "You denied the request for Geolocation.";
+                        break;
+                    case error.POSITION_UNAVAILABLE:
+                        message = "Location information is unavailable.";
+                        break;
+                    case error.TIMEOUT:
+                        message = "The request to get user location timed out.";
+                        break;
+                    case error.UNKNOWN_ERROR:
+                        message = "An unknown error occurred.";
+                        break;
+                }
+                locationStatus.textContent = message + ' Please enter your location manually.';
+            }
+        });
+    </script>
+</body>
+</html>

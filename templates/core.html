@@ -172,16 +172,23 @@
                 <li class="new-chat-item">
                     <button class="new-chat-btn">+ New Chat</button>
                 </li>
-                <li><a href="#">History</a></li>
-                <li><a href="home/Policies">Policies</a></li>
-                <li><a href="home/about">About us</a></li>
+                
+                <li><a href="{% url 'Policies' %}">Policies</a></li>
+                
                 <li><a href="home/Fertilizer">Fertilizer</a></li>
+                <li><a href="{% url 'view_profile' %}">My Profile</a></li>
+                <li><a href="home/about">About us</a></li>
             </ul>
             <div class="sidebar-footer">
+        <div class="sidebar-footer">
                 <div class="back-button-container">
-                    <a href="/home/" class="back-button">← Home</a>
+                    <div class="user-info" style="text-align: center; margin-bottom: 1rem; font-size: 0.9rem;">
+                        Logged in as:<br><strong>{{ request.user.username }}</strong>
+                    </div>
+                    <!-- [MODIFIED] This button now logs the user out -->
+                    <a href="{% url 'logout' %}" class="back-button">Logout 🚪</a>
                 </div>
-            </div>
+        </div>
         </aside>
 
         <!-- Main Content Wrapper -->

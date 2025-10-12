@@ -22,6 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('home/', include('home.urls')),
     path('', core_views.assistant_page, name='ai'), # Serve the HTML page at root
+    path('accounts/', include('accounts.urls')),
     path('process/', core_views.process_voice, name='process_voice'), # API endpoint
     path('api/get-greeting/', core_views.get_greeting, name='get_greeting'),
      path('api/clear-chat/', core_views.clear_chat, name='clear_chat'),
