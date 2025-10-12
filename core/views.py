@@ -142,31 +142,50 @@ def get_greeting(request):
 
 @csrf_exempt
 def process_voice(request):
-    if request.method != 'POST': return JsonResponse({'error': 'Invalid request method'}, status=405)
-    if not MODEL: return JsonResponse({'response': 'क्षमा करें, मेरा AI कनेक्शन ठीक से काम नहीं कर रहा है।'}, status=500)
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Invalid request method'}, status=405)
+    if not MODEL:
+        return JsonResponse({'response': 'क्षमा करें, मेरा AI कनेक्शन ठीक से काम नहीं कर रहा है।'}, status=500)
 
     try:
         data = json.loads(request.body)
         user_prompt = data.get('text')
-        if not user_prompt: return JsonResponse({'error': 'No text provided'}, status=400)
+        if not user_prompt:
+            return JsonResponse({'error': 'No text provided'}, status=400)
 
+        # 1. Get chat history from the session, ensure it is a list
+        # This is the most critical line. Use a consistent key and default.
         history = request.session.get('chat_history', [])
+
+        # 2. Add the user's new message to the history
+        # Use the correct Gemini format for the user's latest message
         history.append({'role': 'user', 'parts': [user_prompt]})
 
+        # --- Step 1: Classification (uses only the latest prompt) ---
         classifier_prompt = f"""User query: "{user_prompt}". Classify this into: 'weather', 'crop_recommendation', 'government_scheme', 'general_conversation'. Respond only with the category name."""
         category = generate_gemini_response(classifier_prompt).strip().lower()
 
+        # 3. Create a **copy** of the history for the AI handlers to use.
+        # This ensures the classification prompt doesn't interfere with the main chat history.
+        conversation_context = list(history)
+        
+        # --- Step 2: Routing ---
         final_response_text = ""
         if 'weather' in category:
-            final_response_text = handle_weather_query(user_prompt, history)
+            # Pass the user's specific text and the full context
+            final_response_text = handle_weather_query(user_prompt, conversation_context)
         elif 'crop' in category:
-            final_response_text = handle_crop_recommendation(user_prompt, history)
+            final_response_text = handle_crop_recommendation(user_prompt, conversation_context)
         elif 'scheme' in category or 'yojana' in category or 'sarkari' in category:
-            final_response_text = handle_government_scheme(user_prompt, history)
+            final_response_text = handle_government_scheme(user_prompt, conversation_context)
         else:
-            final_response_text = handle_general_conversation(user_prompt, history)
+            final_response_text = handle_general_conversation(user_prompt, conversation_context)
 
+        # 4. Add the AI's response to the history list
+        # Use the correct Gemini format for the model's response
         history.append({'role': 'model', 'parts': [final_response_text]})
+
+        # 5. Save the updated history back to the session
         request.session['chat_history'] = history
 
         return JsonResponse({'response': final_response_text})
