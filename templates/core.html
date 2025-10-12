@@ -12,335 +12,166 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
 
     <style>
-        /* --- Base Resets and New Theme Variables --- */
-        *, *::before, *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        /* --- Base Resets and Theme Variables (Unchanged) --- */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
         :root {
-            /* Green Gradient Colors */
-            --grad-green-1: #004d40;
-            --grad-green-2: #00796b;
-            --grad-green-3: #4caf50;
-            --grad-green-4: #81c784;
-            --grad-green-accent: #a5d6a7;
-            --glow-green: #66ff99;
-
-            /* Text & UI Colors */
-            --text-light: #f8fafc;
-            --text-dark: #00332e;
-            --card-bg: rgba(255, 255, 255, 0.1);
-            --card-border: rgba(200, 230, 201, 0.3);
-            --shadow-color: rgba(0, 0, 0, 0.2);
-
-            /* Title Backdrop */
-            --title-backdrop-bg: rgba(0, 51, 46, 0.3);
-            --title-backdrop-border: rgba(76, 175, 80, 0.4);
+            --grad-green-1: #004d40; --grad-green-2: #00796b; --grad-green-3: #4caf50;
+            --grad-green-4: #81c784; --grad-green-accent: #a5d6a7; --glow-green: #66ff99;
+            --text-light: #f8fafc; --text-dark: #00332e; --card-bg: rgba(255, 255, 255, 0.1);
+            --card-border: rgba(200, 230, 201, 0.3); --shadow-color: rgba(0, 0, 0, 0.2);
+            --title-backdrop-bg: rgba(0, 51, 46, 0.3); --title-backdrop-border: rgba(76, 175, 80, 0.4);
             --title-backdrop-shadow: rgba(0, 0, 0, 0.3);
         }
 
-        /* --- Body Styling --- */
+        /* --- Body and Layout (Unchanged) --- */
         body {
-            font-family: 'Poppins', sans-serif;
-            height: 100vh;
-            width: 100vw;
-            color: var(--text-light);
+            font-family: 'Poppins', sans-serif; height: 100vh; width: 100vw; color: var(--text-light);
             background: linear-gradient(135deg, var(--grad-green-1) 0%, var(--grad-green-2) 50%, var(--grad-green-3) 100%);
-            background-size: cover;
-            background-attachment: fixed;
-            overflow: hidden;
+            background-size: cover; background-attachment: fixed; overflow: hidden;
         }
-
-        /* --- Main Page Layout --- */
-        .page-container {
-            display: flex;
-            height: 100%;
-            width: 100%;
-        }
-
-        /* --- Sidebar Styling --- */
-        .sidebar {
-            width: 260px;
-            height: 100%;
-            padding: 1.5rem 1rem;
-            background-color: var(--card-bg);
-            border-right: 1px solid var(--card-border);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            transition: width 0.3s ease, padding 0.3s ease, transform 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-        }
-        .sidebar.collapsed {
-            width: 0;
-            padding: 1.5rem 0;
-            overflow: hidden;
-        }
-
-        /* --- Sidebar Content Fade Transition --- */
-        .sidebar > * {
-            white-space: nowrap;
-            transition: opacity 0.2s ease;
-        }
-        .sidebar.collapsed > * {
-            opacity: 0;
-        }
-
-        /* --- [MODIFIED] New Chat Button & Menu --- */
-        .sidebar-menu {
-            list-style: none;
-            flex-grow: 1;
-            margin-top: 2rem; /* Added margin to create space at the top */
-        }
-        .sidebar-menu .new-chat-item {
-            padding: 0 0.5rem;
-            margin-bottom: 1rem;
-        }
-        .new-chat-btn {
-            color: var(--text-light);
-            background-color: transparent;
-            padding: 0.6rem 1rem;
-            border-radius: 20px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-            border: 1px solid var(--card-border);
-            cursor: pointer;
-            width: 100%; /* Fill the list item */
-            text-align: center;
-        }
-        .new-chat-btn:hover {
-            background-color: rgba(76, 175, 80, 0.2);
-            transform: translateY(-2px);
-        }
-
-        .sidebar-menu a {
-            color: var(--text-light);
-            text-decoration: none;
-            display: block;
-            padding: 0.8rem 1.2rem;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: background-color 0.2s ease;
-        }
-        .sidebar-menu a:hover {
-            background-color: rgba(76, 175, 80, 0.15);
-        }
-        .sidebar-footer {
-            padding: 0 0.5rem;
-        }
-
-        /* --- Main Content Area Styling --- */
+        .page-container { display: flex; height: 100%; width: 100%; }
         .main-content {
-            flex-grow: 1;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem;
-            overflow-y: auto;
+            flex-grow: 1; height: 100vh; display: flex; flex-direction: column;
+            align-items: center; padding: 2rem; overflow-y: auto;
         }
 
-        /* --- Sidebar Toggle Button --- */
+        /* --- Sidebar (Unchanged) --- */
+        .sidebar {
+            width: 260px; height: 100%; padding: 1.5rem 1rem; background-color: var(--card-bg);
+            border-right: 1px solid var(--card-border); backdrop-filter: blur(12px);
+            transition: width 0.3s ease, padding 0.3s ease, transform 0.3s ease;
+            display: flex; flex-direction: column; flex-shrink: 0;
+        }
+        .sidebar.collapsed { width: 0; padding: 1.5rem 0; overflow: hidden; }
+        .sidebar > * { white-space: nowrap; transition: opacity 0.2s ease; }
+        .sidebar.collapsed > * { opacity: 0; }
+        .sidebar-menu { list-style: none; flex-grow: 1; margin-top: 2rem; }
+        .sidebar-menu a {
+            color: var(--text-light); text-decoration: none; display: block; padding: 0.8rem 1.2rem;
+            border-radius: 8px; font-weight: 500; transition: background-color 0.2s ease;
+        }
+        .sidebar-menu a:hover { background-color: rgba(76, 175, 80, 0.15); }
+        .sidebar-footer { padding: 0 0.5rem; }
         .sidebar-toggle-btn {
-            position: absolute;
-            top: 1.5rem;
-            left: 1.5rem;
-            z-index: 100;
-            background-color: var(--card-bg);
-            border: 1px solid var(--card-border);
-            color: var(--text-light);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(8px);
-            transition: all 0.3s ease;
+            position: absolute; top: 1.5rem; left: 1.5rem; z-index: 100; background-color: var(--card-bg);
+            border: 1px solid var(--card-border); color: var(--text-light); width: 40px; height: 40px;
+            border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(8px); transition: all 0.3s ease;
         }
-        .sidebar-toggle-btn:hover {
-             background-color: rgba(76, 175, 80, 0.2);
-        }
-        .sidebar-toggle-btn svg {
-            width: 20px;
-            height: 20px;
-        }
-
-        /* --- Back Button Styling --- */
-        .back-button-container {
-            margin-top: auto;
-        }
+        .sidebar-toggle-btn:hover { background-color: rgba(76, 175, 80, 0.2); }
+        .sidebar-toggle-btn svg { width: 20px; height: 20px; }
+        .back-button-container { margin-top: auto; }
         .back-button {
-            color: var(--text-light);
-            background-color: var(--card-bg);
-            padding: 0.6rem 1.2rem;
-            border-radius: 20px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 8px var(--shadow-color);
-            border: 1px solid var(--card-border);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            display: block;
-            text-align: center;
+            color: var(--text-light); background-color: var(--card-bg); padding: 0.6rem 1.2rem;
+            border-radius: 20px; text-decoration: none; font-weight: 600; font-size: 0.9rem;
+            transition: all 0.3s ease; box-shadow: 0 2px 8px var(--shadow-color);
+            border: 1px solid var(--card-border); backdrop-filter: blur(8px); display: block; text-align: center;
         }
-        .back-button:hover {
-            background-color: rgba(76, 175, 80, 0.2);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px var(--shadow-color);
+        .back-button:hover { background-color: rgba(76, 175, 80, 0.2); transform: translateY(-2px); }
+
+        /* --- New Chat Button --- */
+        .sidebar-menu .new-chat-item { padding: 0 0.5rem; margin-bottom: 1rem; }
+        .new-chat-btn {
+            color: var(--text-light); background-color: transparent; padding: 0.6rem 1rem;
+            border-radius: 20px; text-decoration: none; font-weight: 600; font-size: 0.9rem;
+            transition: all 0.3s ease; border: 1px solid var(--card-border); cursor: pointer;
+            width: 100%; text-align: center;
         }
+        .new-chat-btn:hover { background-color: rgba(76, 175, 80, 0.2); transform: translateY(-2px); }
         
-        /* --- Title Styling --- */
+        /* --- Title and AI Container (Unchanged) --- */
         .title-container {
-            padding: 1rem 3rem;
-            margin-bottom: 2rem;
-            background-color: var(--title-backdrop-bg);
-            border-radius: 12px;
-            border: 1px solid var(--title-backdrop-border);
-            box-shadow: 0 6px 20px var(--title-backdrop-shadow);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            padding: 1rem 3rem; margin-bottom: 2rem; background-color: var(--title-backdrop-bg);
+            border-radius: 12px; border: 1px solid var(--title-backdrop-border);
+            box-shadow: 0 6px 20px var(--title-backdrop-shadow); backdrop-filter: blur(10px);
         }
         .main-title {
-            font-size: clamp(2rem, 5vw, 3rem);
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 800;
-            letter-spacing: 1.5px;
-            margin: 0;
-            background: linear-gradient(90deg, var(--text-light) 10%, var(--grad-green-3) 90%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            color: var(--text-light);
-            text-shadow:
-                0 0 8px rgba(255, 255, 255, 0.6),
-                0 0 20px var(--glow-green),
-                0 0 35px var(--grad-green-2),
-                3px 3px 3px var(--text-dark);
+            font-size: clamp(2rem, 5vw, 3rem); font-family: 'Montserrat', sans-serif; font-weight: 800;
+            letter-spacing: 1.5px; margin: 0; background: linear-gradient(90deg, var(--text-light) 10%, var(--grad-green-3) 90%);
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.6), 0 0 20px var(--glow-green), 0 0 35px var(--grad-green-2), 3px 3px 3px var(--text-dark);
         }
-
-        /* --- Main AI Container --- */
         .ai-container {
-            width: 100%;
-            max-width: 800px;
-            padding: 2rem;
-            text-align: center;
-            background-color: var(--card-bg);
-            border-radius: 15px;
-            border: 1px solid var(--card-border);
-            box-shadow: 0 4px 15px var(--shadow-color);
+            width: 100%; max-width: 800px; padding: 2rem; text-align: center; background-color: var(--card-bg);
+            border-radius: 15px; border: 1px solid var(--card-border); box-shadow: 0 4px 15px var(--shadow-color);
             backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
         }
         
-        /* --- Microphone Button --- */
+        /* --- Microphone Button (Unchanged) --- */
         #startButton {
-            background-color: var(--grad-green-3);
-            color: var(--text-light);
-            border: 2px solid rgba(255, 255, 255, 0.5);
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 1rem auto 2rem auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            background-color: var(--grad-green-3); color: var(--text-light); border: 2px solid rgba(255, 255, 255, 0.5);
+            width: 100px; height: 100px; border-radius: 50%; cursor: pointer; transition: all 0.3s ease;
+            margin: 1rem auto 2rem auto; display: flex; align-items: center; justify-content: center;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
         }
         #startButton svg { width: 40px; height: 40px; fill: var(--text-light); }
-        #startButton:hover:not(:disabled) {
-            transform: scale(1.05);
-            background-color: var(--grad-green-4);
-            box-shadow: 0 7px 25px rgba(0, 0, 0, 0.4);
-        }
-        #startButton:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
-            opacity: 0.7;
-            box-shadow: none;
-        }
-        @keyframes pulse-border {
-            0% { box-shadow: 0 0 0 0 rgba(102, 255, 153, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(102, 255, 153, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(102, 255, 153, 0); }
-        }
+        #startButton:hover:not(:disabled) { transform: scale(1.05); background-color: var(--grad-green-4); }
+        #startButton:disabled { background-color: #6c757d; cursor: not-allowed; opacity: 0.7; }
+        @keyframes pulse-border { 0% { box-shadow: 0 0 0 0 rgba(102, 255, 153, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(102, 255, 153, 0); } 100% { box-shadow: 0 0 0 0 rgba(102, 255, 153, 0); } }
         #startButton.listening { animation: pulse-border 1.5s infinite; }
-
-        /* --- Status and Chat Area --- */
         #status { margin-bottom: 2rem; color: var(--grad-green-accent); min-height: 1.2em; font-weight: 500; }
-        .chat-area { display: flex; flex-direction: column; gap: 1.5rem; margin-top: 2rem; }
-        .info-box {
-            padding: 1.25rem 1.75rem; border-radius: 12px; line-height: 1.6; text-align: left;
-            position: relative; word-wrap: break-word; color: var(--text-light);
+
+        /* --- [NEW] CHAT LOG STYLES --- */
+        .chat-area {
+            width: 100%;
+            height: 45vh; /* Give the chat area a defined height */
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding: 1rem;
+            overflow-y: auto; /* Make it scrollable */
+            border-radius: 10px;
+            background-color: rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--card-border);
         }
-        #output {
-            background-color: rgba(248, 250, 252, 0.15); border: 1px solid rgba(248, 250, 252, 0.2);
-            align-self: flex-end; max-width: 80%;
+        .chat-message {
+            padding: 0.75rem 1.25rem;
+            border-radius: 18px;
+            line-height: 1.6;
+            word-wrap: break-word;
+            max-width: 80%;
+            color: var(--text-light);
+            text-align: left;
         }
-        #response {
-            background-color: rgba(76, 175, 80, 0.25); border: 1px solid rgba(76, 175, 80, 0.4);
-            align-self: flex-start; max-width: 80%;
+        .user-message {
+            background-color: rgba(248, 250, 252, 0.15);
+            border: 1px solid rgba(248, 250, 252, 0.2);
+            align-self: flex-end; /* Align user messages to the right */
+            border-bottom-right-radius: 4px;
         }
-        #output::before {
-            content: 'You'; font-weight: 600; font-size: 0.8rem; color: var(--grad-green-accent);
-            position: absolute; top: -1.2rem; right: 0;
+        .ai-message {
+            background-color: rgba(76, 175, 80, 0.25);
+            border: 1px solid rgba(76, 175, 80, 0.4);
+            align-self: flex-start; /* Align AI messages to the left */
+            border-bottom-left-radius: 4px;
         }
-         #response::before {
-            content: 'AI Assistant'; font-weight: 600; font-size: 0.8rem; color: var(--glow-green);
-            position: absolute; top: -1.2rem; left: 0;
+        .ai-message.talking {
+            animation: talking-glow 1.3s infinite ease-in-out;
         }
         @keyframes talking-glow {
             0%, 100% { border-color: rgba(76, 175, 80, 0.4); }
             50% { border-color: var(--glow-green); }
         }
-        #response.talking { animation: talking-glow 1.3s infinite ease-in-out; }
 
-        /* --- Responsive Adjustments --- */
-        @media (max-width: 768px) {
-            .main-content { padding: 1.5rem; }
-            .title-container { padding: 1rem 2rem; margin-bottom: 2rem; }
-            .ai-container { padding: 1.5rem; }
-            .sidebar {
-                position: absolute;
-                z-index: 200;
-                height: 100%;
-            }
-            .sidebar:not(.collapsed) {
-                box-shadow: 5px 0px 15px rgba(0,0,0,0.2);
-            }
-        }
-        @media (max-width: 480px) {
-            .main-content { padding: 1rem; }
-            .sidebar-toggle-btn { top: 1rem; left: 1rem; }
-            .title-container { padding: 0.8rem 1.5rem; }
-            .ai-container { padding: 1rem; }
-        }
+        /* --- Responsive Adjustments (Unchanged) --- */
+        @media (max-width: 768px) { .main-content { padding: 1.5rem; } .ai-container { padding: 1.5rem; } .sidebar { position: absolute; z-index: 200; height: 100%; } .sidebar:not(.collapsed) { box-shadow: 5px 0px 15px rgba(0,0,0,0.2); } }
+        @media (max-width: 480px) { .main-content { padding: 1rem; } .sidebar-toggle-btn { top: 1rem; left: 1rem; } .ai-container { padding: 1rem; } }
     </style>
 </head>
 <body>
     
     <button class="sidebar-toggle-btn" id="toggle-sidebar-btn" title="Toggle Sidebar">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-          <path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/>
-        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/></svg>
     </button>
 
     <div class="page-container">
         <!-- Sidebar -->
         <aside class="sidebar" id="sidebar">
             <ul class="sidebar-menu">
-                <!-- [MOVED] New Chat Button is now the first list item -->
-                
+                <li class="new-chat-item">
+                    <button class="new-chat-btn">+ New Chat</button>
+                </li>
                 <li><a href="#">History</a></li>
                 <li><a href="home/Policies">Policies</a></li>
                 <li><a href="home/about">About us</a></li>
@@ -348,7 +179,7 @@
             </ul>
             <div class="sidebar-footer">
                 <div class="back-button-container">
-                    <a href="#" class="back-button">New Chat</a>
+                    <a href="/home/" class="back-button">← Home</a>
                 </div>
             </div>
         </aside>
@@ -358,20 +189,15 @@
             <div class="title-container">
                 <h1 class="main-title">AGRIPATH</h1>
             </div>
-
             <div class="ai-container">
                 <button id="startButton">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-                      <path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0z"/>
-                      <path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5"/>
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0z"/><path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5"/></svg>
                 </button>
-
                 <div id="status">Status: तैयार (Ready)</div>
 
-                <div class="chat-area">
-                    <div id="response" class="info-box">...</div>
-                    <div id="output" class="info-box">...</div>
+                <!-- [MODIFIED] This is the new, empty container for our dynamic chat log -->
+                <div id="chatArea" class="chat-area">
+                    <!-- Chat messages will be dynamically added here by JavaScript -->
                 </div>
             </div>
         </main>
@@ -379,155 +205,116 @@
 
     <script>
         // ==============================================================================
-        //  ALL JAVASCRIPT LOGIC (MODIFIED FOR AUTOPLAY POLICY)
+        //  COMPLETE JAVASCRIPT FOR CHAT LOG FUNCTIONALITY
         // ==============================================================================
+
+        // --- Element References ---
         const startButton = document.getElementById('startButton');
-        const outputDiv = document.getElementById('output');
-        const responseDiv = document.getElementById('response');
         const statusDiv = document.getElementById('status');
+        const chatArea = document.getElementById('chatArea');
+        const newChatButton = document.querySelector('.new-chat-btn');
         const csrfToken = '{{ csrf_token }}';
 
-        // [NEW] Global variables to handle the initial greeting
-        let initialGreetingHasBeenSpoken = false;
-        let greetingTextToSpeak = "";
-
-        // --- Speech Recognition (STT) ---
+        // --- TTS and STT Initialization ---
+        const synth = window.speechSynthesis;
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition;
-        if (SpeechRecognition) {
-            recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.lang = 'hi-IN';
-            recognition.interimResults = false;
-            recognition.maxAlternatives = 1;
-            recognition.onstart = () => {
-                statusDiv.textContent = 'Status: सुन रहा हूँ... (Listening...)';
-                startButton.classList.add('listening');
-                startButton.disabled = true;
-                outputDiv.textContent = '...';
-                if (!responseDiv.classList.contains('initial-greeting')) {
-                    responseDiv.textContent = '...';
-                }
-                responseDiv.classList.remove('talking', 'initial-greeting');
-            };
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                outputDiv.textContent = transcript;
-                sendTextToBackend(transcript);
-            };
-            recognition.onerror = (event) => {
-                statusDiv.textContent = `Error: ${event.error}`;
-                console.error("Speech Recognition Error:", event);
-                resetUIState();
-            };
-            recognition.onend = () => {
-                 statusDiv.textContent = 'Status: प्रसंस्करण (Processing)...';
-            };
-        } else {
-            statusDiv.textContent = "Status: Speech Recognition समर्थित नहीं है।";
-            startButton.disabled = true;
-        }
-
-        // --- Text To Speech (TTS) ---
-        const synth = window.speechSynthesis;
         let hindiVoice = null;
-        let speechChunkQueue = [];
-        let isSpeakingGreeting = false;
-        let currentSpeechTimeout = null;
+        
         function loadVoices() {
-             const voices = synth.getVoices();
-             hindiVoice = voices.find(voice => voice.lang === 'hi-IN') || voices.find(voice => voice.lang.startsWith('hi'));
+            hindiVoice = synth.getVoices().find(voice => voice.lang === 'hi-IN' || voice.lang.startsWith('hi'));
         }
         if (synth.onvoiceschanged !== undefined) {
             synth.onvoiceschanged = loadVoices;
         }
         loadVoices();
-        function chunkText(text) {
-            const maxLength = 200;
-            const chunks = [];
-            let remainingText = text.replace(/\n\n/g, "\n");
-            const newlineChunks = remainingText.split('\n');
-            let tempChunks = [];
-            newlineChunks.forEach(nlChunk => {
-                if (nlChunk.trim().length === 0) return;
-                const sentenceEndings = /([.?!।])\s*/g;
-                let sentences = nlChunk.split(sentenceEndings);
-                let currentChunk = "";
-                for (let i = 0; i < sentences.length; i += 2) {
-                    let sentence = sentences[i];
-                    let delimiter = sentences[i+1] || "";
-                    let part = sentence + delimiter;
-                    if (part.trim().length === 0) continue;
-                    if (currentChunk.length + part.length <= maxLength) {
-                        currentChunk += part;
-                    } else {
-                        if (currentChunk.trim().length > 0) { tempChunks.push(currentChunk.trim()); }
-                        currentChunk = part.length > maxLength ? "" : part;
-                        if (part.length > maxLength) {
-                             splitByLength(part, maxLength).forEach(sp => tempChunks.push(sp.trim()));
-                        }
-                    }
-                }
-                if (currentChunk.trim().length > 0) { tempChunks.push(currentChunk.trim()); }
-            });
-            return tempChunks.filter(chunk => chunk.length > 0);
+
+        // --- Core Application Logic ---
+
+        /**
+         * Creates and displays a message in the chat log.
+         * @param {string} text - The message text.
+         * @param {string} sender - 'user' or 'ai'.
+         * @returns {HTMLElement} The created message element.
+         */
+        function addMessageToLog(text, sender) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat-message', `${sender}-message`);
+            messageElement.textContent = text;
+            chatArea.appendChild(messageElement);
+            chatArea.scrollTop = chatArea.scrollHeight; // Auto-scroll to the bottom
+            return messageElement;
         }
-        function splitByLength(text, maxLength) {
-             const chunks = []; let i = 0;
-             while (i < text.length) { chunks.push(text.substring(i, i + maxLength)); i += maxLength; }
-             return chunks;
-        }
-        function cancelSpeech() {
-            if (currentSpeechTimeout) { clearTimeout(currentSpeechTimeout); currentSpeechTimeout = null; }
-            if (synth.speaking || synth.pending) { speechChunkQueue = []; synth.cancel(); }
-            responseDiv.classList.remove('talking', 'initial-greeting');
-        }
-        function speak(textToSpeak, isGreeting = false) {
-            cancelSpeech();
-            isSpeakingGreeting = isGreeting;
-            responseDiv.textContent = textToSpeak && textToSpeak.trim() !== '' ? textToSpeak : "मुझे कहने के लिए कुछ नहीं मिला।";
-            if (responseDiv.textContent === "") { if (!isGreeting) resetUIState(); return; }
-            speechChunkQueue = chunkText(textToSpeak);
-            if (speechChunkQueue.length > 0) { speakNextChunk(); }
-            else { if (!isGreeting) resetUIState(); }
-        }
-        function speakNextChunk() {
-            if (speechChunkQueue.length === 0) {
-                // When speaking is done, reset the UI
+
+        /**
+         * Handles the "New Chat" button click.
+         */
+        async function startNewChat() {
+            try {
+                await fetch("{% url 'clear_chat' %}", { method: 'POST', headers: {'X-CSRFToken': csrfToken }});
+                chatArea.innerHTML = '';
+                await fetchAndDisplayGreeting();
+                statusDiv.textContent = 'Status: नया चैट शुरू हुआ (New Chat Started)';
                 resetUIState();
-                return;
+            } catch (error) {
+                console.error('Error starting new chat:', error);
             }
-            const chunk = speechChunkQueue.shift();
-            if (chunk && chunk.trim() !== '') {
-                if (synth.speaking || synth.pending) {
-                    speechChunkQueue.unshift(chunk); currentSpeechTimeout = setTimeout(speakNextChunk, 250); return;
-                }
-                const utterThis = new SpeechSynthesisUtterance(chunk);
-                utterThis.lang = 'hi-IN';
-                if (hindiVoice) { utterThis.voice = hindiVoice; }
-                utterThis.pitch = 1; utterThis.rate = 0.95;
-                utterThis.onstart = () => {
-                    responseDiv.classList.add('talking');
-                    if(isSpeakingGreeting) responseDiv.classList.add('initial-greeting');
-                    statusDiv.textContent = 'Status: बोल रहा हूँ... (Speaking...)';
-                    startButton.disabled = true; // Disable button while speaking
-                };
-                utterThis.onend = () => {
-                    if (speechChunkQueue.length > 0) {
-                        currentSpeechTimeout = setTimeout(() => { currentSpeechTimeout = null; speakNextChunk(); }, 75);
-                    } else {
-                        // This is the important part: reset the UI after speaking finishes.
-                        resetUIState();
-                    }
-                };
-                utterThis.onerror = (event) => {
-                    console.error('TTS error:', event); speechChunkQueue = [];
-                    if (currentSpeechTimeout) { clearTimeout(currentSpeechTimeout); }
-                    resetUIState();
-                };
-                synth.speak(utterThis);
-            } else { speakNextChunk(); }
         }
+
+        // --- Speech Recognition Logic ---
+        if (SpeechRecognition) {
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.lang = 'hi-IN';
+            recognition.interimResults = false;
+            recognition.onstart = () => {
+                statusDiv.textContent = 'Status: सुन रहा हूँ... (Listening...)';
+                startButton.classList.add('listening');
+                startButton.disabled = true;
+            };
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                addMessageToLog(transcript, 'user');
+                sendTextToBackend(transcript);
+            };
+            recognition.onerror = (event) => {
+                console.error("Speech Recognition Error:", event);
+                addMessageToLog(`Speech recognition error: ${event.error}`, 'ai');
+                resetUIState();
+            };
+        } else {
+            statusDiv.textContent = "Status: Speech Recognition is not supported by this browser.";
+            startButton.disabled = true;
+        }
+
+        // --- Text To Speech Logic ---
+        function speak(textToSpeak) {
+            if (synth.speaking) {
+                synth.cancel();
+            }
+            const lastAiMessage = chatArea.querySelector('.ai-message:last-child');
+            const utterThis = new SpeechSynthesisUtterance(textToSpeak);
+            utterThis.lang = 'hi-IN';
+            utterThis.voice = hindiVoice;
+            utterThis.rate = 0.95;
+            utterThis.onstart = () => {
+                if (lastAiMessage) lastAiMessage.classList.add('talking');
+                statusDiv.textContent = 'Status: बोल रहा हूँ... (Speaking...)';
+                startButton.disabled = true;
+            };
+            utterThis.onend = () => {
+                if (lastAiMessage) lastAiMessage.classList.remove('talking');
+                resetUIState();
+            };
+            utterThis.onerror = (event) => {
+                console.error('TTS error:', event);
+                if (lastAiMessage) lastAiMessage.classList.remove('talking');
+                resetUIState();
+            };
+            synth.speak(utterThis);
+        }
+        
+        // --- Backend Communication ---
         async function sendTextToBackend(text) {
             statusDiv.textContent = 'Status: प्रसंस्करण (Processing)...';
             try {
@@ -536,80 +323,62 @@
                     headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
                     body: JSON.stringify({ text: text })
                 });
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({}));
-                    throw new Error(`HTTP error! status: ${response.status} - ${errorData.error || response.statusText}`);
-                }
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const data = await response.json();
-                statusDiv.textContent = 'Status: जवाब मिल गया (Response received)';
-                speak(data.response, false);
+                addMessageToLog(data.response, 'ai');
+                speak(data.response);
             } catch (error) {
                 console.error('Error sending/receiving backend data:', error);
-                statusDiv.textContent = `Status: त्रुटि - ${error.message}`;
-                responseDiv.textContent = "क्षमा करें, सर्वर से कनेक्ट करने में कोई त्रुटि हुई।";
+                addMessageToLog("क्षमा करें, सर्वर से कनेक्ट करने में कोई त्रुटि हुई।", 'ai');
                 resetUIState();
             }
         }
-        function resetUIState() {
-             startButton.classList.remove('listening');
-             startButton.disabled = false;
-             statusDiv.textContent = 'Status: तैयार (Ready)';
-             responseDiv.classList.remove('talking', 'initial-greeting');
-             cancelSpeech();
-        }
 
-        // [MODIFIED] This is the main button click handler
-        startButton.addEventListener('click', () => {
-            // If the greeting hasn't been spoken yet, this first click will play it.
-            if (!initialGreetingHasBeenSpoken) {
-                if (greetingTextToSpeak) {
-                    speak(greetingTextToSpeak, true);
-                    initialGreetingHasBeenSpoken = true;
-                }
-                return; // Stop here, don't start recognition yet.
-            }
-
-            // On all subsequent clicks, it will start speech recognition.
-            if (recognition) {
-                 try { cancelSpeech(); recognition.start(); }
-                 catch (e) { console.error("Error starting recognition:", e); resetUIState(); }
-            }
-        });
-
-        // [MODIFIED] This function now only fetches and displays the greeting, it does not speak it.
+        // --- Greeting Logic ---
         async function fetchAndDisplayGreeting() {
             try {
                 const response = await fetch("{% url 'get_greeting' %}");
-                if (!response.ok) { throw new Error('Failed to fetch greeting.'); }
                 const data = await response.json();
                 if (data.greeting) {
-                    greetingTextToSpeak = data.greeting; // Store text for later
-                    responseDiv.textContent = data.greeting; // Display text immediately
+                    addMessageToLog(data.greeting, 'ai');
                 }
             } catch (error) {
-                console.error('Error fetching dynamic greeting:', error);
-                const fallbackGreeting = "नमस्ते! मैं आपकी मदद के लिए तैयार हूँ। सवाल पूछने के लिए माइक्रोफ़ोन बटन दबाएँ।";
-                greetingTextToSpeak = fallbackGreeting;
-                responseDiv.textContent = fallbackGreeting;
+                console.error('Error fetching greeting:', error);
+                addMessageToLog("नमस्ते! मैं आपकी मदद के लिए तैयार हूँ।", 'ai');
             }
         }
 
-        document.addEventListener('DOMContentLoaded', (event) => {
-            fetchAndDisplayGreeting(); // Call the modified function
+        // --- UI State Management ---
+        function resetUIState() {
+            startButton.classList.remove('listening');
+            startButton.disabled = false;
+            statusDiv.textContent = 'Status: तैयार (Ready)';
+            const talkingMessage = chatArea.querySelector('.ai-message.talking');
+            if (talkingMessage) talkingMessage.classList.remove('talking');
+        }
 
-            // --- JAVASCRIPT LOGIC FOR SIDEBAR (UNCHANGED) ---
+        // --- Event Listeners ---
+        startButton.addEventListener('click', () => {
+            if (synth.speaking) {
+                synth.cancel(); // Stop any current speech before listening
+            }
+            if (recognition) {
+                recognition.start();
+            }
+        });
+
+        newChatButton.addEventListener('click', startNewChat);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchAndDisplayGreeting();
+
+            // Sidebar Logic
             const sidebar = document.getElementById('sidebar');
             const toggleBtn = document.getElementById('toggle-sidebar-btn');
-            
-            const toggleSidebar = () => {
-                sidebar.classList.toggle('collapsed');
-            };
-
+            toggleBtn.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
             if (window.innerWidth <= 768) {
                 sidebar.classList.add('collapsed');
             }
-
-            toggleBtn.addEventListener('click', toggleSidebar);
         });
     </script>
 </body>
