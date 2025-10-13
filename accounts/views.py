@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from twilio.rest import Client
 from django.conf import settings
-from .forms import PhoneForm, OTPForm, ProfileForm
+from .forms import PhoneForm, OTPForm, ProfileEditForm # <-- Ensure this import is correct
 from .models import Profile
 
 # --- Twilio Client Initialization ---
@@ -85,13 +85,22 @@ def verify_otp(request):
 @login_required
 def setup_profile(request):
     profile = request.user.profile
+    
+    # Check if the profile is already complete (based on location being set)
+    # If the user somehow navigated back here but has a location, redirect them away.
+    if profile.location and not request.GET.get('force'):
+        return redirect('ai')
+
     if request.method == 'POST':
-        form = ProfileForm(request.POST, instance=profile)
+        # [MODIFIED] Use the full ProfileEditForm for comprehensive setup
+        form = ProfileEditForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
-            return redirect('ai') # Redirect to your AI homepage
+            return redirect('index') 
     else:
-        form = ProfileForm(instance=profile)
+        # Pass the full form for the user to complete all details
+        form = ProfileEditForm(instance=profile)
+        
     return render(request, 'accounts/setup_profile.html', {'form': form})
 
 def custom_logout(request):
@@ -100,7 +109,21 @@ def custom_logout(request):
 
 @login_required
 def view_profile(request):
-    # The @login_required decorator ensures only logged-in users can see this.
-    # The user's profile is automatically linked via the one-to-one relationship.
     profile = request.user.profile
-    return render(request, 'accounts/profile_detail.html', {'profile': profile})
+    
+    if request.method == 'POST':
+        # Handles form submission for editing profile (including file upload)
+        form = ProfileEditForm(request.POST, request.FILES, instance=profile)
+        if form.is_valid():
+            form.save()
+            # Redirect back to the profile page to see changes
+            return redirect('view_profile') 
+    else:
+        # Handles initial GET request
+        form = ProfileEditForm(instance=profile)
+        
+    # Pass both the profile object (for display) and the form (for editing)
+    return render(request, 'accounts/profile_detail.html', {
+        'profile': profile,
+        'form': form
+    })

@@ -68,26 +68,39 @@
     </style>
 </head>
 <body>
-    <div class="auth-container">
+    <div class="profile-container">
         <h1 class="auth-title">Complete Your Profile</h1>
-        <p style="margin-bottom: 1.5rem;">Please provide your location to get started.</p>
+        <p style="margin-bottom: 2rem;">Please fill in your details to get started.</p>
         
-        <!-- [NEW] Button to trigger location detection -->
-        <button id="detect-location-btn" class="detect-btn">📍 Detect My Location</button>
-
-        <!-- [NEW] Element to show status messages to the user -->
-        <p id="location-status"></p>
-
-        <form method="post">
+        <!-- Add the enctype for image upload -->
+        <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <div class="form-group">
-                <label for="{{ form.location.id_for_label }}">Your City or District</label>
-                <!-- We will populate this input field using JavaScript -->
-                {{ form.location }}
-                 {% if form.location.errors %}
+
+            <!-- Profile Picture Field -->
+            <p>{{ form.profile_picture.label_tag }} {{ form.profile_picture }}</p>
+
+            <!-- Name Field -->
+            <p>{{ form.name.label_tag }} {{ form.name }}</p>
+            {% if form.name.errors %} <div class="error-message">{{ form.name.errors.0 }}</div> {% endif %}
+
+            <!-- Age Field -->
+            <p>{{ form.age.label_tag }} {{ form.age }}</p>
+
+            <!-- Location Fields with Geolocation -->
+            <div style="margin-top: 2rem;">
+                <h3 style="font-size: 1.2rem; text-align: left; margin-bottom: 1rem;">Location</h3>
+                
+                <button type="button" id="detect-location-btn" class="detect-btn">
+                    📍 Detect My Location
+                </button>
+                <p id="location-status"></p>
+                
+                <p>{{ form.location.label_tag }} {{ form.location }}</p>
+                {% if form.location.errors %}
                     <div class="error-message">{{ form.location.errors.0 }}</div>
                 {% endif %}
             </div>
+
             <button type="submit" class="submit-btn">Save & Continue</button>
         </form>
     </div>

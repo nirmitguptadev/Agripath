@@ -17,6 +17,8 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,include
 from core import views as core_views
+from django.conf import settings         # <-- CHECK THIS IMPORT
+from django.conf.urls.static import static #
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,3 +29,6 @@ urlpatterns = [
     path('api/get-greeting/', core_views.get_greeting, name='get_greeting'),
      path('api/clear-chat/', core_views.clear_chat, name='clear_chat'),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
