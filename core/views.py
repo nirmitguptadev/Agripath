@@ -127,9 +127,8 @@ def handle_general_conversation(user_prompt, history):
 # ==============================================================================
 @login_required 
 def assistant_page(request):
-    if 'chat_history' in request.session:
-        del request.session['chat_history']
-    return render(request, 'core.html')
+    history = request.session.get('chat_history', [])
+    return render(request, 'core.html', {'initial_history': history})
 
 def get_greeting(request):
     fallback_greeting = "नमस्ते! मैं आपकी मदद के लिए तैयार हूँ।"

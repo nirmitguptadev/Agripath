@@ -217,11 +217,15 @@
             </div>
         </main>
     </div>
-
+    {{ initial_history|json_script:"initial-history-data" }}
     <script>
         // ==============================================================================
-        //  COMPLETE JAVASCRIPT FOR CHAT LOG FUNCTIONALITY
+        //  COMPLETE JAVASCRIPT FOR PERSISTENT CHAT LOG FUNCTIONALITY
         // ==============================================================================
+
+        // [NEW] Safely retrieve initial history from the hidden script element
+        const historyScriptElement = document.getElementById('initial-history-data');
+        const initialHistory = historyScriptElement ? JSON.parse(historyScriptElement.textContent) : [];
 
         // --- Element References ---
         const startButton = document.getElementById('startButton');
@@ -243,40 +247,40 @@
             synth.onvoiceschanged = loadVoices;
         }
         loadVoices();
-
-        // --- Core Application Logic ---
-
+        
         /**
          * Creates and displays a message in the chat log.
-         * @param {string} text - The message text.
-         * @param {string} sender - 'user' or 'ai'.
-         * @returns {HTMLElement} The created message element.
          */
         function addMessageToLog(text, sender) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('chat-message', `${sender}-message`);
             messageElement.textContent = text;
             chatArea.appendChild(messageElement);
-            chatArea.scrollTop = chatArea.scrollHeight; // Auto-scroll to the bottom
+            chatArea.scrollTop = chatArea.scrollHeight; // Auto-scroll
             return messageElement;
         }
 
         /**
-         * Handles the "New Chat" button click.
+         * Handles the "New Chat" button click (clears session history).
          */
         async function startNewChat() {
             try {
+                // Call the backend endpoint to clear the session
                 await fetch("{% url 'clear_chat' %}", { method: 'POST', headers: {'X-CSRFToken': csrfToken }});
+                
+                // Visually clear the chat log on the screen
                 chatArea.innerHTML = '';
+                
+                // Fetch and display the new greeting
                 await fetchAndDisplayGreeting();
-                statusDiv.textContent = 'Status: नया चैट शुरू हुआ (New Chat Started)';
                 resetUIState();
+                statusDiv.textContent = 'Status: नया चैट शुरू हुआ (New Chat Started)';
             } catch (error) {
                 console.error('Error starting new chat:', error);
             }
         }
 
-        // --- Speech Recognition Logic ---
+        // --- Speech Recognition Logic (Unchanged) ---
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
             recognition.continuous = false;
@@ -302,11 +306,9 @@
             startButton.disabled = true;
         }
 
-        // --- Text To Speech Logic ---
+        // --- Text To Speech Logic (Unchanged) ---
         function speak(textToSpeak) {
-            if (synth.speaking) {
-                synth.cancel();
-            }
+            if (synth.speaking) { synth.cancel(); }
             const lastAiMessage = chatArea.querySelector('.ai-message:last-child');
             const utterThis = new SpeechSynthesisUtterance(textToSpeak);
             utterThis.lang = 'hi-IN';
@@ -329,7 +331,7 @@
             synth.speak(utterThis);
         }
         
-        // --- Backend Communication ---
+        // --- Backend Communication (Unchanged) ---
         async function sendTextToBackend(text) {
             statusDiv.textContent = 'Status: प्रसंस्करण (Processing)...';
             try {
@@ -349,7 +351,9 @@
             }
         }
 
-        // --- Greeting Logic ---
+        /**
+         * Fetches and displays the initial greeting.
+         */
         async function fetchAndDisplayGreeting() {
             try {
                 const response = await fetch("{% url 'get_greeting' %}");
@@ -363,7 +367,26 @@
             }
         }
 
-        // --- UI State Management ---
+        /**
+         * [NEW] Function to load history from the context variable
+         */
+        function loadInitialHistory() {
+            if (initialHistory && initialHistory.length > 0) {
+                initialHistory.forEach(message => {
+                    // Check for the correct Gemini format
+                    if (message.parts && message.parts[0] && message.role) {
+                        // Map Gemini's 'model' role to 'ai' for CSS
+                        const sender = message.role === 'user' ? 'user' : 'ai';
+                        addMessageToLog(message.parts[0], sender);
+                    }
+                });
+            } else {
+                // If no history exists, fetch the initial greeting
+                fetchAndDisplayGreeting();
+            }
+        }
+
+        // --- UI State Management (Unchanged) ---
         function resetUIState() {
             startButton.classList.remove('listening');
             startButton.disabled = false;
@@ -372,21 +395,17 @@
             if (talkingMessage) talkingMessage.classList.remove('talking');
         }
 
-        // --- Event Listeners ---
+        // --- Event Listeners (Unchanged) ---
         startButton.addEventListener('click', () => {
-            if (synth.speaking) {
-                synth.cancel(); // Stop any current speech before listening
-            }
-            if (recognition) {
-                recognition.start();
-            }
+            if (synth.speaking) { synth.cancel(); }
+            if (recognition) { recognition.start(); }
         });
 
         newChatButton.addEventListener('click', startNewChat);
 
         document.addEventListener('DOMContentLoaded', () => {
-            fetchAndDisplayGreeting();
-
+            loadInitialHistory(); // <-- THIS LOADS THE PERSISTENT CHAT
+            
             // Sidebar Logic
             const sidebar = document.getElementById('sidebar');
             const toggleBtn = document.getElementById('toggle-sidebar-btn');
