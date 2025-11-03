@@ -33,10 +33,62 @@ def get_current_weather_data(city_name):
             "temperature": data["main"]["temp"],
             "description": data["weather"][0]["description"], 
             "humidity": data["main"]["humidity"],
+            "pressure": data["main"]["pressure"], # <-- ADDED
+            "wind_speed": data["wind"]["speed"], # <-- ADDED
+            "visibility": data.get("visibility") # <-- ADDED (in meters)
         }, None
     except requests.exceptions.RequestException as e:
         print(f"🔴 Weather API request error: {e}")
         return None, "Could not connect to the current weather service."
+
+# Update get_alerts_and_forecast to capture wind/pressure/humidity/min/max temp for forecast
+def get_alerts_and_forecast(lat, lon):
+    if not OPENWEATHER_API_KEY: return {'forecast': [], 'alerts': []}, "API key missing."
+    
+    base_url = "http://api.openweathermap.org/data/2.5/forecast"
+    params = {
+        'lat': lat, 
+        'lon': lon, 
+        'appid': OPENWEATHER_API_KEY, 
+        'units': 'metric', 
+        'lang': 'hi'
+    }
+
+    try:
+        response = requests.get(base_url, params=params)
+        response.raise_for_status()
+        data = response.json()
+        
+        forecast = []
+        processed_dates = set()
+        for item in data.get('list', []):
+            date_str = item['dt_txt'].split(' ')[0]
+            time_str = item['dt_txt'].split(' ')[1]
+            
+            # Use noon data (most reliable daily representation)
+            if date_str not in processed_dates and time_str == '12:00:00':
+                forecast.append({
+                    'date': item.get('dt'),
+                    'max_temp': item['main']['temp_max'],
+                    'min_temp': item['main']['temp_min'],
+                    'description': item['weather'][0]['description'],
+                    'icon': item['weather'][0]['icon'],
+                    'humidity': item['main']['humidity'],
+                    'pressure': item['main']['pressure'], # <-- ADDED
+                    'wind_speed': item['wind']['speed'] # <-- ADDED
+                })
+                processed_dates.add(date_str)
+            
+            if len(forecast) >= 5:
+                break
+            
+        alerts = [] # Alerts are NOT available in the free tier
+
+        return {'forecast': forecast, 'alerts': alerts}, None
+
+    except requests.exceptions.RequestException as e:
+        print(f"🔴 OpenWeatherMap Forecast API request error: {e}")
+        return {'forecast': [], 'alerts': []}, "Could not connect to the forecast service."
 
 def get_alerts_and_forecast(lat, lon):
     if not OPENWEATHER_API_KEY: return {'forecast': [], 'alerts': []}, "API key missing."
