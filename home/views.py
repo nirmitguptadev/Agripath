@@ -190,12 +190,12 @@ def Policies(request):
         location = None
 
     if not location:
-        return render(request, 'policies.html', {
+        return render(request, 'Policies.html', {
             'error': 'कृपया अपनी प्रोफाइल में अपना स्थान (Location) अपडेट करें ताकि हम आपके लिए योजनाएं ढूंढ सकें।'
         })
 
     if not POLICY_MODEL:
-        return render(request, 'policies.html', {
+        return render(request, 'Policies.html', {
             'error': 'AI सेवा अनुपलब्ध है। कृपया थोड़ी देर बाद प्रयास करें।'
         })
 
@@ -227,7 +227,7 @@ def Policies(request):
         
         policies_data = json.loads(text)
         
-        return render(request, 'policies.html', {
+        return render(request, 'Policies.html', {
             'location': location,
             'policies': policies_data
         })
@@ -236,7 +236,7 @@ def Policies(request):
         print(f"Error fetching/parsing policies: {e}")
         text = locals().get('text', 'No raw response text captured.')
         print(f"Raw AI response: {text}")
-        return render(request, 'policies.html', {
+        return render(request, 'Policies.html', {
             'error': f'{location} के लिए योजनाओं को लोड करने में समस्या आई। कृपया पुनः प्रयास करें।'
         })
 
