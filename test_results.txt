@@ -1,0 +1,18 @@
+Creating test database for alias 'default'...
+
+..........D:\Code\Django\dvenv\Lib\site-packages\django\core\handlers\base.py:61: UserWarning: No directory at: D:\Code\Django\mypage\staticfiles\
+  mw_instance = middleware(adapted_handler)
+..................................
+----------------------------------------------------------------------
+Ran 44 tests in 0.119s
+
+OK
+Destroying test database for alias 'default'...
+
+Successfully configured Gemini and Weather APIs.
+Found 44 test(s).
+System check identified no issues (0 silenced).
+GEMINI API ERROR: API Error
+Attempted to call Gemini, but the model is not configured.
+Weather API request error: Network error
+Generated OTP for +919876543210: 572485

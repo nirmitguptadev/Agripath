@@ -16,16 +16,16 @@ try:
     OPENWEATHER_API_KEY = settings.OPENWEATHER_API_KEY
     genai.configure(api_key=GEMINI_API_KEY)
     MODEL = genai.GenerativeModel('gemini-2.5-flash-lite')
-    print("✅ Successfully configured Gemini and Weather APIs.")
+    print("Successfully configured Gemini and Weather APIs.")
 except (AttributeError, Exception) as e:
-    print(f"🔴 FATAL ERROR: Could not configure API keys. Error: {e}")
+    print(f"FATAL ERROR: Could not configure API keys. Error: {e}")
     GEMINI_API_KEY = None
     OPENWEATHER_API_KEY = None
 
 # --- [MODIFIED] Centralized Gemini Response Function with Post-Processing ---
 def generate_gemini_response(prompt_content):
     if not MODEL:
-        print("🔴 Attempted to call Gemini, but the model is not configured.")
+        print("Attempted to call Gemini, but the model is not configured.")
         return "क्षमा करें, मेरा AI कनेक्शन ठीक से काम नहीं कर रहा है।"
     try:
         response = MODEL.generate_content(prompt_content)
@@ -38,7 +38,7 @@ def generate_gemini_response(prompt_content):
         return cleaned_text.strip() # Return the cleaned text
         
     except Exception as e:
-        print(f"🔴🔴🔴 GEMINI API ERROR 🔴🔴🔴: {e}")
+        print(f"GEMINI API ERROR: {e}")
         return "क्षमा करें, AI से कनेक्ट करते समय एक त्रुटि हुई।"
 
 # --- Weather Helper Function (no changes) ---
@@ -54,7 +54,7 @@ def get_weather_data(city_name):
         data = response.json()
         return { "city": data.get("name"), "temperature": data["main"]["temp"], "description": data["weather"][0]["description"], "humidity": data["main"]["humidity"], "wind_speed": data["wind"]["speed"], }, None
     except requests.exceptions.RequestException as e:
-        print(f"🔴 Weather API request error: {e}")
+        print(f"Weather API request error: {e}")
         return None, "Could not connect to the weather service."
 
 # ==============================================================================
@@ -192,7 +192,7 @@ def process_voice(request):
     except json.JSONDecodeError:
         return JsonResponse({'error': 'Invalid JSON in request body'}, status=400)
     except Exception as e:
-        print(f"🔴 An unexpected error occurred in process_voice: {e}")
+        print(f"An unexpected error occurred in process_voice: {e}")
         return JsonResponse({'error': 'Sorry, an internal server error occurred.'}, status=500)
 
 
