@@ -27,7 +27,8 @@ urlpatterns = [
     path('accounts/', include('accounts.urls')),
     path('process/', core_views.process_voice, name='process_voice'), # API endpoint
     path('api/get-greeting/', core_views.get_greeting, name='get_greeting'),
-     path('api/clear-chat/', core_views.clear_chat, name='clear_chat'),
+    path('api/clear-chat/', core_views.clear_chat, name='clear_chat'),
+    path('', include('home.urls')), # Include home URLs at root level
 ]
 
 if settings.DEBUG:

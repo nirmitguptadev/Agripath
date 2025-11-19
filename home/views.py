@@ -5,6 +5,7 @@ import google.generativeai as genai
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+from core.crop_model import predict_suitable_crops, get_soil_data_by_location, CROP_PREDICTOR_MODEL
 
 # --- Configure GenAI for this app ---
 try:
@@ -42,54 +43,6 @@ def get_current_weather_data(city_name):
         return None, "Could not connect to the current weather service."
 
 # Update get_alerts_and_forecast to capture wind/pressure/humidity/min/max temp for forecast
-def get_alerts_and_forecast(lat, lon):
-    if not OPENWEATHER_API_KEY: return {'forecast': [], 'alerts': []}, "API key missing."
-    
-    base_url = "http://api.openweathermap.org/data/2.5/forecast"
-    params = {
-        'lat': lat, 
-        'lon': lon, 
-        'appid': OPENWEATHER_API_KEY, 
-        'units': 'metric', 
-        'lang': 'hi'
-    }
-
-    try:
-        response = requests.get(base_url, params=params)
-        response.raise_for_status()
-        data = response.json()
-        
-        forecast = []
-        processed_dates = set()
-        for item in data.get('list', []):
-            date_str = item['dt_txt'].split(' ')[0]
-            time_str = item['dt_txt'].split(' ')[1]
-            
-            # Use noon data (most reliable daily representation)
-            if date_str not in processed_dates and time_str == '12:00:00':
-                forecast.append({
-                    'date': item.get('dt'),
-                    'max_temp': item['main']['temp_max'],
-                    'min_temp': item['main']['temp_min'],
-                    'description': item['weather'][0]['description'],
-                    'icon': item['weather'][0]['icon'],
-                    'humidity': item['main']['humidity'],
-                    'pressure': item['main']['pressure'], # <-- ADDED
-                    'wind_speed': item['wind']['speed'] # <-- ADDED
-                })
-                processed_dates.add(date_str)
-            
-            if len(forecast) >= 5:
-                break
-            
-        alerts = [] # Alerts are NOT available in the free tier
-
-        return {'forecast': forecast, 'alerts': alerts}, None
-
-    except requests.exceptions.RequestException as e:
-        print(f"🔴 OpenWeatherMap Forecast API request error: {e}")
-        return {'forecast': [], 'alerts': []}, "Could not connect to the forecast service."
-
 def get_alerts_and_forecast(lat, lon):
     if not OPENWEATHER_API_KEY: return {'forecast': [], 'alerts': []}, "API key missing."
     
@@ -141,6 +94,76 @@ def get_alerts_and_forecast(lat, lon):
         print(f"🔴 OpenWeatherMap Forecast API request error: {e}")
         return {'forecast': [], 'alerts': []}, "Could not connect to the forecast service."
     
+@login_required
+def CropAdvisory(request):
+    try:
+        location = request.user.profile.location
+    except:
+        return render(request, 'crop_advisory.html', {'error': 'प्रोफ़ाइल स्थान आवश्यक है।'})
+
+    if not location:
+        return render(request, 'crop_advisory.html', {
+            'error': 'कृपया अपनी प्रोफाइल में अपना स्थान (Location) अपडेट करें ताकि हम आपके लिए सलाह दे सकें।'
+        })
+
+    if not CROP_PREDICTOR_MODEL:
+         return render(request, 'crop_advisory.html', {'error': 'फसल सलाहकार मॉडल लोड नहीं हो सका।'})
+
+    # 1. Get Real-time Weather Data for Model Input
+    current_weather, weather_error = get_current_weather_data(location)
+    if weather_error or not current_weather:
+         return render(request, 'crop_advisory.html', {'error': f'मौसम डेटा प्राप्त करने में विफलता: {weather_error}.'})
+
+    # 2. Get Soil Data (Mocked/Estimated NPK, pH, Rainfall)
+    soil_data = get_soil_data_by_location(location)
+    
+    # 3. Combine Real-time and Estimated Data for the Model Input
+    model_input = {
+        'N': soil_data['N'],
+        'P': soil_data['P'],
+        'K': soil_data['K'],
+        'temperature': current_weather['temperature'],
+        'humidity': current_weather['humidity'],
+        'ph': soil_data['ph'],
+        'rainfall': soil_data['rainfall']
+    }
+
+    # 4. Predict MULTIPLE Suitable Crops
+    suitable_crops = predict_suitable_crops(model_input)
+    
+    if not suitable_crops:
+        return render(request, 'crop_advisory.html', {'error': 'इस मिट्टी और मौसम डेटा के लिए कोई उपयुक्त फसल नहीं मिली।'})
+        
+    crops_list_str = ", ".join(suitable_crops)
+
+    # 5. Use Gemini to create the Year-Round Planting Calendar
+    gemini_prompt = f"""
+    आप एक विशेषज्ञ भारतीय कृषि वैज्ञानिक हैं।
+    आपके पास एक मॉडल से प्राप्त {location} क्षेत्र के लिए {len(suitable_crops)} सबसे उपयुक्त फसलों की सूची है: {crops_list_str}
+    
+    इस सूची का उपयोग करते हुए, एक संवादात्मक, हिंदी में, साल भर की बुवाई की योजना (Year-Round Planting Calendar) बनाएं।
+    
+    तालिका या जटिल संरचना का उपयोग न करें। प्रत्येक फसल के लिए निम्नलिखित जानकारी को एक छोटे पैराग्राफ में दें:
+    1.  फसल का नाम।
+    2.  बुवाई/रोपण के लिए सबसे अच्छा महीना या मौसम (जैसे "खरीफ की शुरुआत में").
+    3.  मुख्य देखभाल टिप या उपयुक्त मिट्टी का प्रकार।
+    """
+    
+    advisory_text = "क्षमा करें, सलाह देने वाला AI इस समय अनुपलब्ध है।"
+    if POLICY_MODEL:
+        try:
+            response = POLICY_MODEL.generate_content(gemini_prompt)
+            advisory_text = response.text.strip()
+        except Exception as e:
+            print(f"Gemini Advisory Error: {e}")
+
+    # 6. Return the final render
+    return render(request, 'crop_advisory.html', {
+        'location': location,
+        'suitable_crops': suitable_crops, # Pass the list of crops
+        'soil_data': model_input, 
+        'advisory': advisory_text
+    })
 
 @login_required
 def Weather(request):

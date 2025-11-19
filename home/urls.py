@@ -11,6 +11,7 @@ urlpatterns = [
     
     path('Weather', views.Weather, name='Weather'),
     path('Fertilizer',views.Fertilizer,name= 'Fertilizer'),
+    path('CropAdvisory', views.CropAdvisory, name='CropAdvisory'),
     
 
     
