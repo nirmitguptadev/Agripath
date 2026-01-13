@@ -189,11 +189,11 @@
                 {% if request.user.profile.name %}
                     {{ request.user.profile.name }}
                 {% else %}
-                    {{ request.user.username }} <!-- Fallback to mobile number -->
+                    {{ request.user.username }} 
                 {% endif %}
              </strong>
               </div>
-                    <!-- [MODIFIED] This button now logs the user out -->
+                    
                     <a href="{% url 'logout' %}" class="back-button">Logout 🚪</a>
                 </div>
         </div>
@@ -210,9 +210,9 @@
                 </button>
                 <div id="status">Status: तैयार (Ready)</div>
 
-                <!-- [MODIFIED] This is the new, empty container for our dynamic chat log -->
+                
                 <div id="chatArea" class="chat-area">
-                    <!-- Chat messages will be dynamically added here by JavaScript -->
+                    
                 </div>
             </div>
         </main>
@@ -223,7 +223,7 @@
         //  COMPLETE JAVASCRIPT FOR PERSISTENT CHAT LOG FUNCTIONALITY
         // ==============================================================================
 
-        // [NEW] Safely retrieve initial history from the hidden script element
+        
         const historyScriptElement = document.getElementById('initial-history-data');
         const initialHistory = historyScriptElement ? JSON.parse(historyScriptElement.textContent) : [];
 
@@ -280,7 +280,7 @@
             }
         }
 
-        // --- Speech Recognition Logic (Unchanged) ---
+        // --- Speech Recognition Logic ---
         if (SpeechRecognition) {
             recognition = new SpeechRecognition();
             recognition.continuous = false;
@@ -306,7 +306,7 @@
             startButton.disabled = true;
         }
 
-        // --- Text To Speech Logic (Unchanged) ---
+        // --- Text To Speech Logic ---
         function speak(textToSpeak) {
             if (synth.speaking) { synth.cancel(); }
             const lastAiMessage = chatArea.querySelector('.ai-message:last-child');
@@ -331,7 +331,7 @@
             synth.speak(utterThis);
         }
         
-        // --- Backend Communication (Unchanged) ---
+        // --- Backend Communication ---
         async function sendTextToBackend(text) {
             statusDiv.textContent = 'Status: प्रसंस्करण (Processing)...';
             try {
@@ -368,7 +368,7 @@
         }
 
         /**
-         * [NEW] Function to load history from the context variable
+         *Function to load history from the context variable
          */
         function loadInitialHistory() {
             if (initialHistory && initialHistory.length > 0) {
@@ -386,7 +386,7 @@
             }
         }
 
-        // --- UI State Management (Unchanged) ---
+        // --- UI State Management ---
         function resetUIState() {
             startButton.classList.remove('listening');
             startButton.disabled = false;
@@ -395,7 +395,7 @@
             if (talkingMessage) talkingMessage.classList.remove('talking');
         }
 
-        // --- Event Listeners (Unchanged) ---
+        // --- Event Listeners  ---
         startButton.addEventListener('click', () => {
             if (synth.speaking) { synth.cancel(); }
             if (recognition) { recognition.start(); }
@@ -404,7 +404,7 @@
         newChatButton.addEventListener('click', startNewChat);
 
         document.addEventListener('DOMContentLoaded', () => {
-            loadInitialHistory(); // <-- THIS LOADS THE PERSISTENT CHAT
+            loadInitialHistory(); 
             
             // Sidebar Logic
             const sidebar = document.getElementById('sidebar');

@@ -144,13 +144,13 @@
             <div class="card-container">
                 <h2 class="section-title">वर्तमान मौसम (Current Weather)</h2>
                 <div class="current-temp-block">
-                    <!-- Corrected icon URL -->
+                    
                     <img src="http://openweathermap.org/img/wn/{{ current_data.icon }}@2x.png" alt="{{ current_data.description }}">
                     <div class="current-temp-value">{{ current_data.temperature|floatformat:0 }}°C</div>
                 </div>
                 <div class="current-summary">{{ current_data.description|capfirst }}</div>
 
-                <!-- Additional Info Grid (Displaying all available data) -->
+                
                 <div class="info-grid">
                     <div class="info-item">
                         <div class="info-label">नमी (Humidity)</div>
@@ -177,7 +177,7 @@
                 </div>
             </div>
             
-            <!-- [REVERTED] Forecast Grid -->
+            
             <div class="card-container">
                 <h2 class="section-title">अगले 5 दिनों का पूर्वानुमान (5-Day Forecast)</h2>
                 <div class="forecast-grid">

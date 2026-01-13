@@ -4,18 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About AgriPath - Green Gradient</title>
-    <!-- Link to Google Font -->
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
 
-    <!-- Link to Swiper's CSS -->
+    
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
 
-    <!-- Link to your MAIN CSS file (shared theme) -->
+    
     <link rel="stylesheet" href="/static/style.css">
 
-    <!-- Add specific styles for About page if needed, or embed here -->
+    
     <style>
         /* Add specific overrides or new styles for the About page here */
         .carousel-container {
@@ -154,7 +154,7 @@
 </head>
 <body>
 
-    <div class="container about-page-container"> <!-- Add specific class if needed -->
+    <div class="container about-page-container"> 
 
         <!-- Carousel Section -->
         <div class="carousel-container">
@@ -167,12 +167,12 @@
                     <div class="swiper-slide"><img src="/static/carousel-image-2.jpg" alt="Agriculture Technology"></div>
                     <div class="swiper-slide"><img src="/static/carousel-image-3.jpg" alt="Government Policy Document Concept"></div>
                     <div class="swiper-slide"><img src="/static/carousel-image-4.jpg" alt="Healthy Crops"></div>
-                    <!-- Add more slides as needed -->
+                    
                 </div>
-                <!-- If we need pagination -->
+                
                 <div class="swiper-pagination"></div>
 
-                <!-- If we need navigation buttons -->
+                
                 <div class="swiper-button-prev"></div>
                 <div class="swiper-button-next"></div>
             </div>
@@ -197,7 +197,7 @@
             </p>
         </div>
 
-        <!-- Optional Back Button -->
+        
          <a href="/" class="back-button">Back to Home</a>
 
     </div> <!-- /container -->
@@ -211,28 +211,28 @@
             // Optional parameters
             loop: true, // Enable continuous loop mode
             autoplay: {
-                delay: 4000, // Delay between transitions (in ms)
-                disableOnInteraction: false, // Autoplay will not be disabled after user interactions
-                pauseOnMouseEnter: true, // Pause autoplay on mouse hover
+                delay: 4000, 
+                disableOnInteraction: false, 
+                pauseOnMouseEnter: true, 
             },
-            effect: 'fade', // Add fade effect (optional)
+            effect: 'fade', // Add fade effect 
              fadeEffect: {
                  crossFade: true
              },
 
-            // If we need pagination
+            
             pagination: {
                 el: '.swiper-pagination',
                 clickable: true, // Allow clicking on pagination bullets
             },
 
-            // Navigation arrows
+           
             navigation: {
                 nextEl: '.swiper-button-next',
                 prevEl: '.swiper-button-prev',
             },
 
-            // Optional: Add keyboard navigation
+            
             keyboard: {
                 enabled: true,
                 onlyInViewport: false,

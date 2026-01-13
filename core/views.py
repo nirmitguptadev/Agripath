@@ -1,6 +1,6 @@
 import os
 import json
-import re # <-- ADD THIS IMPORT for the post-processing step
+import re 
 import requests
 import google.generativeai as genai
 from django.conf import settings
@@ -22,7 +22,7 @@ except (AttributeError, Exception) as e:
     GEMINI_API_KEY = None
     OPENWEATHER_API_KEY = None
 
-# --- [MODIFIED] Centralized Gemini Response Function with Post-Processing ---
+# --- Centralized Gemini Response Function with Post-Processing ---
 def generate_gemini_response(prompt_content):
     if not MODEL:
         print("Attempted to call Gemini, but the model is not configured.")
@@ -30,8 +30,8 @@ def generate_gemini_response(prompt_content):
     try:
         response = MODEL.generate_content(prompt_content)
         
-        # [NEW] Post-processing step to guarantee no special characters
-        # This will remove common markdown characters like *, #, -, etc.
+        # Post-processing step to guarantee no special characters
+        
         raw_text = response.text
         cleaned_text = re.sub(r'[!@#$*_-]', '', raw_text)
         
@@ -41,9 +41,9 @@ def generate_gemini_response(prompt_content):
         print(f"GEMINI API ERROR: {e}")
         return "क्षमा करें, AI से कनेक्ट करते समय एक त्रुटि हुई।"
 
-# --- Weather Helper Function (no changes) ---
+# --- Weather Helper Function  ---
 def get_weather_data(city_name):
-    # ... (no changes in this function)
+    
     if not OPENWEATHER_API_KEY: return None, "Weather API key not configured."
     base_url = "http://api.openweathermap.org/data/2.5/weather"
     params = {'q': city_name, 'appid': OPENWEATHER_API_KEY, 'units': 'metric', 'lang': 'hi'}
@@ -58,10 +58,10 @@ def get_weather_data(city_name):
         return None, "Could not connect to the weather service."
 
 # ==============================================================================
-#  [MODIFIED] HANDLER FUNCTIONS - With more natural persona and instructions
+#  HANDLER FUNCTIONS - With more natural persona and instructions
 # ==============================================================================
 
-# This is our new, more natural persona prompt
+
 PERSONA_PROMPT = {
     'role': 'user', 
     'parts': [
@@ -132,7 +132,7 @@ def assistant_page(request):
 
 def get_greeting(request):
     fallback_greeting = "नमस्ते! मैं आपकी मदद के लिए तैयार हूँ।"
-    # [MODIFIED] Updated prompt for a more natural greeting
+    
     greeting_prompt = "आप AgriPath नाम के एक AI कृषि सहायक हैं। एक किसान के लिए एक छोटा, स्वाभाविक और मैत्रीपूर्ण नमस्ते हिंदी में उत्पन्न करें। केवल एक वाक्य।"
     greeting_text = generate_gemini_response(greeting_prompt)
     if "क्षमा करें" in greeting_text:
@@ -153,25 +153,25 @@ def process_voice(request):
             return JsonResponse({'error': 'No text provided'}, status=400)
 
         # 1. Get chat history from the session, ensure it is a list
-        # This is the most critical line. Use a consistent key and default.
+        
         history = request.session.get('chat_history', [])
 
         # 2. Add the user's new message to the history
-        # Use the correct Gemini format for the user's latest message
+        
         history.append({'role': 'user', 'parts': [user_prompt]})
 
-        # --- Step 1: Classification (uses only the latest prompt) ---
+        # --- Step 1: Classification  ---
         classifier_prompt = f"""User query: "{user_prompt}". Classify this into: 'weather', 'crop_recommendation', 'government_scheme', 'general_conversation'. Respond only with the category name."""
         category = generate_gemini_response(classifier_prompt).strip().lower()
 
         # 3. Create a **copy** of the history for the AI handlers to use.
-        # This ensures the classification prompt doesn't interfere with the main chat history.
+        
         conversation_context = list(history)
         
         # --- Step 2: Routing ---
         final_response_text = ""
         if 'weather' in category:
-            # Pass the user's specific text and the full context
+            
             final_response_text = handle_weather_query(user_prompt, conversation_context)
         elif 'crop' in category:
             final_response_text = handle_crop_recommendation(user_prompt, conversation_context)
@@ -181,7 +181,7 @@ def process_voice(request):
             final_response_text = handle_general_conversation(user_prompt, conversation_context)
 
         # 4. Add the AI's response to the history list
-        # Use the correct Gemini format for the model's response
+        
         history.append({'role': 'model', 'parts': [final_response_text]})
 
         # 5. Save the updated history back to the session

@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from core.crop_model import predict_suitable_crops, get_soil_data_by_location, CROP_PREDICTOR_MODEL
 
-# --- Configure GenAI for this app ---
+# --- Configure GenAI  ---
 try:
     genai.configure(api_key=settings.GEMINI_API_KEY)
     # Using flash model for speed
@@ -34,9 +34,9 @@ def get_current_weather_data(city_name):
             "temperature": data["main"]["temp"],
             "description": data["weather"][0]["description"], 
             "humidity": data["main"]["humidity"],
-            "pressure": data["main"]["pressure"], # <-- ADDED
-            "wind_speed": data["wind"]["speed"], # <-- ADDED
-            "visibility": data.get("visibility") # <-- ADDED (in meters)
+            "pressure": data["main"]["pressure"], 
+            "wind_speed": data["wind"]["speed"], 
+            "visibility": data.get("visibility") 
         }, None
     except requests.exceptions.RequestException as e:
         print(f"🔴 Weather API request error: {e}")
@@ -46,7 +46,7 @@ def get_current_weather_data(city_name):
 def get_alerts_and_forecast(lat, lon):
     if not OPENWEATHER_API_KEY: return {'forecast': [], 'alerts': []}, "API key missing."
     
-    # [FIXED] Use the Free Tier 5-Day / 3-Hour Forecast API endpoint
+    # Use the Free Tier 5-Day / 3-Hour Forecast API endpoint
     base_url = "http://api.openweathermap.org/data/2.5/forecast"
     params = {
         'lat': lat, 
@@ -85,7 +85,7 @@ def get_alerts_and_forecast(lat, lon):
             if len(forecast) >= 5:
                 break
             
-        # [ALERTS REMOVED] The free API does not include severe weather alerts
+        # [ALERTS REMOVED]
         alerts = [] 
 
         return {'forecast': forecast, 'alerts': alerts}, None
@@ -160,7 +160,7 @@ def CropAdvisory(request):
     # 6. Return the final render
     return render(request, 'crop_advisory.html', {
         'location': location,
-        'suitable_crops': suitable_crops, # Pass the list of crops
+        'suitable_crops': suitable_crops, 
         'soil_data': model_input, 
         'advisory': advisory_text
     })
@@ -222,7 +222,7 @@ def Policies(request):
             'error': 'AI सेवा अनुपलब्ध है। कृपया थोड़ी देर बाद प्रयास करें।'
         })
 
-    # [MODIFIED] The prompt now asks for a government link.
+    # The prompt asks for a government link.
     prompt = f"""
     Act as an expert on Indian government agricultural schemes.
     List the top 4 most beneficial, currently active government schemes for farmers in: {location}, India.
