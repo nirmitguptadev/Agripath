@@ -168,7 +168,16 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Database Configuration
-if env('DATABASE_URL', default=None) and not os.environ.get('DISABLE_COLLECTSTATIC'):
+# Use SQLite during build phase to avoid connection issues
+if os.environ.get('RENDER') and not os.environ.get('DATABASE_URL'):
+    # Build phase on Render
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+elif env('DATABASE_URL', default=None):
     DATABASES = {
         'default': dj_database_url.config(default=env('DATABASE_URL'))
     }
