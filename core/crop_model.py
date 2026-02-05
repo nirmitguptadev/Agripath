@@ -1,4 +1,3 @@
-# core/crop_model.py
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 from sklearn.ensemble import RandomForestClassifier # More robust than Decision Tree
