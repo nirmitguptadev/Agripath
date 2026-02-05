@@ -26,8 +26,10 @@ grpcio-status==1.71.2
 gunicorn==23.0.0
 httplib2==0.22.0
 idna==3.10
+joblib==1.4.2
 multidict==6.7.0
 packaging==25.0
+pandas==2.2.3
 phonenumbers==9.0.16
 pillow==11.3.0
 propcache==0.4.1
@@ -43,6 +45,7 @@ pyparsing==3.2.3
 python-dotenv==1.2.1
 requests==2.32.3
 rsa==4.9.1
+scikit-learn==1.5.2
 sqlparse==0.5.3
 tqdm==4.67.1
 twilio==9.8.3
@@ -53,4 +56,3 @@ uritemplate==4.2.0
 urllib3==2.4.0
 whitenoise==6.6.0
 yarl==1.22.0
-
