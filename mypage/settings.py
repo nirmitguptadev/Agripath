@@ -168,7 +168,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Database Configuration
-if env('DATABASE_URL', default=None):
+if env('DATABASE_URL', default=None) and not os.environ.get('DISABLE_COLLECTSTATIC'):
     DATABASES = {
         'default': dj_database_url.config(default=env('DATABASE_URL'))
     }
