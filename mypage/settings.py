@@ -168,20 +168,17 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Database Configuration
-# Use SQLite during build phase to avoid connection issues
-if os.environ.get('RENDER') and not os.environ.get('DATABASE_URL'):
-    # Build phase on Render
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+# Force SQLite during build to avoid PostgreSQL connection issues
+try:
+    # Test if we can parse DATABASE_URL without connecting
+    database_url = env('DATABASE_URL', default=None)
+    if database_url and 'migrate' not in os.environ.get('_', ''):
+        DATABASES = {
+            'default': dj_database_url.config(default=database_url)
         }
-    }
-elif env('DATABASE_URL', default=None):
-    DATABASES = {
-        'default': dj_database_url.config(default=env('DATABASE_URL'))
-    }
-else:
+    else:
+        raise Exception("Using SQLite for build/migrate")
+except:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
