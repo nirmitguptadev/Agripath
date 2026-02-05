@@ -96,6 +96,13 @@ def get_alerts_and_forecast(lat, lon):
     
 @login_required
 def CropAdvisory(request):
+    # Ensure model is loaded
+    if not CROP_PREDICTOR_MODEL:
+        try:
+            load_and_train_model()
+        except Exception as e:
+            return render(request, 'crop_advisory.html', {'error': 'फसल सलाहकार मॉडल लोड नहीं हो सका।'})
+    
     try:
         location = request.user.profile.location
     except:

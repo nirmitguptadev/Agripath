@@ -98,4 +98,10 @@ def predict_suitable_crops(input_data):
         return ["Prediction Failed"]
 
 # Execute the model loading when the module is imported
-load_and_train_model()
+try:
+    load_and_train_model()
+except Exception as e:
+    print(f"Warning: Could not load ML model during build: {e}")
+    CROP_PREDICTOR_MODEL = None
+    CROP_LABEL_ENCODER = None
+    ALL_CROPS = []
