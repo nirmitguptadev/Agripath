@@ -1,161 +1,48 @@
-<!DOCTYPE html>
-<html lang="hi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>सरकारी योजनाएं - AgriPath</title>
-    {% load static %}
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
-    <style>
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --grad-green-1: #004d40; --grad-green-2: #00796b; --grad-green-3: #4caf50;
-            --text-light: #f8fafc; --text-dark: #212121;
-        }
-        body {
-            font-family: 'Poppins', sans-serif;
-            min-height: 100vh;
-            color: var(--text-light);
-            background: linear-gradient(135deg, var(--grad-green-1) 0%, var(--grad-green-2) 50%, var(--grad-green-3) 100%);
-            background-size: cover;
-            background-attachment: fixed;
-            padding: 2rem;
-        }
-        .main-container {
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        .header-area {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            padding-bottom: 1rem;
-        }
-        .back-button {
-            color: var(--text-light);
-            background-color: rgba(255, 255, 255, 0.1);
-            padding: 0.6rem 1.2rem;
-            border-radius: 20px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.3s ease;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-        }
-        .back-button:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-        .header-title h1 {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 2.2rem;
-            margin: 0;
-        }
-        .header-title p {
-            font-size: 1rem;
-            opacity: 0.8;
-        }
-        .policy-grid {
-            display: grid;
-            grid-template-columns: 1fr; /* Single column layout */
-            gap: 2rem;
-        }
-        .policy-card {
-            background-color: #ffffff; /* White background */
-            color: var(--text-dark); /* Black text */
-            border-radius: 12px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
-        }
-        .policy-name {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 1.8rem; /* Big text */
-            margin-bottom: 1.5rem;
-            color: var(--grad-green-1);
-            border-bottom: 2px solid #eee;
-            padding-bottom: 1rem;
-        }
-        .policy-section { margin-bottom: 1.5rem; }
-        .policy-label {
-            font-weight: 700;
-            font-size: 1rem;
-            color: #666;
-            display: block;
-            margin-bottom: 0.5rem;
-        }
-        .policy-text {
-            font-size: 1.1rem; /* Big text */
-            line-height: 1.7;
-        }
-        .info-button {
-            background-color: var(--grad-green-3);
-            color: white;
-            padding: 0.8rem 1.5rem;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 600;
-            text-align: center;
-            margin-top: auto; /* Pushes button to the bottom */
-            transition: background-color 0.3s;
-        }
-        .info-button:hover {
-            background-color: var(--grad-green-2);
-        }
-        .message-box {
-            text-align: center;
-            padding: 2rem;
-            background-color: rgba(255, 255, 255, 0.9);
-            color: var(--text-dark);
-            border-radius: 12px;
-            font-size: 1.1rem;
-        }
-    </style>
-</head>
-<body>
-    <div class="main-container">
-        <div class="header-area">
-            <div class="header-title">
-                <h1>सरकारी योजनाएं</h1>
-                {% if location %}
-                    <p>आपके क्षेत्र, {{ location }} के लिए</p>
-                {% endif %}
-            </div>
-            <a href="{% url 'ai' %}" class="back-button">← वापस AI पर जाएं</a>
-        </div>
+{% extends 'base.html' %}
+{% load static %}
 
-        {% if error %}
-            <div class="message-box">
-                <p>⚠️ {{ error }}</p>
-            </div>
-        {% elif policies %}
-            <div class="policy-grid">
-                {% for policy in policies %}
-                    <div class="policy-card">
-                        <h2 class="policy-name">{{ policy.name }}</h2>
-                        <div class="policy-section">
-                            <span class="policy-label">विवरण (Description)</span>
-                            <p class="policy-text">{{ policy.description }}</p>
-                        </div>
-                        <div class="policy-section">
-                            <span class="policy-label">लाभ (Benefits)</span>
-                            <p class="policy-text">{{ policy.benefits }}</p>
-                        </div>
-                        {% if policy.link and policy.link != "N/A" %}
-                            <a href="{{ policy.link }}" target="_blank" class="info-button">
-                                अधिक जानकारी (More Info)
-                            </a>
-                        {% endif %}
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <div class="message-box">
-                <p>🔄 योजनाओं को लोड किया जा रहा है... कृपया प्रतीक्षा करें।</p>
-            </div>
+{% block title %}AgriPath - Government Policies{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h1 class="main-title">Government Schemes</h1>
+        {% if location %}
+        <p style="color: var(--light-green);">For your location: {{ location }}</p>
         {% endif %}
     </div>
-</body>
-</html>
+
+    {% if error %}
+    <div class="message-box">
+        <p>⚠️ {{ error }}</p>
+    </div>
+    {% elif policies %}
+    <div class="policy-grid">
+        {% for policy in policies %}
+        <div class="policy-card">
+            <h2 class="policy-name">{{ policy.name }}</h2>
+            <div class="policy-section">
+                <span class="policy-label">Description</span>
+                <p class="policy-text">{{ policy.description }}</p>
+            </div>
+            <div class="policy-section">
+                <span class="policy-label">Benefits</span>
+                <p class="policy-text">{{ policy.benefits }}</p>
+            </div>
+            {% if policy.link and policy.link != "N/A" %}
+            <a href="{{ policy.link }}" target="_blank" class="info-button">
+                More Info
+            </a>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="message-box">
+        <p>🔄 Loading policies... Please wait.</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

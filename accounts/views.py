@@ -96,7 +96,7 @@ def setup_profile(request):
         form = ProfileEditForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
-            return redirect('index') 
+            return redirect('ai') 
     else:
         # Pass the full form for the user to complete all details
         form = ProfileEditForm(instance=profile)

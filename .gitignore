@@ -1,5 +1,6 @@
 # Ignore environment variables file
 .env
+dvenv
 
 # Other common Python/Django ignores
 __pycache__/

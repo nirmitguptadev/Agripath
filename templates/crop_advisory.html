@@ -1,159 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
 
+{% block title %}AgriPath - Crop Advisory{% endblock %}
 
-<!DOCTYPE html>
-<html lang="hi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>फसल सलाहकार - AgriPath</title>
-    {% load static %}
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
-    
-    <style>
-        /* --- Styles are copied from your weather/policies page for consistency --- */
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --grad-green-1: #004d40; --grad-green-2: #00796b; --grad-green-3: #4caf50;
-            --grad-green-accent: #a5d6a7; --text-light: #f8fafc; --text-dark: #212121;
-            --card-bg: rgba(255, 255, 255, 0.1); --card-border: rgba(200, 230, 201, 0.3);
-            --shadow-color: rgba(0, 0, 0, 0.2); --alert-red: #c94c4c;
-        }
-        body {
-            font-family: 'Poppins', sans-serif; min-height: 100vh; color: var(--text-light);
-            background: linear-gradient(135deg, var(--grad-green-1) 0%, var(--grad-green-2) 50%, var(--grad-green-3) 100%);
-            background-size: cover; background-attachment: fixed; padding: 2rem;
-        }
-        .page-simple-content { max-width: 900px; margin: 0 auto; }
-        .simple-header-area {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 2.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            padding-bottom: 1rem;
-        }
-        .simple-back-button {
-            color: var(--text-light); background-color: var(--card-bg); padding: 0.6rem 1.2rem;
-            border-radius: 20px; text-decoration: none; font-weight: 600; font-size: 0.9rem;
-            transition: all 0.3s ease; border: 1px solid var(--card-border); backdrop-filter: blur(8px);
-        }
-        .simple-back-button:hover { background-color: rgba(255, 255, 255, 0.2); }
-        .simple-header-title h1 {
-            font-family: 'Montserrat', sans-serif; font-size: 2.2rem; margin: 0;
-        }
-        .simple-header-title p { font-size: 1rem; opacity: 0.8; }
-        .message-box {
-            text-align: center; padding: 2rem; background-color: var(--card-bg);
-            color: var(--text-light); border-radius: 12px; font-size: 1.1rem;
-            border: 1px solid var(--card-border); backdrop-filter: blur(8px);
-        }
-        .advisory-card {
-            background-color: var(--card-bg); color: var(--text-light);
-            border-radius: 18px; padding: 2.5rem; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-            border: 1px solid var(--card-border); backdrop-filter: blur(8px);
-            margin-bottom: 2rem;
-        }
-        .suitable-crops-list {
-            margin-top: 1rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 1rem;
-            text-align: center;
-        }
-        .crop-badge {
-            display: inline-block; background-color: rgba(76, 175, 80, 0.3);
-            padding: 5px 10px; border-radius: 15px; margin: 5px; font-weight: 600;
-        }
-        .soil-data-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 15px; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        .soil-item {
-            background-color: rgba(255, 255, 255, 0.1); padding: 1rem; border-radius: 8px;
-            border: 1px solid var(--card-border); text-align: center;
-        }
-        .soil-label { font-size: 0.8rem; color: var(--grad-green-accent); margin-bottom: 0.3rem; }
-        .soil-value { font-size: 1.3rem; font-weight: 600; }
-        .advisory-text {
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: left;
-            line-height: 1.8;
-            font-size: 1.1rem;
-        }
-    </style>
-</head>
-<body>
-    <div class="page-simple-content">
-        <div class="simple-header-area">
-            <div class="simple-header-title">
-                <h1>फसल सलाहकार</h1>
-                {% if location %}
-                    <p>📍 {{ location }} के लिए</p>
-                {% endif %}
-            </div>
-            <a href="{% url 'ai' %}" class="simple-back-button">← वापस AI पर जाएं</a>
-        </div>
+{% block content %}
+<div class="container" style="padding-top: 2rem; padding-bottom: 2rem; max-width: 900px;">
 
-        {% if error %}
-            <div class="message-box">
-                ⚠️ {{ error }} <br><br>
-                <a href="{% url 'view_profile' %}" style="color: var(--grad-green-accent);">प्रोफाइल अपडेट करें (Update Profile)</a>
-            </div>
-        {% elif suitable_crops %}
-            
-            <div class="advisory-card">
-                <div style="text-align: center;">
-                    <p style="font-size: 1.5rem; color: var(--grad-green-accent);">आपके क्षेत्र के लिए सबसे उपयुक्त फसलें:</p>
-                    
-                    <!-- Display the list of suitable crops -->
-                    <div class="suitable-crops-list">
-                        {% for crop in suitable_crops %}
-                            <span class="crop-badge">{{ crop }}</span>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <!-- Soil Data Used -->
-                <h3 style="text-align: left; margin-top: 2rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 0.5rem;">विश्लेषण के लिए इस्तेमाल किया गया डेटा:</h3>
-                <div class="soil-data-grid">
-                    <div class="soil-item">
-                        <div class="soil-label">नाइट्रोजन (N)</div>
-                        <div class="soil-value">{{ soil_data.N }}</div>
-                    </div>
-                    <div class="soil-item">
-                        <div class="soil-label">फास्फोरस (P)</div>
-                        <div class="soil-value">{{ soil_data.P }}</div>
-                    </div>
-                    <div class="soil-item">
-                        <div class="soil-label">पोटैशियम (K)</div>
-                        <div class="soil-value">{{ soil_data.K }}</div>
-                    </div>
-                    <div class="soil-item">
-                        <div class="soil-label">pH मान</div>
-                        <div class="soil-value">{{ soil_data.ph|floatformat:1 }}</div>
-                    </div>
-                    <div class="soil-item">
-                        <div class="soil-label">तापमान (°C)</div>
-                        <div class="soil-value">{{ soil_data.temperature|floatformat:1 }}</div>
-                    </div>
-                    <div class="soil-item">
-                        <div class="soil-label">नमी (%)</div>
-                        <div class="soil-value">{{ soil_data.humidity|floatformat:0 }}</div>
-                    </div>
-                    <div class="soil-item">
-                        <div class="soil-label">वर्षा (mm)</div>
-                        <div class="soil-value">{{ soil_data.rainfall }}</div>
-                    </div>
-                </div>
-
-                <!-- Gemini Advisory -->
-                <h3 style="text-align: left; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid rgba(255, 255, 255, 0.1);">साल भर की बुवाई योजना (Year-Round Planting Plan):</h3>
-                <div class="advisory-text">
-                    {{ advisory|linebreaks }}
-                </div>
-            </div>
-
-        {% else %}
-            <div class="message-box">
-                🔄 फसल सलाहकार को लोड किया जा रहा है... कृपया प्रतीक्षा करें।
-            </div>
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 class="main-title">Crop Advisory</h1>
+        {% if location %}
+        <p style="color: var(--text-secondary);">📍 For {{ location }}</p>
         {% endif %}
     </div>
-</body>
-</html>
+
+    {% if error %}
+    <div class="message-box">
+        ⚠️ {{ error }} <br><br>
+        <a href="{% url 'view_profile' %}" style="color: var(--accent-green);">Update Profile</a>
+    </div>
+    {% elif suitable_crops %}
+
+    <div class="advisory-card">
+        <div style="text-align: center;">
+            <p style="font-size: 1.3rem; color: var(--secondary-green); font-weight: 600; margin-bottom: 1rem;">Best
+                Crops for Your Area:</p>
+
+            <!-- Display the list of suitable crops -->
+            <div class="suitable-crops-list">
+                {% for crop in suitable_crops %}
+                <span class="crop-badge">{{ crop }}</span>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Soil Data Used -->
+        <h3
+            style="text-align: left; margin-top: 2rem; border-bottom: 1px solid var(--card-border); padding-bottom: 0.5rem; color: var(--text-primary); font-size: 1.2rem;">
+            Soil Analysis Data:</h3>
+        <div class="soil-data-grid">
+            <div class="soil-item">
+                <div class="soil-label">Nitrogen (N)</div>
+                <div class="soil-value">{{ soil_data.N }}</div>
+            </div>
+            <div class="soil-item">
+                <div class="soil-label">Phosphorus (P)</div>
+                <div class="soil-value">{{ soil_data.P }}</div>
+            </div>
+            <div class="soil-item">
+                <div class="soil-label">Potassium (K)</div>
+                <div class="soil-value">{{ soil_data.K }}</div>
+            </div>
+            <div class="soil-item">
+                <div class="soil-label">pH Level</div>
+                <div class="soil-value">{{ soil_data.ph|floatformat:1 }}</div>
+            </div>
+            <div class="soil-item">
+                <div class="soil-label">Temp (°C)</div>
+                <div class="soil-value">{{ soil_data.temperature|floatformat:1 }}</div>
+            </div>
+            <div class="soil-item">
+                <div class="soil-label">Humidity (%)</div>
+                <div class="soil-value">{{ soil_data.humidity|floatformat:0 }}</div>
+            </div>
+            <div class="soil-item">
+                <div class="soil-label">Rainfall (mm)</div>
+                <div class="soil-value">{{ soil_data.rainfall }}</div>
+            </div>
+        </div>
+
+        <!-- Gemini Advisory -->
+        <h3
+            style="text-align: left; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--card-border); color: var(--text-primary); font-size: 1.2rem;">
+            Year-Round Planting Plan:</h3>
+        <div class="advisory-text">
+            {{ advisory|safe }}
+        </div>
+    </div>
+
+    {% else %}
+    <div class="message-box">
+        🔄 Analyzing soil data... Please wait.
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

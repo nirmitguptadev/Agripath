@@ -1,214 +1,93 @@
-<!DOCTYPE html>
-<html lang="hi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>मौसम पूर्वानुमान - AgriPath</title>
-    {% load static %}
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&family=Montserrat:wght@700&display=swap" rel="stylesheet">
-    
-    <style>
-        /* ==================================================================== */
-        /* ------------------------ GLOBAL RESET & DARK THEME VARIABLES -------------------- */
-        /* ==================================================================== */
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            /* Original Dark Green Gradient Colors */
-            --grad-green-1: #004d40; --grad-green-2: #00796b; --grad-green-3: #4caf50;
-            --grad-green-accent: #a5d6a7; --text-light: #f8fafc; --text-dark: #212121;
-            --card-bg: rgba(255, 255, 255, 0.1); --card-border: rgba(200, 230, 201, 0.3);
-            --shadow-color: rgba(0, 0, 0, 0.2); --input-bg: rgba(0, 0, 0, 0.2);
-            --alert-red: #c94c4c;
-        }
+{% extends 'base.html' %}
+{% load static %}
 
-        /* --- Base Body Styling (Applies to ALL pages) --- */
-        body {
-            font-family: 'Poppins', sans-serif; min-height: 100vh; color: var(--text-light);
-            background: linear-gradient(135deg, var(--grad-green-1) 0%, var(--grad-green-2) 50%, var(--grad-green-3) 100%);
-            background-size: cover; background-attachment: fixed; padding: 2rem;
-        }
+{% block title %}AgriPath - Weather Forecast{% endblock %}
 
-        /* --- Global Centering & Page Container --- */
-        .page-simple-content { max-width: 900px; margin: 0 auto; }
+{% block content %}
+<div class="container" style="padding-top: 2rem; padding-bottom: 2rem; max-width: 900px;">
 
-        /* --- Page Header --- */
-        .simple-header-area {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 2.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            padding-bottom: 1rem;
-        }
-        .simple-back-button {
-            color: var(--text-light); background-color: var(--card-bg); padding: 0.6rem 1.2rem;
-            border-radius: 20px; text-decoration: none; font-weight: 600; font-size: 0.9rem;
-            transition: all 0.3s ease; border: 1px solid var(--card-border); backdrop-filter: blur(8px);
-        }
-        .simple-back-button:hover { background-color: rgba(255, 255, 255, 0.2); }
-        .simple-header-title h1 {
-            font-family: 'Montserrat', sans-serif; font-size: 2.2rem; margin: 0;
-        }
-        .simple-header-title p { font-size: 1rem; opacity: 0.8; }
-        .message-box {
-            text-align: center; padding: 2rem; background-color: var(--card-bg);
-            color: var(--text-light); border-radius: 12px; font-size: 1.1rem;
-            border: 1px solid var(--card-border); backdrop-filter: blur(8px);
-        }
-
-        /* ==================================================================== */
-        /* ------------------------ WEATHER SPECIFIC STYLES ------------------- */
-        /* ==================================================================== */
-        
-        .card-container {
-            background-color: var(--card-bg); color: var(--text-light);
-            border-radius: 18px; padding: 2.5rem; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
-            display: flex; flex-direction: column; align-items: center; margin-bottom: 2rem;
-            text-align: center; border: 1px solid var(--card-border); backdrop-filter: blur(8px);
-        }
-        .section-title {
-            font-size: 1.5rem; font-weight: 700; margin-bottom: 1rem; color: var(--grad-green-accent);
-            border-bottom: 1px solid var(--card-border); padding-bottom: 0.5rem;
-            width: 100%; text-align: left;
-        }
-        
-        /* --- Current Conditions --- */
-        .current-temp-block { display: flex; align-items: center; margin-bottom: 0.5rem; }
-        .current-temp-block img { width: 80px; height: 80px; margin-right: 15px; }
-        .current-temp-value {
-            font-size: 5rem; font-weight: 300; line-height: 1; color: var(--grad-green-accent);
-        }
-        .current-summary { font-size: 1.5rem; font-weight: 500; color: var(--text-light); margin-bottom: 1.5rem; }
-
-        /* --- Additional Info Grid --- */
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; }
-        .info-item {
-            background-color: rgba(255, 255, 255, 0.1); padding: 1rem; border-radius: 12px; 
-            text-align: left; border: 1px solid var(--card-border);
-        }
-        .info-label {
-            font-size: 0.85rem; color: var(--grad-green-accent); font-weight: 600; margin-bottom: 0.3rem;
-        }
-        .info-value { font-size: 1.5rem; font-weight: 600; color: var(--text-light); }
-
-        /* --- [REVERTED] Forecast Grid Styles --- */
-        .forecast-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-            gap: 1rem;
-            margin-top: 1.5rem;
-            width: 100%;
-        }
-        .forecast-day {
-            background-color: rgba(255, 255, 255, 0.1);
-            padding: 1rem 0.5rem;
-            border-radius: 8px;
-            border: 1px solid var(--card-border);
-            text-align: center;
-        }
-        .forecast-day img { width: 40px; height: 40px; margin-bottom: 0.5rem; }
-        .forecast-day .day-date { font-weight: 600; font-size: 0.9rem; color: var(--grad-green-accent); }
-        .forecast-day .temp-range { font-size: 1.1rem; font-weight: 700; margin: 0.5rem 0; }
-        .forecast-day .description-small { font-size: 0.85rem; color: var(--grad-green-accent); }
-        
-        /* --- Alert Styles --- */
-        .alert-box {
-            background-color: var(--alert-red); color: white; padding: 1.5rem;
-            border-radius: 8px; margin-top: 1.5rem; width: 100%;
-        }
-        .alert-title { font-size: 1.3rem; font-weight: 700; margin-bottom: 0.5rem; }
-        .alert-description { font-size: 1rem; line-height: 1.5; }
-
-        @media (max-width: 600px) {
-            .current-temp-value { font-size: 4rem; }
-            .current-temp-block img { width: 60px; height: 60px; }
-        }
-    </style>
-</head>
-<body>
-    <div class="page-simple-content">
-        <div class="simple-header-area">
-            <div class="simple-header-title">
-                <h1>मौसम पूर्वानुमान</h1>
-                {% if location %}
-                    <p>📍 {{ location }} के लिए</p>
-                {% endif %}
-            </div>
-            <a href="{% url 'ai' %}" class="simple-back-button">← वापस AI पर जाएं</a>
-        </div>
-
-        {% if error %}
-            <div class="message-box">
-                ⚠️ {{ error }} <br><br>
-                <a href="{% url 'view_profile' %}" style="color: var(--grad-green-accent);">प्रोफाइल अपडेट करें (Update Profile)</a>
-            </div>
-        {% elif current_data %}
-            
-            <div class="card-container">
-                <h2 class="section-title">वर्तमान मौसम (Current Weather)</h2>
-                <div class="current-temp-block">
-                    
-                    <img src="http://openweathermap.org/img/wn/{{ current_data.icon }}@2x.png" alt="{{ current_data.description }}">
-                    <div class="current-temp-value">{{ current_data.temperature|floatformat:0 }}°C</div>
-                </div>
-                <div class="current-summary">{{ current_data.description|capfirst }}</div>
-
-                
-                <div class="info-grid">
-                    <div class="info-item">
-                        <div class="info-label">नमी (Humidity)</div>
-                        <div class="info-value">{{ current_data.humidity }}%</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">हवा (Wind Speed)</div>
-                        <div class="info-value">{{ current_data.wind_speed|floatformat:1 }} m/s</div> 
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">दबाव (Pressure)</div>
-                        <div class="info-value">{{ current_data.pressure }} hPa</div>
-                    </div>
-                    <div class="info-item">
-                        <div class="info-label">दृश्यता (Visibility)</div>
-                        <div class="info-value">
-                            {% if current_data.visibility %}
-                                {{ current_data.visibility|divisibleby:1000 }} km
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            
-            <div class="card-container">
-                <h2 class="section-title">अगले 5 दिनों का पूर्वानुमान (5-Day Forecast)</h2>
-                <div class="forecast-grid">
-                    {% for day in forecast %}
-                        <div class="forecast-day">
-                            <div class="day-date">{{ day.date|date:"D" }}</div>
-                            <img src="http://openweathermap.org/img/wn/{{ day.icon }}.png" alt="{{ day.description }}">
-                            <div class="temp-range">
-                                {{ day.max_temp|floatformat:0 }}° / {{ day.min_temp|floatformat:0 }}°
-                            </div>
-                            <div class="description-small">{{ day.description|capfirst }}</div>
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- Alerts Box -->
-            {% if alerts %}
-                <div class="alert-box">
-                    <h2 class="alert-title">🚨 खराब मौसम की चेतावनी</h2>
-                    {% for alert in alerts %}
-                        <p class="alert-description">{{ alert.description }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-
-        {% else %}
-            <div class="message-box">
-                🔄 मौसम डेटा लोड किया जा रहा है... कृपया प्रतीक्षा करें।
-            </div>
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 class="main-title">Weather Forecast</h1>
+        {% if location %}
+        <p style="color: var(--light-green);">📍 For {{ location }}</p>
         {% endif %}
     </div>
-</body>
-</html>
+
+    {% if error %}
+    <div class="message-box">
+        ⚠️ {{ error }} <br><br>
+        <a href="{% url 'view_profile' %}" style="color: var(--accent-green);">Update Profile</a>
+    </div>
+    {% elif current_data %}
+
+    <!-- Current Weather -->
+    <div class="weather-card-container">
+        <h2 class="section-title">Current Weather</h2>
+        <div class="current-temp-block">
+            <img src="http://openweathermap.org/img/wn/{{ current_data.icon }}@2x.png"
+                alt="{{ current_data.description }}">
+            <div class="current-temp-value">{{ current_data.temperature|floatformat:0 }}°C</div>
+        </div>
+        <div class="current-summary">{{ current_data.description|capfirst }}</div>
+
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Humidity</div>
+                <div class="info-value">{{ current_data.humidity }}%</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Wind Speed</div>
+                <div class="info-value">{{ current_data.wind_speed|floatformat:1 }} m/s</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Pressure</div>
+                <div class="info-value">{{ current_data.pressure }} hPa</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Visibility</div>
+                <div class="info-value">
+                    {% if current_data.visibility %}
+                    {{ current_data.visibility|divisibleby:1000 }} km
+                    {% else %}
+                    N/A
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5-Day Forecast -->
+    <div class="weather-card-container">
+        <h2 class="section-title">5-Day Forecast</h2>
+        <div class="forecast-grid">
+            {% for day in forecast %}
+            <div class="forecast-day">
+                <div class="day-date">{{ day.date|date:"D" }}</div>
+                <img src="http://openweathermap.org/img/wn/{{ day.icon }}.png" alt="{{ day.description }}">
+                <div class="temp-range">
+                    {{ day.max_temp|floatformat:0 }}° / {{ day.min_temp|floatformat:0 }}°
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-secondary);">{{ day.description|capfirst }}</div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Alerts Box -->
+    {% if alerts %}
+    <div class="alert-box">
+        <h2 class="alert-title">🚨 Severe Weather Alert</h2>
+        {% for alert in alerts %}
+        <p>{{ alert.description }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="message-box">
+        🔄 Loading weather data... Please wait.
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

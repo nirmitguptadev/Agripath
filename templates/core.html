@@ -1,419 +1,229 @@
-<!DOCTYPE html>
-<html lang="hi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgriPath</title>
-    {% load static %}
+{% extends 'base.html' %}
+{% load static %}
 
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+{% block title %}AgriPath - AI Assistant{% endblock %}
 
-    <style>
-        /* --- Base Resets and Theme Variables (Unchanged) --- */
-        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --grad-green-1: #004d40; --grad-green-2: #00796b; --grad-green-3: #4caf50;
-            --grad-green-4: #81c784; --grad-green-accent: #a5d6a7; --glow-green: #66ff99;
-            --text-light: #f8fafc; --text-dark: #00332e; --card-bg: rgba(255, 255, 255, 0.1);
-            --card-border: rgba(200, 230, 201, 0.3); --shadow-color: rgba(0, 0, 0, 0.2);
-            --title-backdrop-bg: rgba(0, 51, 46, 0.3); --title-backdrop-border: rgba(76, 175, 80, 0.4);
-            --title-backdrop-shadow: rgba(0, 0, 0, 0.3);
-        }
+{% block content %}
+<div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
 
-        /* --- Body and Layout (Unchanged) --- */
-        body {
-            font-family: 'Poppins', sans-serif; height: 100vh; width: 100vw; color: var(--text-light);
-            background: linear-gradient(135deg, var(--grad-green-1) 0%, var(--grad-green-2) 50%, var(--grad-green-3) 100%);
-            background-size: cover; background-attachment: fixed; overflow: hidden;
-        }
-        .page-container { display: flex; height: 100%; width: 100%; }
-        .main-content {
-            flex-grow: 1; height: 100vh; display: flex; flex-direction: column;
-            align-items: center; padding: 2rem; overflow-y: auto;
-        }
+    <!-- Title removed as per request to use logo branding -->
 
-        /* --- Sidebar (Unchanged) --- */
-        .sidebar {
-            width: 260px; height: 100%; padding: 1.5rem 1rem; background-color: var(--card-bg);
-            border-right: 1px solid var(--card-border); backdrop-filter: blur(12px);
-            transition: width 0.3s ease, padding 0.3s ease, transform 0.3s ease;
-            display: flex; flex-direction: column; flex-shrink: 0;
-        }
-        .sidebar.collapsed { width: 0; padding: 1.5rem 0; overflow: hidden; }
-        .sidebar > * { white-space: nowrap; transition: opacity 0.2s ease; }
-        .sidebar.collapsed > * { opacity: 0; }
-        .sidebar-menu { list-style: none; flex-grow: 1; margin-top: 2rem; }
-        .sidebar-menu a {
-            color: var(--text-light); text-decoration: none; display: block; padding: 0.8rem 1.2rem;
-            border-radius: 8px; font-weight: 500; transition: background-color 0.2s ease;
-        }
-        .sidebar-menu a:hover { background-color: rgba(76, 175, 80, 0.15); }
-        .sidebar-footer { padding: 0 0.5rem; }
-        .sidebar-toggle-btn {
-            position: absolute; top: 1.5rem; left: 1.5rem; z-index: 100; background-color: var(--card-bg);
-            border: 1px solid var(--card-border); color: var(--text-light); width: 40px; height: 40px;
-            border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
-            backdrop-filter: blur(8px); transition: all 0.3s ease;
-        }
-        .sidebar-toggle-btn:hover { background-color: rgba(76, 175, 80, 0.2); }
-        .sidebar-toggle-btn svg { width: 20px; height: 20px; }
-        .back-button-container { margin-top: auto; }
-        .back-button {
-            color: var(--text-light); background-color: var(--card-bg); padding: 0.6rem 1.2rem;
-            border-radius: 20px; text-decoration: none; font-weight: 600; font-size: 0.9rem;
-            transition: all 0.3s ease; box-shadow: 0 2px 8px var(--shadow-color);
-            border: 1px solid var(--card-border); backdrop-filter: blur(8px); display: block; text-align: center;
-        }
-        .back-button:hover { background-color: rgba(76, 175, 80, 0.2); transform: translateY(-2px); }
+    <div class="ai-container">
+        <div id="status">Status: तैयार (Ready)</div>
 
-        /* --- New Chat Button --- */
-        .sidebar-menu .new-chat-item { padding: 0 0.5rem; margin-bottom: 1rem; }
-        .new-chat-btn {
-            color: var(--text-light); background-color: transparent; padding: 0.6rem 1rem;
-            border-radius: 20px; text-decoration: none; font-weight: 600; font-size: 0.9rem;
-            transition: all 0.3s ease; border: 1px solid var(--card-border); cursor: pointer;
-            width: 100%; text-align: center;
-        }
-        .new-chat-btn:hover { background-color: rgba(76, 175, 80, 0.2); transform: translateY(-2px); }
-        
-        /* --- Title and AI Container (Unchanged) --- */
-        .title-container {
-            padding: 1rem 3rem; margin-bottom: 2rem; background-color: var(--title-backdrop-bg);
-            border-radius: 12px; border: 1px solid var(--title-backdrop-border);
-            box-shadow: 0 6px 20px var(--title-backdrop-shadow); backdrop-filter: blur(10px);
-        }
-        .main-title {
-            font-size: clamp(2rem, 5vw, 3rem); font-family: 'Montserrat', sans-serif; font-weight: 800;
-            letter-spacing: 1.5px; margin: 0; background: linear-gradient(90deg, var(--text-light) 10%, var(--grad-green-3) 90%);
-            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
-            text-shadow: 0 0 8px rgba(255, 255, 255, 0.6), 0 0 20px var(--glow-green), 0 0 35px var(--grad-green-2), 3px 3px 3px var(--text-dark);
-        }
-        .ai-container {
-            width: 100%; max-width: 800px; padding: 2rem; text-align: center; background-color: var(--card-bg);
-            border-radius: 15px; border: 1px solid var(--card-border); box-shadow: 0 4px 15px var(--shadow-color);
-            backdrop-filter: blur(8px);
-        }
-        
-        /* --- Microphone Button (Unchanged) --- */
-        #startButton {
-            background-color: var(--grad-green-3); color: var(--text-light); border: 2px solid rgba(255, 255, 255, 0.5);
-            width: 100px; height: 100px; border-radius: 50%; cursor: pointer; transition: all 0.3s ease;
-            margin: 1rem auto 2rem auto; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-        }
-        #startButton svg { width: 40px; height: 40px; fill: var(--text-light); }
-        #startButton:hover:not(:disabled) { transform: scale(1.05); background-color: var(--grad-green-4); }
-        #startButton:disabled { background-color: #6c757d; cursor: not-allowed; opacity: 0.7; }
-        @keyframes pulse-border { 0% { box-shadow: 0 0 0 0 rgba(102, 255, 153, 0.7); } 70% { box-shadow: 0 0 0 15px rgba(102, 255, 153, 0); } 100% { box-shadow: 0 0 0 0 rgba(102, 255, 153, 0); } }
-        #startButton.listening { animation: pulse-border 1.5s infinite; }
-        #status { margin-bottom: 2rem; color: var(--grad-green-accent); min-height: 1.2em; font-weight: 500; }
+        <button id="startButton" title="Click to Speak">
+            <!-- Mic Icon -->
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                <path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0z" />
+                <path
+                    d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5" />
+            </svg>
+        </button>
 
-        /* --- [NEW] CHAT LOG STYLES --- */
-        .chat-area {
-            width: 100%;
-            height: 45vh; /* Give the chat area a defined height */
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            margin-top: 1rem;
-            padding: 1rem;
-            overflow-y: auto; /* Make it scrollable */
-            border-radius: 10px;
-            background-color: rgba(0, 0, 0, 0.1);
-            border: 1px solid var(--card-border);
-        }
-        .chat-message {
-            padding: 0.75rem 1.25rem;
-            border-radius: 18px;
-            line-height: 1.6;
-            word-wrap: break-word;
-            max-width: 80%;
-            color: var(--text-light);
-            text-align: left;
-        }
-        .user-message {
-            background-color: rgba(248, 250, 252, 0.15);
-            border: 1px solid rgba(248, 250, 252, 0.2);
-            align-self: flex-end; /* Align user messages to the right */
-            border-bottom-right-radius: 4px;
-        }
-        .ai-message {
-            background-color: rgba(76, 175, 80, 0.25);
-            border: 1px solid rgba(76, 175, 80, 0.4);
-            align-self: flex-start; /* Align AI messages to the left */
-            border-bottom-left-radius: 4px;
-        }
-        .ai-message.talking {
-            animation: talking-glow 1.3s infinite ease-in-out;
-        }
-        @keyframes talking-glow {
-            0%, 100% { border-color: rgba(76, 175, 80, 0.4); }
-            50% { border-color: var(--glow-green); }
-        }
-
-        /* --- Responsive Adjustments (Unchanged) --- */
-        @media (max-width: 768px) { .main-content { padding: 1.5rem; } .ai-container { padding: 1.5rem; } .sidebar { position: absolute; z-index: 200; height: 100%; } .sidebar:not(.collapsed) { box-shadow: 5px 0px 15px rgba(0,0,0,0.2); } }
-        @media (max-width: 480px) { .main-content { padding: 1rem; } .sidebar-toggle-btn { top: 1rem; left: 1rem; } .ai-container { padding: 1rem; } }
-    </style>
-</head>
-<body>
-    
-    <button class="sidebar-toggle-btn" id="toggle-sidebar-btn" title="Toggle Sidebar">
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path fill-rule="evenodd" d="M2.5 12a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5m0-4a.5.5 0 0 1 .5-.5h10a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5"/></svg>
-    </button>
-
-    <div class="page-container">
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <ul class="sidebar-menu">
-                <li class="new-chat-item">
-                    <button class="new-chat-btn">+ New Chat</button>
-                </li>
-                
-                <li><a href="{% url 'Policies' %}">Policies</a></li>
-                <li><a href="{% url 'Weather' %}">Weather</a></li> 
-                <li><a href="{% url 'CropAdvisory' %}">Crop Advisory</a></li> 
-                <li><a href="home/Fertilizer">Fertilizer</a></li>
-                <li><a href="{% url 'view_profile' %}">My Profile</a></li>
-                <li><a href="home/about">About us</a></li>
-            </ul>
-            <div class="sidebar-footer">
-        <div class="sidebar-footer">
-                <div class="back-button-container">
-            <div class="user-info" style="text-align: center; margin-bottom: 1rem; font-size: 0.9rem;">
-             Logged in as:<br>
-             <strong>
-                {% if request.user.profile.name %}
-                    {{ request.user.profile.name }}
-                {% else %}
-                    {{ request.user.username }} 
-                {% endif %}
-             </strong>
-              </div>
-                    
-                    <a href="{% url 'logout' %}" class="back-button">Logout 🚪</a>
-                </div>
+        <div id="chatArea" class="chat-area">
+            <!-- Chat messages will appear here -->
         </div>
-        </aside>
 
-        <!-- Main Content Wrapper -->
-        <main class="main-content">
-            <div class="title-container">
-                <h1 class="main-title">AGRIPATH</h1>
-            </div>
-            <div class="ai-container">
-                <button id="startButton">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="M5 3a3 3 0 0 1 6 0v5a3 3 0 0 1-6 0z"/><path d="M3.5 6.5A.5.5 0 0 1 4 7v1a4 4 0 0 0 8 0V7a.5.5 0 0 1 1 0v1a5 5 0 0 1-4.5 4.975V15h3a.5.5 0 0 1 0 1h-7a.5.5 0 0 1 0-1h3v-2.025A5 5 0 0 1 3 8V7a.5.5 0 0 1 .5-.5"/></svg>
-                </button>
-                <div id="status">Status: तैयार (Ready)</div>
-
-                
-                <div id="chatArea" class="chat-area">
-                    
-                </div>
-            </div>
-        </main>
+        <div style="margin-top: 1rem; text-align: center;">
+            <button class="btn-primary" id="newChatBtn" style="font-size: 0.9rem; padding: 0.5rem 1rem;">
+                New Chat / Reset
+            </button>
+        </div>
     </div>
-    {{ initial_history|json_script:"initial-history-data" }}
-    <script>
-        // ==============================================================================
-        //  COMPLETE JAVASCRIPT FOR PERSISTENT CHAT LOG FUNCTIONALITY
-        // ==============================================================================
+</div>
 
-        
-        const historyScriptElement = document.getElementById('initial-history-data');
-        const initialHistory = historyScriptElement ? JSON.parse(historyScriptElement.textContent) : [];
+{{ initial_history|json_script:"initial-history-data" }}
+{% endblock %}
 
-        // --- Element References ---
-        const startButton = document.getElementById('startButton');
-        const statusDiv = document.getElementById('status');
-        const chatArea = document.getElementById('chatArea');
-        const newChatButton = document.querySelector('.new-chat-btn');
-        const csrfToken = '{{ csrf_token }}';
+{% block extra_js %}
+<script>
+    // ==============================================================================
+    //  COMPLETE JAVASCRIPT FOR PERSISTENT CHAT LOG FUNCTIONALITY
+    // ==============================================================================
 
-        // --- TTS and STT Initialization ---
-        const synth = window.speechSynthesis;
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let recognition;
-        let hindiVoice = null;
-        
-        function loadVoices() {
-            hindiVoice = synth.getVoices().find(voice => voice.lang === 'hi-IN' || voice.lang.startsWith('hi'));
+    const historyScriptElement = document.getElementById('initial-history-data');
+    const initialHistory = historyScriptElement ? JSON.parse(historyScriptElement.textContent) : [];
+
+    // --- Element References ---
+    const startButton = document.getElementById('startButton');
+    const statusDiv = document.getElementById('status');
+    const chatArea = document.getElementById('chatArea');
+    const newChatButton = document.getElementById('newChatBtn');
+    const csrfToken = '{{ csrf_token }}';
+
+    // --- TTS and STT Initialization ---
+    const synth = window.speechSynthesis;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+    let hindiVoice = null;
+
+    function loadVoices() {
+        hindiVoice = synth.getVoices().find(voice => voice.lang === 'hi-IN' || voice.lang.startsWith('hi'));
+    }
+    if (synth.onvoiceschanged !== undefined) {
+        synth.onvoiceschanged = loadVoices;
+    }
+    loadVoices();
+
+    /**
+     * Creates and displays a message in the chat log.
+     */
+    function addMessageToLog(text, sender) {
+        const messageElement = document.createElement('div');
+        messageElement.classList.add('chat-message', `${sender}-message`);
+        messageElement.textContent = text;
+        chatArea.appendChild(messageElement);
+        chatArea.scrollTop = chatArea.scrollHeight; // Auto-scroll
+        return messageElement;
+    }
+
+    /**
+     * Handles the "New Chat" button click (clears session history).
+     */
+    async function startNewChat() {
+        try {
+            // Call the backend endpoint to clear the session
+            await fetch("{% url 'clear_chat' %}", { method: 'POST', headers: { 'X-CSRFToken': csrfToken } });
+
+            // Visually clear the chat log on the screen
+            chatArea.innerHTML = '';
+
+            // Fetch and display the new greeting
+            await fetchAndDisplayGreeting();
+            resetUIState();
+            statusDiv.textContent = 'Status: नया चैट शुरू हुआ (New Chat Started)';
+        } catch (error) {
+            console.error('Error starting new chat:', error);
         }
-        if (synth.onvoiceschanged !== undefined) {
-            synth.onvoiceschanged = loadVoices;
-        }
-        loadVoices();
-        
-        /**
-         * Creates and displays a message in the chat log.
-         */
-        function addMessageToLog(text, sender) {
-            const messageElement = document.createElement('div');
-            messageElement.classList.add('chat-message', `${sender}-message`);
-            messageElement.textContent = text;
-            chatArea.appendChild(messageElement);
-            chatArea.scrollTop = chatArea.scrollHeight; // Auto-scroll
-            return messageElement;
-        }
+    }
 
-        /**
-         * Handles the "New Chat" button click (clears session history).
-         */
-        async function startNewChat() {
-            try {
-                // Call the backend endpoint to clear the session
-                await fetch("{% url 'clear_chat' %}", { method: 'POST', headers: {'X-CSRFToken': csrfToken }});
-                
-                // Visually clear the chat log on the screen
-                chatArea.innerHTML = '';
-                
-                // Fetch and display the new greeting
-                await fetchAndDisplayGreeting();
-                resetUIState();
-                statusDiv.textContent = 'Status: नया चैट शुरू हुआ (New Chat Started)';
-            } catch (error) {
-                console.error('Error starting new chat:', error);
-            }
-        }
-
-        // --- Speech Recognition Logic ---
-        if (SpeechRecognition) {
-            recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.lang = 'hi-IN';
-            recognition.interimResults = false;
-            recognition.onstart = () => {
-                statusDiv.textContent = 'Status: सुन रहा हूँ... (Listening...)';
-                startButton.classList.add('listening');
-                startButton.disabled = true;
-            };
-            recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
-                addMessageToLog(transcript, 'user');
-                sendTextToBackend(transcript);
-            };
-            recognition.onerror = (event) => {
-                console.error("Speech Recognition Error:", event);
-                addMessageToLog(`Speech recognition error: ${event.error}`, 'ai');
-                resetUIState();
-            };
-        } else {
-            statusDiv.textContent = "Status: Speech Recognition is not supported by this browser.";
+    // --- Speech Recognition Logic ---
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.lang = 'hi-IN';
+        recognition.interimResults = false;
+        recognition.onstart = () => {
+            statusDiv.textContent = 'Status: सुन रहा हूँ... (Listening...)';
+            startButton.classList.add('listening');
             startButton.disabled = true;
-        }
+        };
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            addMessageToLog(transcript, 'user');
+            sendTextToBackend(transcript);
+        };
+        recognition.onerror = (event) => {
+            console.error("Speech Recognition Error:", event);
+            addMessageToLog(`Speech recognition error: ${event.error}`, 'ai');
+            resetUIState();
+        };
+    } else {
+        statusDiv.textContent = "Status: Speech Recognition is not supported by this browser.";
+        startButton.disabled = true;
+    }
 
-        // --- Text To Speech Logic ---
-        function speak(textToSpeak) {
-            if (synth.speaking) { synth.cancel(); }
-            const lastAiMessage = chatArea.querySelector('.ai-message:last-child');
-            const utterThis = new SpeechSynthesisUtterance(textToSpeak);
-            utterThis.lang = 'hi-IN';
-            utterThis.voice = hindiVoice;
-            utterThis.rate = 0.95;
-            utterThis.onstart = () => {
-                if (lastAiMessage) lastAiMessage.classList.add('talking');
-                statusDiv.textContent = 'Status: बोल रहा हूँ... (Speaking...)';
-                startButton.disabled = true;
-            };
-            utterThis.onend = () => {
-                if (lastAiMessage) lastAiMessage.classList.remove('talking');
-                resetUIState();
-            };
-            utterThis.onerror = (event) => {
-                console.error('TTS error:', event);
-                if (lastAiMessage) lastAiMessage.classList.remove('talking');
-                resetUIState();
-            };
-            synth.speak(utterThis);
+    // --- Text To Speech Logic ---
+    function speak(textToSpeak) {
+        if (synth.speaking) { synth.cancel(); }
+        const lastAiMessage = chatArea.querySelector('.ai-message:last-child');
+        const utterThis = new SpeechSynthesisUtterance(textToSpeak);
+        utterThis.lang = 'hi-IN';
+        utterThis.voice = hindiVoice;
+        utterThis.rate = 0.95;
+        utterThis.onstart = () => {
+            if (lastAiMessage) lastAiMessage.classList.add('talking');
+            statusDiv.textContent = 'Status: बोल रहा हूँ... (Speaking...)';
+            startButton.disabled = true;
+        };
+        utterThis.onend = () => {
+            if (lastAiMessage) lastAiMessage.classList.remove('talking');
+            resetUIState();
+        };
+        utterThis.onerror = (event) => {
+            console.error('TTS error:', event);
+            if (lastAiMessage) lastAiMessage.classList.remove('talking');
+            resetUIState();
+        };
+        synth.speak(utterThis);
+    }
+
+    // --- Backend Communication ---
+    async function sendTextToBackend(text) {
+        statusDiv.textContent = 'Status: प्रसंस्करण (Processing)...';
+        try {
+            const response = await fetch("{% url 'process_voice' %}", {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                body: JSON.stringify({ text: text })
+            });
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            const data = await response.json();
+            addMessageToLog(data.response, 'ai');
+            speak(data.response);
+        } catch (error) {
+            console.error('Error sending/receiving backend data:', error);
+            addMessageToLog("क्षमा करें, सर्वर से कनेक्ट करने में कोई त्रुटि हुई।", 'ai');
+            resetUIState();
         }
-        
-        // --- Backend Communication ---
-        async function sendTextToBackend(text) {
-            statusDiv.textContent = 'Status: प्रसंस्करण (Processing)...';
-            try {
-                const response = await fetch("{% url 'process_voice' %}", {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-                    body: JSON.stringify({ text: text })
-                });
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const data = await response.json();
-                addMessageToLog(data.response, 'ai');
-                speak(data.response);
-            } catch (error) {
-                console.error('Error sending/receiving backend data:', error);
-                addMessageToLog("क्षमा करें, सर्वर से कनेक्ट करने में कोई त्रुटि हुई।", 'ai');
-                resetUIState();
+    }
+
+    /**
+     * Fetches and displays the initial greeting.
+     */
+    async function fetchAndDisplayGreeting() {
+        try {
+            const response = await fetch("{% url 'get_greeting' %}");
+            const data = await response.json();
+            if (data.greeting) {
+                addMessageToLog(data.greeting, 'ai');
             }
+        } catch (error) {
+            console.error('Error fetching greeting:', error);
+            addMessageToLog("नमस्ते! मैं आपकी मदद के लिए तैयार हूँ।", 'ai');
         }
+    }
 
-        /**
-         * Fetches and displays the initial greeting.
-         */
-        async function fetchAndDisplayGreeting() {
-            try {
-                const response = await fetch("{% url 'get_greeting' %}");
-                const data = await response.json();
-                if (data.greeting) {
-                    addMessageToLog(data.greeting, 'ai');
+    /**
+     *Function to load history from the context variable
+     */
+    function loadInitialHistory() {
+        if (initialHistory && initialHistory.length > 0) {
+            initialHistory.forEach(message => {
+                // Check for the correct Gemini format
+                if (message.parts && message.parts[0] && message.role) {
+                    // Map Gemini's 'model' role to 'ai' for CSS
+                    const sender = message.role === 'user' ? 'user' : 'ai';
+                    addMessageToLog(message.parts[0], sender);
                 }
-            } catch (error) {
-                console.error('Error fetching greeting:', error);
-                addMessageToLog("नमस्ते! मैं आपकी मदद के लिए तैयार हूँ।", 'ai');
-            }
+            });
+        } else {
+            // If no history exists, fetch the initial greeting
+            fetchAndDisplayGreeting();
         }
+    }
 
-        /**
-         *Function to load history from the context variable
-         */
-        function loadInitialHistory() {
-            if (initialHistory && initialHistory.length > 0) {
-                initialHistory.forEach(message => {
-                    // Check for the correct Gemini format
-                    if (message.parts && message.parts[0] && message.role) {
-                        // Map Gemini's 'model' role to 'ai' for CSS
-                        const sender = message.role === 'user' ? 'user' : 'ai';
-                        addMessageToLog(message.parts[0], sender);
-                    }
-                });
-            } else {
-                // If no history exists, fetch the initial greeting
-                fetchAndDisplayGreeting();
-            }
-        }
+    // --- UI State Management ---
+    function resetUIState() {
+        startButton.classList.remove('listening');
+        startButton.disabled = false;
+        statusDiv.textContent = 'Status: तैयार (Ready)';
+        const talkingMessage = chatArea.querySelector('.ai-message.talking');
+        if (talkingMessage) talkingMessage.classList.remove('talking');
+    }
 
-        // --- UI State Management ---
-        function resetUIState() {
-            startButton.classList.remove('listening');
-            startButton.disabled = false;
-            statusDiv.textContent = 'Status: तैयार (Ready)';
-            const talkingMessage = chatArea.querySelector('.ai-message.talking');
-            if (talkingMessage) talkingMessage.classList.remove('talking');
-        }
+    // --- Event Listeners  ---
+    startButton.addEventListener('click', () => {
+        if (synth.speaking) { synth.cancel(); }
+        if (recognition) { recognition.start(); }
+    });
 
-        // --- Event Listeners  ---
-        startButton.addEventListener('click', () => {
-            if (synth.speaking) { synth.cancel(); }
-            if (recognition) { recognition.start(); }
-        });
-
+    if (newChatButton) {
         newChatButton.addEventListener('click', startNewChat);
+    }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            loadInitialHistory(); 
-            
-            // Sidebar Logic
-            const sidebar = document.getElementById('sidebar');
-            const toggleBtn = document.getElementById('toggle-sidebar-btn');
-            toggleBtn.addEventListener('click', () => sidebar.classList.toggle('collapsed'));
-            if (window.innerWidth <= 768) {
-                sidebar.classList.add('collapsed');
-            }
-        });
-    </script>
-</body>
-</html>
+    document.addEventListener('DOMContentLoaded', () => {
+        loadInitialHistory();
+    });
+</script>
+{% endblock %}
