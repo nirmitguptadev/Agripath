@@ -1,6 +1,7 @@
 # Ignore environment variables file
 .env
 dvenv
+.agripath
 
 # Other common Python/Django ignores
 __pycache__/
