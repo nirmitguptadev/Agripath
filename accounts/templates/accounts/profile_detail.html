@@ -4,145 +4,136 @@
 {% block title %}Your Profile - AgriPath{% endblock %}
 
 {% block content %}
-<div class="container"
-    style="display: flex; align-items: center; justify-content: center; min-height: 80vh; padding-top: 2rem; padding-bottom: 2rem;">
-    <div class="profile-container">
-        <h1 class="profile-title">Your Profile</h1>
+<div class="container" style="padding-top: 2rem; padding-bottom: 2rem; min-height: 80vh;">
 
-        <!-- Profile Picture Display -->
-        <img src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}{% static 'default_profile.png' %}{% endif %}"
-            alt="Profile Picture" class="profile-pic">
-
-        <form method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-
-            <!-- Hidden Fields/Metadata -->
-            <p style="text-align: right; font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
-                Mobile: {{ profile.phone_number }}
-            </p>
-
-            <!-- Name and Age Fields -->
-            <div class="form-group">
-                {{ form.name.label_tag }} {{ form.name }}
-                {% if form.name.errors %} <div class="error-message">{{ form.name.errors.0 }}</div> {% endif %}
+    <div class="profile-card">
+        <!-- 1. Header with Gradient Banner -->
+        <div class="profile-header">
+            <div class="profile-avatar-container">
+                <!-- Safe check for profile picture -->
+                <img src="{% if profile.profile_picture %}{{ profile.profile_picture.url }}{% else %}{% static 'default_profile.png' %}{% endif %}"
+                    alt="Profile Picture" class="profile-pic">
             </div>
+        </div>
 
-            <div class="form-group">
-                {{ form.age.label_tag }} {{ form.age }}
-            </div>
+        <!-- 2. Body -->
+        <div class="profile-body">
+            <h1 class="profile-title">
+                {% if profile.name %}{{ profile.name }}{% else %}{{ user.username }}{% endif %}
+            </h1>
+            <p class="profile-subtitle">{{ profile.phone_number }}</p>
 
-            <!-- Profile Picture Field -->
-            <div class="form-group">
-                {{ form.profile_picture.label_tag }}
-                {{ form.profile_picture }}
-            </div>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
 
-            <!-- Location Fields -->
-            <div style="margin-top: 2rem; text-align: left;">
-                <h3 style="font-size: 1.1rem; margin-bottom: 1rem; color: var(--secondary-green); font-weight: 600;">
-                    Location</h3>
+                <div class="profile-form-grid">
+                    <!-- Name & Age -->
+                    <div class="form-group">
+                        {{ form.name.label_tag }}
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <div class="error-message">{{ form.name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        {{ form.age.label_tag }}
+                        {{ form.age }}
+                        {% if form.age.errors %}
+                        <div class="error-message">{{ form.age.errors.0 }}</div>
+                        {% endif %}
+                    </div>
 
-                <button type="button" id="detect-location-btn" class="detect-btn">
-                    <span>📍</span> Detect My Location
-                </button>
-                <p id="location-status"></p>
+                    <!-- Location - Full Width -->
+                    <div class="form-group full-width">
+                        {{ form.location.label_tag }}
+                        <div style="display: flex; gap: 0.5rem; align-items: flex-end; flex-wrap: wrap;">
+                            <div style="flex: 1;">
+                                {{ form.location }}
+                            </div>
+                            <button type="button" id="detect-location-btn" class="detect-btn"
+                                style="width: auto; margin:0; height: 46px;">
+                                <span>📍</span> Detect
+                            </button>
+                        </div>
+                        <p id="location-status"
+                            style="text-align: left; font-size: 0.85rem; margin-top: 0.5rem; color: var(--accent-green);">
+                        </p>
+                        {% if form.location.errors %}
+                        <div class="error-message">{{ form.location.errors.0 }}</div>
+                        {% endif %}
+                    </div>
 
-                <div class="form-group">
-                    {{ form.location.label_tag }}
-                    {{ form.location }}
-                    {% if form.location.errors %}
-                    <div class="error-message">{{ form.location.errors.0 }}</div>
-                    {% endif %}
+                    <!-- Profile Picture Upload -->
+                    <div class="form-group full-width">
+                        <label for="{{ form.profile_picture.id_for_label }}">Change Profile Picture</label>
+                        {{ form.profile_picture }}
+                    </div>
                 </div>
+
+                <button type="submit" class="submit-btn" style="background-color: #4caf50; color: white;">Save
+                    Changes</button>
+            </form>
+
+            <div class="action-buttons" style="margin-top: 2rem; display: flex; gap: 1rem;">
+                <a href="{% url 'ai' %}" class="back-btn" style="text-decoration: none;">← Back to Dashboard</a>
+                <a href="{% url 'logout' %}" class="logout-btn"
+                    style="text-decoration: none; color: #c94c4c;">Logout</a>
             </div>
-
-            <button type="submit" class="submit-btn" style="background-color: var(--primary-green);">Save
-                Changes</button>
-        </form>
-
-        <div class="action-buttons">
-            <a href="{% url 'ai' %}" class="back-btn">← Back to AI</a>
-            <a href="{% url 'logout' %}" class="back-btn logout-btn">Logout</a>
         </div>
     </div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<!-- JavaScript for Geolocation and Reverse Geocoding -->
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         const detectButton = document.getElementById('detect-location-btn');
         const locationStatus = document.getElementById('location-status');
         const locationInput = document.querySelector('input[name="location"]');
 
-        detectButton.addEventListener('click', () => {
-            if (!navigator.geolocation) {
-                locationStatus.textContent = 'Geolocation is not supported by your browser.';
-                return;
-            }
-
-            locationStatus.textContent = 'Detecting your location... Please allow permission.';
-
-            // Disable button to prevent multiple clicks
-            detectButton.disabled = true;
-
-            navigator.geolocation.getCurrentPosition(handleSuccess, handleError);
-        });
-
-        async function handleSuccess(position) {
-            const latitude = position.coords.latitude;
-            const longitude = position.coords.longitude;
-
-            locationStatus.textContent = 'Coordinates found. Fetching address...';
-
-            // Use OpenStreetMap's free Nominatim API for reverse geocoding
-            const apiUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`;
-
-            try {
-                const response = await fetch(apiUrl);
-                const data = await response.json();
-
-                if (data && data.address) {
-                    // Priority check: City > Town > Village > State District
-                    const address = data.address;
-                    const locationName = address.city || address.town || address.village || address.state_district || address.county || address.state;
-
-                    if (locationName) {
-                        locationInput.value = locationName;
-                        locationStatus.textContent = `Location updated: ${locationName}`;
-                    } else {
-                        locationStatus.textContent = 'Could not determine city name. Please enter manually.';
-                    }
-                } else {
-                    locationStatus.textContent = 'Failed to fetch address details. Please enter manually.';
+        if (detectButton) {
+            detectButton.addEventListener('click', () => {
+                if (!navigator.geolocation) {
+                    locationStatus.textContent = 'Geolocation is not supported by your browser.';
+                    return;
                 }
-            } catch (error) {
-                console.error('Reverse geocoding error:', error);
-                locationStatus.textContent = 'Failed to fetch address. Please enter manually.';
-            } finally {
-                detectButton.disabled = false;
-            }
-        }
 
-        function handleError(error) {
-            let message = '';
-            switch (error.code) {
-                case error.PERMISSION_DENIED:
-                    message = "You denied the request for Geolocation.";
-                    break;
-                case error.POSITION_UNAVAILABLE:
-                    message = "Location information is unavailable.";
-                    break;
-                case error.TIMEOUT:
-                    message = "The request to get user location timed out.";
-                    break;
-                case error.UNKNOWN_ERROR:
-                    message = "An unknown error occurred.";
-                    break;
-            }
-            locationStatus.textContent = message + ' Please enter your location manually.';
-            detectButton.disabled = false;
+                locationStatus.textContent = 'Detecting your location... Please allow permission.';
+                detectButton.disabled = true;
+
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const latitude = position.coords.latitude;
+                    const longitude = position.coords.longitude;
+
+                    locationStatus.textContent = 'Coordinates found. Fetching address...';
+
+                    const apiUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`;
+
+                    try {
+                        const response = await fetch(apiUrl);
+                        const data = await response.json();
+
+                        if (data && data.address) {
+                            const locationName = data.address.city || data.address.town || data.address.village || data.address.state_district || data.address.county || data.address.state;
+
+                            if (locationName) {
+                                locationInput.value = locationName;
+                                locationStatus.textContent = `Location updated: ${locationName}`;
+                            } else {
+                                locationStatus.textContent = 'Could not determine city name. Please enter manually.';
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Reverse geocoding error:', error);
+                        locationStatus.textContent = 'Failed to fetch address. Please enter manually.';
+                    } finally {
+                        detectButton.disabled = false;
+                    }
+                }, (error) => {
+                    locationStatus.textContent = 'Location access denied. Please enter manually.';
+                    detectButton.disabled = false;
+                });
+            });
         }
     });
 </script>

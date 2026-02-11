@@ -1,0 +1,396 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ crop.name }} - AgriPath Dictionary{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
+
+    <!-- Breadcrumb -->
+    <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+        <a href="{% url 'crop_list' %}"
+            style="text-decoration: none; color: var(--text-secondary); font-weight: 500;">&larr; Back to Dictionary</a>
+        {% if crop.wikipedia_url %}
+        <a href="{{ crop.wikipedia_url }}" target="_blank" class="wiki-btn"
+            style="text-decoration: none; background-color: #f0f0f0; padding: 0.5rem 1rem; border-radius: 20px; color: #333; font-size: 0.9rem; border: 1px solid #ddd; display: flex; align-items: center; gap: 0.5rem;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/6/63/Wikipedia-logo.png" alt="Wiki"
+                style="height: 20px;">
+            Read on Wikipedia
+        </a>
+        {% endif %}
+    </div>
+
+    <!-- Hero Section -->
+    <div class="crop-hero"
+        style="background-color: var(--card-bg); border-radius: 20px; box-shadow: var(--shadow-main); overflow: hidden; margin-bottom: 2rem;">
+        <div style="position: relative; height: 300px;">
+            {% if crop.header_image %}
+            <img src="{{ crop.header_image.url }}" alt="{{ crop.name }}"
+                style="width: 100%; height: 100%; object-fit: cover;">
+            <div
+                style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.8));">
+            </div>
+            {% else %}
+            <div
+                style="width: 100%; height: 100%; background: linear-gradient(135deg, var(--secondary-green), var(--primary-green));">
+            </div>
+            {% endif %}
+
+            <div style="position: absolute; bottom: 2rem; left: 2rem; color: white;">
+                <h1 style="font-size: 3.5rem; margin: 0; text-shadow: 0 2px 4px rgba(0,0,0,0.3);">{{ crop.name }}</h1>
+                <p style="font-style: italic; opacity: 0.9; margin: 0; font-size: 1.3rem;">{{ crop.scientific_name }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Quick Stats Bar -->
+        <div class="stats-bar"
+            style="display: flex; flex-wrap: wrap; padding: 1.5rem 2rem; border-top: 1px solid rgba(0,0,0,0.05); gap: 2rem; background-color: rgba(255,255,255,0.9);">
+            <div class="stat-item">
+                <span>Family</span>
+                <strong>{{ crop.family }}</strong>
+            </div>
+            <div class="stat-item">
+                <span>Season</span>
+                <strong>{{ crop.sowing_season }}</strong>
+            </div>
+            <div class="stat-item">
+                <span>Duration</span>
+                <strong>{{ crop.growth_duration }}</strong>
+            </div>
+            <div class="stat-item">
+                <span>Market Price</span>
+                <strong style="color: var(--accent-green);">{{ crop.average_price }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <div class="crop-content-grid"
+        style="display: grid; grid-template-columns: 280px 1fr; gap: 2.5rem; align-items: start;">
+
+        <!-- Sidebar Navigation (Sticky) -->
+        <div class="crop-sidebar"
+            style="position: sticky; top: 2rem; background: var(--card-bg); padding: 0.5rem; border-radius: 15px; box-shadow: var(--shadow-sm); overflow: hidden;">
+            <ul style="list-style: none; padding: 0; margin: 0;">
+                <li><a href="#overview" class="nav-link">📖 Overview</a></li>
+                <li><a href="#botanical" class="nav-link">🌿 Botanical Profile</a></li>
+                <li><a href="#cultivation" class="nav-link">🚜 Cultivation & Agronomy</a></li>
+                <li><a href="#nutrient" class="nav-link">🧪 Nutrient Management</a></li>
+                <li><a href="#pest" class="nav-link">🐛 Pest & Weed Control</a></li>
+                <li><a href="#diseases" class="nav-link">🦠 Diseases</a></li>
+                <li><a href="#harvest" class="nav-link">🌾 Harvest & Post-Harvest</a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="crop-details">
+
+            <!-- Overview -->
+            <section id="overview" class="detail-section">
+                <h2>Overview</h2>
+                <div class="content-box">
+                    <p class="lead" style="font-size: 1.1rem; line-height: 1.8;">{{ crop.overview }}</p>
+                </div>
+            </section>
+
+            <!-- 1. Botanical Profile -->
+            <section id="botanical" class="detail-section">
+                <h2>Botanical & Taxonomical Profile</h2>
+                <div class="grid-2">
+                    <div class="info-card">
+                        <h3>Varieties</h3>
+                        <p>{{ crop.varieties }}</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Growth Habit</h3>
+                        <p>{{ crop.growth_habit }}</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Pollination</h3>
+                        <p>{{ crop.pollination }}</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Family</h3>
+                        <p>{{ crop.family }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. Cultivation -->
+            <section id="cultivation" class="detail-section">
+                <h2>Cultivation & Agronomy</h2>
+                <div class="info-card full-width">
+                    <h3>🌱 Sowing Window</h3>
+                    <p>{{ crop.sowing_window }}</p>
+                </div>
+
+                <div class="grid-2">
+                    <div class="info-card">
+                        <h3>Soil Requirements</h3>
+                        <p><strong>pH:</strong> {{ crop.soil_ph }}<br><strong>Type:</strong> {{ crop.soil_type }}</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Climatic Requirements</h3>
+                        <p>{{ crop.climatic_req }}</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Seed Rate & Spacing</h3>
+                        <p>{{ crop.seed_rate_spacing }}</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>💧 Water Management</h3>
+                        <p>{{ crop.water_req }}</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. Nutrient -->
+            <section id="nutrient" class="detail-section">
+                <h2>Nutrient & Soil Health</h2>
+                <div class="content-box">
+                    <h3 style="color: var(--primary-green); margin-top:0;">Fertilizer Schedule</h3>
+                    <p>{{ crop.fertilizer_schedule }}</p>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 1.5rem 0;">
+
+                    <div class="grid-2">
+                        <div><strong style="color: #d35400;">Micronutrients:</strong><br>{{ crop.micronutrients }}</div>
+                        <div><strong style="color: #27ae60;">Crop Rotation:</strong><br>{{ crop.crop_rotation }}</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. Pest & Weed -->
+            <section id="pest" class="detail-section">
+                <h2>Pest & Weed Management</h2>
+                <div class="grid-2">
+                    <div class="info-card alert-card">
+                        <h3>🦗 Major Pests</h3>
+                        <p>{{ crop.major_pests }}</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>🌿 Weed Control</h3>
+                        <p>{{ crop.weed_control }}</p>
+                    </div>
+                </div>
+                <div class="info-card full-width" style="border-left-color: #2980b9;">
+                    <h3>🛡️ Integrated Pest Management (IPM)</h3>
+                    <p>{{ crop.ipm_practices }}</p>
+                </div>
+            </section>
+
+            <!-- Diseases -->
+            <section id="diseases" class="detail-section">
+                <h2 style="color: #c0392b;">Diseases & Management</h2>
+                {% if diseases %}
+                <div style="display: grid; gap: 1.5rem;">
+                    {% for disease in diseases %}
+                    <div class="disease-card">
+                        <div class="disease-header">
+                            <h3 style="margin: 0; color: #c0392b;">{{ disease.name }}</h3>
+                        </div>
+                        {% if disease.image %}
+                        <div class="disease-image"
+                            style="height: 200px; overflow: hidden; border-bottom: 1px solid #ffe0e0;">
+                            <img src="{{ disease.image.url }}" alt="{{ disease.name }}"
+                                style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        {% endif %}
+                        <div class="disease-body">
+                            <p><strong>Symptoms:</strong> {{ disease.symptoms }}</p>
+                            <div class="grid-2" style="margin-top: 1rem;">
+                                <div class="pill protection">🛡️ <strong>Protection:</strong>
+                                    {{ disease.medicine_protection }}
+                                </div>
+                                <div class="pill cure">💊 <strong>Cure:</strong> {{ disease.medicine_cure }}</div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p>No specific disease data available.</p>
+                {% endif %}
+            </section>
+
+            <!-- 5. Harvest -->
+            <section id="harvest" class="detail-section">
+                <h2>Harvest & Post-Harvest</h2>
+                <div class="grid-2">
+                    <div class="info-card">
+                        <h3>Maturity Signs</h3>
+                        <p>{{ crop.maturity_signs }}</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Harvesting Method</h3>
+                        <p>{{ crop.harvesting_method }}</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Yield Expectations</h3>
+                        <p>{{ crop.yield_expectations }}</p>
+                    </div>
+                    <div class="info-card">
+                        <h3>Storage</h3>
+                        <p>{{ crop.storage_req }}</p>
+                    </div>
+                </div>
+                <div class="content-box" style="margin-top: 1.5rem;">
+                    <h3>🏭 Processing & Value Addition</h3>
+                    <p>{{ crop.processing_value }}</p>
+                </div>
+            </section>
+
+        </div>
+    </div>
+
+</div>
+
+<style>
+    /* New Styles for Rich Content */
+    .wiki-btn:hover {
+        background-color: #e0e0e0 !important;
+    }
+
+    .stat-item span {
+        display: block;
+        font-size: 0.75rem;
+        color: #777;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.2rem;
+    }
+
+    .stat-item strong {
+        display: block;
+        font-size: 1.1rem;
+        color: #333;
+    }
+
+    .nav-link {
+        display: block;
+        padding: 1rem 1.5rem;
+        text-decoration: none;
+        color: #555;
+        border-bottom: 1px solid #f0f0f0;
+        transition: all 0.2s;
+        font-weight: 500;
+    }
+
+    .nav-link:hover {
+        background-color: #f9f9f9;
+        color: var(--primary-green);
+        padding-left: 1.8rem;
+    }
+
+    .nav-link:last-child {
+        border-bottom: none;
+    }
+
+    .detail-section {
+        margin-bottom: 4rem;
+        scroll-margin-top: 2rem;
+    }
+
+    .detail-section h2 {
+        font-size: 1.8rem;
+        color: var(--primary-green);
+        margin-bottom: 1.5rem;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 0.5rem;
+    }
+
+    .content-box {
+        background: var(--card-bg);
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+    }
+
+    .info-card {
+        background: var(--card-bg);
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        border-left: 4px solid var(--accent-green);
+    }
+
+    .info-card h3 {
+        margin: 0 0 0.5rem 0;
+        font-size: 1rem;
+        color: #666;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .info-card p {
+        margin: 0;
+        color: #333;
+        line-height: 1.5;
+    }
+
+    .alert-card {
+        border-left-color: #e74c3c;
+    }
+
+    .full-width {
+        margin-bottom: 1.5rem;
+    }
+
+    .disease-card {
+        background: var(--card-bg);
+        border-radius: 12px;
+        box-shadow: var(--shadow-sm);
+        overflow: hidden;
+        border: 1px solid #eee;
+    }
+
+    .disease-header {
+        background: #fff5f5;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #ffe0e0;
+    }
+
+    .disease-body {
+        padding: 1.5rem;
+    }
+
+    .pill {
+        padding: 1rem;
+        border-radius: 8px;
+        font-size: 0.95rem;
+    }
+
+    .protection {
+        background: #fff9db;
+        color: #bf8c00;
+    }
+
+    .cure {
+        background: #e6fffa;
+        color: #009688;
+    }
+
+    @media (max-width: 768px) {
+        .crop-content-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .crop-sidebar {
+            display: none;
+        }
+
+        .grid-2 {
+            grid-template-columns: 1fr;
+        }
+
+        .crop-hero h1 {
+            font-size: 2.2rem !important;
+        }
+    }
+</style>
+{% endblock %}

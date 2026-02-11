@@ -12,6 +12,7 @@ class Profile(models.Model):
     profile_picture = models.ImageField(upload_to='profile_pics/', default='default_profile.png', blank=True)
     phone_number = PhoneNumberField(unique=True, null=True, blank=True)
     location = models.CharField(max_length=100, blank=True)
+    language = models.CharField(max_length=10, choices=[('en-us', 'English'), ('hi', 'Hindi')], default='en-us')
 
     def __str__(self):
         return self.user.username

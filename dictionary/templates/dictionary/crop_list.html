@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}Crop Dictionary - AgriPath{% endblock %}
+
+{% block content %}
+<div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
+    <h1 style="text-align: center; margin-bottom: 2rem; color: var(--primary-green);">Crop Dictionary</h1>
+
+    <div class="crop-grid"
+        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem;">
+        {% for crop in crops %}
+        <div class="crop-card"
+            style="background: var(--card-bg); border-radius: 15px; overflow: hidden; box-shadow: var(--shadow-sm); transition: transform 0.3s ease; border: 1px solid rgba(0,0,0,0.05);">
+            <div class="crop-image"
+                style="height: 180px; background-color: #e0e0e0; position: relative; overflow: hidden;">
+                {% if crop.header_image %}
+                <img src="{{ crop.header_image.url }}" alt="{{ crop.name }}"
+                    style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                <!-- Placeholder using a gradient if no image -->
+                <div
+                    style="width: 100%; height: 100%; background: linear-gradient(135deg, var(--secondary-green), var(--primary-green)); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
+                    {{ crop.name|slice:":1" }}
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="crop-info" style="padding: 1.5rem;">
+                <h3 style="margin: 0 0 0.5rem 0; color: var(--primary-green);">{{ crop.name }}</h3>
+
+                <p style="font-size: 0.9rem; color: var(--text-primary); line-height: 1.5; margin-bottom: 1.5rem;">
+                    {{ crop.overview|truncatewords:20 }}
+                </p>
+
+                <a href="{% url 'crop_detail' crop.pk %}" class="btn"
+                    style="display: block; text-align: center; background-color: var(--accent-green); color: white; padding: 0.8rem; border-radius: 8px; text-decoration: none; font-weight: 500;">
+                    View Details
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+    .crop-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-main);
+    }
+</style>
+{% endblock %}
