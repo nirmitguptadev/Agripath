@@ -166,7 +166,16 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Static Files Configuration for Render
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
+# Use Django 5.x STORAGES setting instead of deprecated STATICFILES_STORAGE
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 # Database Configuration
 database_url = env('DATABASE_URL', default=None)
