@@ -5,7 +5,7 @@ class Crop(models.Model):
     scientific_name = models.CharField(max_length=100)
     overview = models.TextField()
     header_image = models.ImageField(upload_to='crop_headers/', blank=True, null=True)
-    wikipedia_url = models.URLField(blank=True, null=True, help_text="Link to Wikipedia article")
+    wikipedia_url = models.URLField(blank=True, null=True, help_text="Link to Wikipedia article") 
 
     # 1. Botanical & Taxonomical Profile
     family = models.CharField(max_length=100, blank=True, help_text="e.g., Solanaceae")

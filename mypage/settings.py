@@ -169,21 +169,33 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Database Configuration
-# Force SQLite during build to avoid PostgreSQL connection issues
-try:
-    # Test if we can parse DATABASE_URL without connecting
-    database_url = env('DATABASE_URL', default=None)
-    if database_url and 'migrate' not in os.environ.get('_', ''):
-        DATABASES = {
-            'default': dj_database_url.config(default=database_url)
-        }
-    else:
-        raise Exception("Using SQLite for build/migrate")
-except:
+database_url = env('DATABASE_URL', default=None)
+if database_url:
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=database_url,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-# ... (rest of your settings) ...
+
+# Security Settings for Production
+if not DEBUG:
+    # CSRF Settings
+    CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
+    
+    # Secure Cookie Settings
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = True
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
