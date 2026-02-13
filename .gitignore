@@ -12,6 +12,9 @@ db.sqlite3
 
 /staticfiles/
 
+# Note: media/crop_headers and media/disease_images are tracked in git
+# as they contain application images, not user uploads
+# media/profile_pics/ contains user uploads (not tracked)
 
 # IDE
 .vscode/

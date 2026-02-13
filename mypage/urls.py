@@ -32,5 +32,6 @@ urlpatterns = [
     path('', include('home.urls')), 
 ]
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+# Serve media files in both development and production
+# (Crop images are application assets committed to git, not user uploads)
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
