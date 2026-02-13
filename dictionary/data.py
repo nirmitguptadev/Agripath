@@ -51,7 +51,8 @@ crops_data = [
                 "name": "Yellow Rust (Stripe Rust)",
                 "symptoms": "Yellow pustules arranged in linear stripes on leaves. Severe in NW India.",
                 "medicine_protection": "Monitor crop regularly.",
-                "medicine_cure": "Spray Tebuconazole or Triadimefon @ 0.1%."
+                "medicine_cure": "Spray Tebuconazole or Triadimefon @ 0.1%.",
+                "image": "dictionary/disease_images/wheat_d2.jpg"
             }
         ]
     },
@@ -97,13 +98,15 @@ crops_data = [
                 "name": "Blast",
                 "symptoms": "Spindle-shaped spots with white centre and brown margin. Can break neck of panicle.",
                 "medicine_protection": "Avoid excess Nitrogen.",
-                "medicine_cure": "Spray Tricyclazole 75 WP @ 0.6 g/L."
+                "medicine_cure": "Spray Tricyclazole 75 WP @ 0.6 g/L.",
+                "image": "dictionary/disease_images/rice_d1.jpg"
             },
                 {
                 "name": "Bacterial Leaf Blight",
                 "symptoms": "Streaming yellow/white lesions along leaf margins. Bacterial ooze seen in morning.",
                 "medicine_protection": "Use resistant varieties.",
-                "medicine_cure": "Spray Streptocycline 15g + Copper Oxychloride 500g per ha."
+                "medicine_cure": "Spray Streptocycline 15g + Copper Oxychloride 500g per ha.",
+                "image": "dictionary/disease_images/rice_d2.jpg"
             }
         ]
     },
@@ -196,7 +199,8 @@ crops_data = [
                 "name": "Red Rot",
                 "symptoms": "Reddening of internal pith with white cross-bands. Alcoholic smell.",
                 "medicine_protection": "Key threat. Use healthy setts/resistant varieties.",
-                "medicine_cure": "No specific cure in standing crop. Remove clamps."
+                "medicine_cure": "No specific cure in standing crop. Remove clamps.",
+                "image": "dictionary/disease_images/sugarcane_d1.jpg"
             }
         ]
     },
@@ -242,7 +246,8 @@ crops_data = [
                 "name": "Turcicum Leaf Blight",
                 "symptoms": "Long, elliptical, greyish-green lesions on leaves.",
                 "medicine_protection": "Resistant hybrids.",
-                "medicine_cure": "Spray Mancozeb 75 WP @ 2g/L."
+                "medicine_cure": "Spray Mancozeb 75 WP @ 2g/L.",
+                "image": "dictionary/disease_images/corn_d1.jpg"
             }
         ]
     },
@@ -288,7 +293,8 @@ crops_data = [
                 "name": "Late Blight",
                 "symptoms": "Water-soaked spots on leaves turning black. Decay of tubers. Historic famine cause.",
                 "medicine_protection": "Prophylactic Mancozeb.",
-                "medicine_cure": "Cymoxanil + Mancozeb spray."
+                "medicine_cure": "Cymoxanil + Mancozeb spray.",
+                "image": "dictionary/disease_images/potato_d1.jpg"
             }
         ]
     },
@@ -334,7 +340,8 @@ crops_data = [
                 "name": "Early Blight",
                 "symptoms": "Concentric rings ('Target board') on lower leaves. Defoliation.",
                 "medicine_protection": "Clean cultivation.",
-                "medicine_cure": "Spray Chlorothalonil or Mancozeb."
+                "medicine_cure": "Spray Chlorothalonil or Mancozeb.",
+                "image": "dictionary/disease_images/tomato_d1.jpg"
             },
             {
                 "name": "Tomato Leaf Curl Virus",
