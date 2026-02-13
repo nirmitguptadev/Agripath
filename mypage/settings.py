@@ -180,6 +180,9 @@ STORAGES = {
     },
 }
 
+# Legacy settings for compatibility with some packages (like django-cloudinary-storage)
+STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+
 # Cloudinary Configuration
 # Cloudinary Configuration
 CLOUDINARY_STORAGE = {
