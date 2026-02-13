@@ -45,8 +45,6 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 # Application definition
 
 INSTALLED_APPS = [
-    'cloudinary_storage',
-    'cloudinary',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -58,6 +56,8 @@ INSTALLED_APPS = [
     'accounts',
     'phonenumber_field',
     'dictionary',
+    'cloudinary_storage',
+    'cloudinary',
 ]
 
 MIDDLEWARE = [
