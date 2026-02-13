@@ -172,7 +172,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Use Django 5.x STORAGES setting instead of deprecated STATICFILES_STORAGE
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
     },
     "staticfiles": {
         # Use CompressedStaticFilesStorage without Manifest to avoid 500 errors
