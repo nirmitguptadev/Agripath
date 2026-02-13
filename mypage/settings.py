@@ -45,6 +45,8 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 # Application definition
 
 INSTALLED_APPS = [
+    'cloudinary_storage',
+    'cloudinary',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -56,8 +58,6 @@ INSTALLED_APPS = [
     'accounts',
     'phonenumber_field',
     'dictionary',
-    'cloudinary_storage',
-    'cloudinary',
 ]
 
 MIDDLEWARE = [
@@ -181,11 +181,21 @@ STORAGES = {
 }
 
 # Cloudinary Configuration
+# Cloudinary Configuration
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': env('CLOUDINARY_CLOUD_NAME', default=''),
     'API_KEY': env('CLOUDINARY_API_KEY', default=''),
     'API_SECRET': env('CLOUDINARY_API_SECRET', default=''),
 }
+
+# If CLOUDINARY_URL is provided (e.g. from dashboard), parse it to populate the config
+# This is a fallback/convenience to prevent errors if user used the single connection string
+import cloudinary
+if os.environ.get('CLOUDINARY_URL'):
+    config = cloudinary.config()
+    CLOUDINARY_STORAGE['CLOUD_NAME'] = config.cloud_name
+    CLOUDINARY_STORAGE['API_KEY'] = config.api_key
+    CLOUDINARY_STORAGE['API_SECRET'] = config.api_secret
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
