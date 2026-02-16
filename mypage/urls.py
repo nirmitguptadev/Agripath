@@ -26,6 +26,7 @@ urlpatterns = [
     path('', core_views.assistant_page, name='ai'), 
     path('accounts/', include('accounts.urls')),
     path('dictionary/', include('dictionary.urls')),
+    path('tracker/', include('tracker.urls')),
     path('process/', core_views.process_voice, name='process_voice'), 
     path('api/get-greeting/', core_views.get_greeting, name='get_greeting'),
     path('api/clear-chat/', core_views.clear_chat, name='clear_chat'),

@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}AgriPath - Add New Crop{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="max-width: 600px;">
+    <div class="card shadow">
+        <div class="card-header bg-success text-white">
+            <h2 class="h5 mb-0">Start Tracking a New Crop</h2>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label for="id_crop" class="form-label">Select Crop</label>
+                    {{ form.crop }}
+                    <div class="form-text">Choose from our dictionary for better recommendations.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_crop_name_custom" class="form-label">Or Custom Crop Name</label>
+                    {{ form.crop_name_custom }}
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_quantity" class="form-label">Quantity / Area</label>
+                        {{ form.quantity }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="id_unit" class="form-label">Unit</label>
+                        {{ form.unit }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="id_planting_date" class="form-label">Planting Date</label>
+                        {{ form.planting_date }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="id_growth_phase" class="form-label">Current Phase</label>
+                        {{ form.growth_phase }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_cost" class="form-label">Initial Cost (Seeds/Fertilizer)</label>
+                    <div class="input-group">
+                        <span class="input-group-text">₹</span>
+                        {{ form.cost }}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="id_strategy" class="form-label">Notes / Strategy</label>
+                    {{ form.strategy }}
+                </div>
+
+                <button type="submit" class="btn btn-success w-100">Start Tracking</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

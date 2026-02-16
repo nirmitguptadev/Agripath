@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'accounts',
     'phonenumber_field',
     'dictionary',
+    'tracker',
     'cloudinary_storage',
     'cloudinary',
 ]
@@ -181,7 +182,7 @@ STORAGES = {
 }
 
 # Legacy settings for compatibility with some packages (like django-cloudinary-storage)
-STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
+STATICFILES_STORAGE = "django.contrib.staticfiles.storage.StaticFilesStorage" if DEBUG else "whitenoise.storage.CompressedStaticFilesStorage"
 
 # Cloudinary Configuration
 # Cloudinary Configuration
