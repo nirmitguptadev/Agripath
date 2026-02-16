@@ -22,15 +22,15 @@ from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', include('home.urls')),
     path('home/', include('home.urls')),
-    path('', core_views.assistant_page, name='ai'), 
+    path('ai/', core_views.assistant_page, name='assistant_page'), 
     path('accounts/', include('accounts.urls')),
     path('dictionary/', include('dictionary.urls')),
     path('tracker/', include('tracker.urls')),
     path('process/', core_views.process_voice, name='process_voice'), 
     path('api/get-greeting/', core_views.get_greeting, name='get_greeting'),
     path('api/clear-chat/', core_views.clear_chat, name='clear_chat'),
-    path('', include('home.urls')), 
 ]
 
 # Serve media files in both development and production

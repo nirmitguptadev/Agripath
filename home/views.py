@@ -1,20 +1,11 @@
 import json
 import re
 import requests
-import google.generativeai as genai
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from core.crop_model import predict_suitable_crops, get_soil_data_by_location, CROP_PREDICTOR_MODEL
-
-# --- Configure GenAI  ---
-try:
-    genai.configure(api_key=settings.GEMINI_API_KEY)
-    # Using flash model for speed
-    POLICY_MODEL = genai.GenerativeModel('gemini-2.5-flash-lite') 
-except Exception as e:
-    print(f"Error configuring Gemini in home/views: {e}")
-    POLICY_MODEL = None
+from core.ai_fallback import generate_ai_response
 
 OPENWEATHER_API_KEY = getattr(settings, 'OPENWEATHER_API_KEY', None)
 
@@ -158,12 +149,10 @@ def CropAdvisory(request):
     """
     
     advisory_text = "क्षमा करें, सलाह देने वाला AI इस समय अनुपलब्ध है।"
-    if POLICY_MODEL:
-        try:
-            response = POLICY_MODEL.generate_content(gemini_prompt)
-            advisory_text = response.text.strip()
-        except Exception as e:
-            print(f"Gemini Advisory Error: {e}")
+    try:
+        advisory_text = generate_ai_response(gemini_prompt)
+    except Exception as e:
+        print(f"AI Advisory Error: {e}")
 
     # 6. Return the final render
     return render(request, 'crop_advisory.html', {
@@ -225,48 +214,45 @@ def Policies(request):
             'error': 'कृपया अपनी प्रोफाइल में अपना स्थान (Location) अपडेट करें ताकि हम आपके लिए योजनाएं ढूंढ सकें।'
         })
 
-    if not POLICY_MODEL:
-        return render(request, 'Policies.html', {
-            'error': 'AI सेवा अनुपलब्ध है। कृपया थोड़ी देर बाद प्रयास करें।'
-        })
-
-    # The prompt asks for a government link.
     prompt = f"""
     Act as an expert on Indian government agricultural schemes.
-    List the top 4 most beneficial, currently active government schemes for farmers in: {location}, India.
-    Include both Central and State specific schemes for this region.
-    Provide the output in concise Hindi.
-
-    Strictly output ONLY a raw JSON list of objects. Do not use Markdown formatting (no ```json).
-    Follow this exact format, finding the most relevant official government link for each scheme:
+    For farmers in {location}, India, provide schemes organized by use cases.
+    
+    Strictly output ONLY raw JSON. No markdown formatting.
+    Format:
     [
         {{
-            "name": "योजना का नाम (Scheme Name)",
-            "description": "यह योजना क्या है और किसके लिए है (1-2 वाक्य)",
-            "benefits": "मुख्य लाभ (जैसे सब्सिडी राशि, बीमा, आदि)",
-            "link": "https://official-government-link.gov.in"
+            "use_case": "Use case name in Hindi",
+            "schemes": [
+                {{
+                    "name": "योजना का नाम",
+                    "description": "विवरण (1-2 वाक्य)",
+                    "benefits": "मुख्य लाभ",
+                    "link": "https://official-link.gov.in"
+                }}
+            ]
         }}
     ]
+    
+    Include 4 use cases: "फसल बीमा और सुरक्षा", "वित्तीय सहायता और ऋण", "आधुनिक कृषि और तकनीक", "किसान कल्याण".
+    Each use case should have 2-3 relevant schemes.
     """
 
     try:
-        response = POLICY_MODEL.generate_content(prompt)
-        text = response.text.strip()
+        text = generate_ai_response(prompt)
         text = re.sub(r'^```json', '', text)
         text = re.sub(r'^```', '', text)
         text = re.sub(r'```$', '', text)
         
-        policies_data = json.loads(text)
+        policies_by_usecase = json.loads(text)
         
         return render(request, 'Policies.html', {
             'location': location,
-            'policies': policies_data
+            'policies_by_usecase': policies_by_usecase
         })
 
     except Exception as e:
         print(f"Error fetching/parsing policies: {e}")
-        text = locals().get('text', 'No raw response text captured.')
-        print(f"Raw AI response: {text}")
         return render(request, 'Policies.html', {
             'error': f'{location} के लिए योजनाओं को लोड करने में समस्या आई। कृपया पुनः प्रयास करें।'
         })

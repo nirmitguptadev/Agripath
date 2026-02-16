@@ -2,48 +2,17 @@ import os
 import json
 import re 
 import requests
-import google.generativeai as genai
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
+from core.ai_fallback import generate_ai_response
 
-# --- API Configuration (no changes) ---
-MODEL = None
-try:
-    GEMINI_API_KEY = settings.GEMINI_API_KEY
-    OPENWEATHER_API_KEY = settings.OPENWEATHER_API_KEY
-    genai.configure(api_key=GEMINI_API_KEY)
-    MODEL = genai.GenerativeModel('gemini-2.5-flash-lite')
-    print("Successfully configured Gemini and Weather APIs.")
-except (AttributeError, Exception) as e:
-    print(f"FATAL ERROR: Could not configure API keys. Error: {e}")
-    GEMINI_API_KEY = None
-    OPENWEATHER_API_KEY = None
+# --- API Configuration ---
+OPENWEATHER_API_KEY = getattr(settings, 'OPENWEATHER_API_KEY', None)
 
-# --- Centralized Gemini Response Function with Post-Processing ---
-def generate_gemini_response(prompt_content):
-    if not MODEL:
-        print("Attempted to call Gemini, but the model is not configured.")
-        return "क्षमा करें, मेरा AI कनेक्शन ठीक से काम नहीं कर रहा है।"
-    try:
-        response = MODEL.generate_content(prompt_content)
-        
-        # Post-processing step to guarantee no special characters
-        
-        raw_text = response.text
-        cleaned_text = re.sub(r'[!@#$*_-]', '', raw_text)
-        
-        return cleaned_text.strip() # Return the cleaned text
-        
-    except Exception as e:
-        print(f"GEMINI API ERROR: {e}")
-        return "क्षमा करें, AI से कनेक्ट करते समय एक त्रुटि हुई।"
-
-# --- Weather Helper Function  ---
 def get_weather_data(city_name):
-    
     if not OPENWEATHER_API_KEY: return None, "Weather API key not configured."
     base_url = "http://api.openweathermap.org/data/2.5/weather"
     params = {'q': city_name, 'appid': OPENWEATHER_API_KEY, 'units': 'metric', 'lang': 'hi'}
@@ -73,7 +42,7 @@ PERSONA_ACK = {'role': 'model', 'parts': ['जी, मैं समझ गया
 
 def handle_weather_query(user_prompt, history):
     city_extraction_prompt = f"इस वाक्य से केवल शहर का नाम निकालें: '{user_prompt}'. केवल एक शब्द में उत्तर दें।"
-    city_name = generate_gemini_response(city_extraction_prompt).strip()
+    city_name = generate_ai_response(city_extraction_prompt).strip()
 
     if not city_name or "क्षमा करें" in city_name or len(city_name.split()) > 3:
         return "मैं आपका शहर समझ नहीं पाया। क्या आप कृपया फिर से बता सकते हैं।"
@@ -94,7 +63,7 @@ def handle_weather_query(user_prompt, history):
         इस डेटा के आधार पर, किसान को एक सरल और स्वाभाविक सारांश (1-2 वाक्यों में) प्रदान करें।
         """]}
     ]
-    return generate_gemini_response(final_prompt_list)
+    return generate_ai_response(final_prompt_list)
 
 def handle_crop_recommendation(user_prompt, history):
     final_prompt_list = [
@@ -104,7 +73,7 @@ def handle_crop_recommendation(user_prompt, history):
         {'role': 'model', 'parts': ['जी, मैं हर फसल का नाम एक नई लाइन पर दूंगा, बिना किसी निशान के।']},
         *history
     ]
-    return generate_gemini_response(final_prompt_list)
+    return generate_ai_response(final_prompt_list)
 
 def handle_government_scheme(user_prompt, history):
     final_prompt_list = [
@@ -112,7 +81,7 @@ def handle_government_scheme(user_prompt, history):
         PERSONA_ACK,
         *history
     ]
-    return generate_gemini_response(final_prompt_list)
+    return generate_ai_response(final_prompt_list)
 
 def handle_general_conversation(user_prompt, history):
     final_prompt_list = [
@@ -120,7 +89,7 @@ def handle_general_conversation(user_prompt, history):
         PERSONA_ACK,
         *history
     ]
-    return generate_gemini_response(final_prompt_list)
+    return generate_ai_response(final_prompt_list)
 
 # ==============================================================================
 #  MAIN DJANGO VIEWS
@@ -132,9 +101,8 @@ def assistant_page(request):
 
 def get_greeting(request):
     fallback_greeting = "नमस्ते! मैं आपकी मदद के लिए तैयार हूँ।"
-    
     greeting_prompt = "आप AgriPath नाम के एक AI कृषि सहायक हैं। एक किसान के लिए एक छोटा, स्वाभाविक और मैत्रीपूर्ण नमस्ते हिंदी में उत्पन्न करें। केवल एक वाक्य।"
-    greeting_text = generate_gemini_response(greeting_prompt)
+    greeting_text = generate_ai_response(greeting_prompt)
     if "क्षमा करें" in greeting_text:
         return JsonResponse({'greeting': fallback_greeting})
     return JsonResponse({'greeting': greeting_text})
@@ -143,8 +111,6 @@ def get_greeting(request):
 def process_voice(request):
     if request.method != 'POST':
         return JsonResponse({'error': 'Invalid request method'}, status=405)
-    if not MODEL:
-        return JsonResponse({'response': 'क्षमा करें, मेरा AI कनेक्शन ठीक से काम नहीं कर रहा है।'}, status=500)
 
     try:
         data = json.loads(request.body)
@@ -152,26 +118,16 @@ def process_voice(request):
         if not user_prompt:
             return JsonResponse({'error': 'No text provided'}, status=400)
 
-        # 1. Get chat history from the session, ensure it is a list
-        
         history = request.session.get('chat_history', [])
-
-        # 2. Add the user's new message to the history
-        
         history.append({'role': 'user', 'parts': [user_prompt]})
 
-        # --- Step 1: Classification  ---
         classifier_prompt = f"""User query: "{user_prompt}". Classify this into: 'weather', 'crop_recommendation', 'government_scheme', 'general_conversation'. Respond only with the category name."""
-        category = generate_gemini_response(classifier_prompt).strip().lower()
+        category = generate_ai_response(classifier_prompt).strip().lower()
 
-        # 3. Create a **copy** of the history for the AI handlers to use.
-        
         conversation_context = list(history)
         
-        # --- Step 2: Routing ---
         final_response_text = ""
         if 'weather' in category:
-            
             final_response_text = handle_weather_query(user_prompt, conversation_context)
         elif 'crop' in category:
             final_response_text = handle_crop_recommendation(user_prompt, conversation_context)
@@ -180,11 +136,7 @@ def process_voice(request):
         else:
             final_response_text = handle_general_conversation(user_prompt, conversation_context)
 
-        # 4. Add the AI's response to the history list
-        
         history.append({'role': 'model', 'parts': [final_response_text]})
-
-        # 5. Save the updated history back to the session
         request.session['chat_history'] = history
 
         return JsonResponse({'response': final_response_text})

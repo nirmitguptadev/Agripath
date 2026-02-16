@@ -1,0 +1,240 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AgriPath - Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        max-width: 1400px;
+        margin: 2rem auto;
+        padding: 0 2rem;
+    }
+    
+    .dashboard-title {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1B5E20;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .widgets-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .widget {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .widget:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    }
+    
+    .widget-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #10b981;
+    }
+    
+    .widget-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #1B5E20;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .widget-icon {
+        font-size: 1.5rem;
+    }
+    
+    .expand-btn {
+        background: #10b981;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+    }
+    
+    .expand-btn:hover {
+        background: #059669;
+        transform: scale(1.05);
+    }
+    
+    .widget-content {
+        color: #546e7a;
+        font-size: 1rem;
+    }
+    
+    .weather-temp {
+        font-size: 3rem;
+        font-weight: 300;
+        color: #1B5E20;
+        margin: 1rem 0;
+    }
+    
+    .stat-value {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #10b981;
+        margin: 1rem 0;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        color: #546e7a;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .no-location-msg {
+        background: #fff7ed;
+        border: 2px solid #f97316;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        color: #c2410c;
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+    <h1 class="dashboard-title">🌾 AgriPath Dashboard</h1>
+    
+    {% if not location %}
+    <div class="no-location-msg">
+        <strong>⚠️ Location Required:</strong> Please update your profile location to unlock all features.
+    </div>
+    {% endif %}
+    
+    <div class="widgets-grid">
+        <!-- Weather Widget -->
+        <div class="widget">
+            <div class="widget-header">
+                <h2 class="widget-title">
+                    <span class="widget-icon">🌤️</span>
+                    Weather
+                </h2>
+                <a href="{% url 'Weather' %}" class="expand-btn">View Details →</a>
+            </div>
+            <div class="widget-content">
+                {% if weather_data %}
+                    <div class="weather-temp">{{ weather_data.temperature|floatformat:0 }}°C</div>
+                    <p><strong>{{ weather_data.city }}</strong></p>
+                    <p>{{ weather_data.description|title }}</p>
+                    <p>Humidity: {{ weather_data.humidity }}%</p>
+                {% else %}
+                    <p>Location required to show weather data.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Crop Tracker Widget -->
+        <div class="widget">
+            <div class="widget-header">
+                <h2 class="widget-title">
+                    <span class="widget-icon">📊</span>
+                    Crop Tracker
+                </h2>
+                <a href="{% url 'tracker_dashboard' %}" class="expand-btn">View Details →</a>
+            </div>
+            <div class="widget-content">
+                <div class="stat-value">{{ active_crops_count }}</div>
+                <p class="stat-label">Active Crops</p>
+                <div class="stat-value" style="font-size: 1.8rem; margin-top: 1.5rem;">₹{{ total_profit|floatformat:0 }}</div>
+                <p class="stat-label">Total Profit</p>
+            </div>
+        </div>
+        
+        <!-- AI Assistant Widget -->
+        <div class="widget">
+            <div class="widget-header">
+                <h2 class="widget-title">
+                    <span class="widget-icon">🤖</span>
+                    AI Assistant
+                </h2>
+                <a href="{% url 'assistant_page' %}" class="expand-btn">Start Chat →</a>
+            </div>
+            <div class="widget-content">
+                <p>Get instant answers to your farming questions in Hindi.</p>
+                <ul style="margin-top: 1rem; line-height: 2;">
+                    <li>✓ Weather queries</li>
+                    <li>✓ Crop recommendations</li>
+                    <li>✓ Government schemes</li>
+                    <li>✓ General farming advice</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Crop Advisory Widget -->
+        <div class="widget">
+            <div class="widget-header">
+                <h2 class="widget-title">
+                    <span class="widget-icon">🌱</span>
+                    Crop Advisory
+                </h2>
+                <a href="{% url 'CropAdvisory' %}" class="expand-btn">Get Advisory →</a>
+            </div>
+            <div class="widget-content">
+                <p>AI-powered crop recommendations based on your location's soil and weather conditions.</p>
+                <p style="margin-top: 1rem;"><strong>Get personalized planting calendar</strong></p>
+            </div>
+        </div>
+        
+        <!-- Government Policies Widget -->
+        <div class="widget">
+            <div class="widget-header">
+                <h2 class="widget-title">
+                    <span class="widget-icon">📋</span>
+                    Policies
+                </h2>
+                <a href="{% url 'Policies' %}" class="expand-btn">View Schemes →</a>
+            </div>
+            <div class="widget-content">
+                <p>Discover government schemes and subsidies available for farmers in your region.</p>
+                <ul style="margin-top: 1rem; line-height: 2;">
+                    <li>• Crop Insurance</li>
+                    <li>• Financial Aid</li>
+                    <li>• Modern Agriculture</li>
+                    <li>• Farmer Welfare</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Crop Dictionary Widget -->
+        <div class="widget">
+            <div class="widget-header">
+                <h2 class="widget-title">
+                    <span class="widget-icon">📖</span>
+                    Crop Dictionary
+                </h2>
+                <a href="{% url 'crop_list' %}" class="expand-btn">Browse Crops →</a>
+            </div>
+            <div class="widget-content">
+                <p>Comprehensive database of crops with detailed information on cultivation, care, and harvesting.</p>
+                <p style="margin-top: 1rem;"><strong>Search from 100+ crops</strong></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

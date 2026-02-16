@@ -1,12 +1,12 @@
 # accounts/views.py
 import random
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from twilio.rest import Client
 from django.conf import settings
-from .forms import PhoneForm, OTPForm, ProfileEditForm # <-- Ensure this import is correct
+from .forms import PhoneForm, OTPForm, ProfileEditForm
 from .models import Profile
 
 # --- Twilio Client Initialization ---
@@ -18,18 +18,31 @@ def get_twilio_client():
 # --- Main Login Flow ---
 
 def request_otp(request):
+    # Handle username/password login
+    if request.method == 'POST' and 'username' in request.POST:
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user:
+            login(request, user)
+            return redirect('ai')
+        else:
+            return render(request, 'accounts/request_otp.html', {
+                'form': PhoneForm(),
+                'error': 'Invalid username or password'
+            })
+    
+    # Handle OTP login
     if request.method == 'POST':
         form = PhoneForm(request.POST)
         if form.is_valid():
             phone_number = form.cleaned_data['phone_number']
             otp = random.randint(100000, 999999)
 
-            # Store phone number and OTP in session
             request.session['phone_number'] = str(phone_number)
             request.session['otp'] = otp
-            print(f"Generated OTP for {phone_number}: {otp}") # For debugging
+            print(f"Generated OTP for {phone_number}: {otp}")
 
-            # Send OTP via Twilio
             client = get_twilio_client()
             if client:
                 try:
@@ -40,7 +53,6 @@ def request_otp(request):
                     )
                 except Exception as e:
                     print(f"Twilio Error: {e}")
-                    # Handle SMS sending failure (e.g., show an error message)
 
             return redirect('verify_otp')
     else:

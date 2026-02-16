@@ -17,27 +17,32 @@
     <div class="message-box">
         <p>⚠️ {{ error }}</p>
     </div>
-    {% elif policies %}
-    <div class="policy-grid">
-        {% for policy in policies %}
-        <div class="policy-card">
-            <h2 class="policy-name">{{ policy.name }}</h2>
-            <div class="policy-section">
-                <span class="policy-label">Description</span>
-                <p class="policy-text">{{ policy.description }}</p>
+    {% elif policies_by_usecase %}
+        {% for category in policies_by_usecase %}
+        <div style="margin-bottom: 3rem;">
+            <h2 style="color: #10b981 !important; margin-bottom: 1.5rem; padding-bottom: 0.5rem; border-bottom: 3px solid #10b981; font-size: 2rem !important; font-weight: 800 !important; text-transform: uppercase; letter-spacing: 1px; display: block !important; visibility: visible !important;">{{ category.use_case }}</h2>
+            <div class="policy-grid">
+                {% for policy in category.schemes %}
+                <div class="policy-card">
+                    <h3 class="policy-name">{{ policy.name }}</h3>
+                    <div class="policy-section">
+                        <span class="policy-label" style="font-weight: 700; font-size: 1rem; color: #000000; text-transform: uppercase;">Description</span>
+                        <p class="policy-text">{{ policy.description }}</p>
+                    </div>
+                    <div class="policy-section">
+                        <span class="policy-label" style="font-weight: 700; font-size: 1rem; color: #000000; text-transform: uppercase;">Benefits</span>
+                        <p class="policy-text">{{ policy.benefits }}</p>
+                    </div>
+                    {% if policy.link and policy.link != "N/A" %}
+                    <a href="{{ policy.link }}" target="_blank" class="info-button">
+                        More Info
+                    </a>
+                    {% endif %}
+                </div>
+                {% endfor %}
             </div>
-            <div class="policy-section">
-                <span class="policy-label">Benefits</span>
-                <p class="policy-text">{{ policy.benefits }}</p>
-            </div>
-            {% if policy.link and policy.link != "N/A" %}
-            <a href="{{ policy.link }}" target="_blank" class="info-button">
-                More Info
-            </a>
-            {% endif %}
         </div>
         {% endfor %}
-    </div>
     {% else %}
     <div class="message-box">
         <p>🔄 Loading policies... Please wait.</p>
