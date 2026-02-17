@@ -13,7 +13,7 @@ GROQ_CLIENT = None
 if GEMINI_API_KEY:
     try:
         genai.configure(api_key=GEMINI_API_KEY)
-        GEMINI_MODEL = genai.GenerativeModel('gemini-1.5-flash')
+        GEMINI_MODEL = genai.GenerativeModel('gemini-2.5-flash')
     except Exception as e:
         print(f"Gemini config error: {e}")
 
@@ -72,3 +72,45 @@ def generate_ai_response(prompt_content):
             return "क्षमा करें, AI से कनेक्ट करते समय एक त्रुटि हुई।"
     
     return "क्षमा करें, मेरा AI कनेक्शन ठीक से काम नहीं कर रहा है।"
+
+def analyze_plant_image(image_path):
+    """
+    Analyzes a plant image using Gemini Vision to detect diseases and suggest remedies.
+    """
+    if not GEMINI_MODEL:
+        return "AI मॉडल कॉन्फ़िगर नहीं है।"
+
+    try:
+        import PIL.Image
+        img = PIL.Image.open(image_path)
+        
+        prompt = """
+        You are an expert plant pathologist. Analyze this image of a plant.
+        1. Identify the plant and any disease/deficiency visible.
+        2. If healthy, say "The plant appears healthy."
+        3. If sick, list the name of the disease, symptoms observed, and 2-3 organic/chemical remedies.
+        
+        Provide the response in Hindi, formatted as HTML (no markdown blocks, just tags).
+        Use <h3> for headings, <p> for text, and <ul>/<li> for lists.
+        The structure should be:
+        <div class="diagnosis-result">
+            <h3>रोग की पहचान (Diagnosis)</h3>
+            <p>...details...</p>
+            <h3>लक्षण (Symptoms)</h3>
+            <ul>...</ul>
+            <h3>उपचार (Treatment)</h3>
+            <ul>...</ul>
+        </div>
+        """
+        
+        response = GEMINI_MODEL.generate_content([prompt, img])
+        
+        # Clean up markdown code blocks if present
+        text = response.text
+        text = re.sub(r'```html', '', text)
+        text = re.sub(r'```', '', text)
+        return text.strip()
+        
+    except Exception as e:
+        print(f"Plant Doctor Error: {e}")
+        return "क्षमा करें, छवि का विश्लेषण करते समय त्रुटि हुई। कृपया बाद में प्रयास करें।"

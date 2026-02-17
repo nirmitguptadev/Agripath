@@ -4,8 +4,14 @@ import requests
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
+import os
+import time
+from PIL import Image
+from django.conf import settings
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 from core.crop_model import predict_suitable_crops, get_soil_data_by_location, CROP_PREDICTOR_MODEL
-from core.ai_fallback import generate_ai_response
+from core.ai_fallback import generate_ai_response, analyze_plant_image
 
 OPENWEATHER_API_KEY = getattr(settings, 'OPENWEATHER_API_KEY', None)
 
@@ -273,4 +279,50 @@ def Fertilizer(request):
 
 def about(request):
     return render(request,'about.html')
+
+
+@login_required
+def plant_doctor(request):
+    diagnosis = None
+    error = None
+    
+    if request.method == 'POST' and request.FILES.get('plant_image'):
+        image_file = request.FILES['plant_image']
+        
+        # 1. Save locally temporarily
+        # We need a physical file for Gemini (or at least it's easier to handle resizing)
+        # Use a safe temporary directory
+        temp_dir = os.path.join(settings.MEDIA_ROOT, 'temp_uploads')
+        os.makedirs(temp_dir, exist_ok=True)
+        
+        temp_filename = f"temp_plant_{int(time.time())}_{image_file.name}"
+        temp_path = os.path.join(temp_dir, temp_filename)
+        
+        try:
+            # Save the uploaded file
+            with open(temp_path, 'wb+') as destination:
+                for chunk in image_file.chunks():
+                    destination.write(chunk)
+            
+            # Resize image to max 800x800 to save bandwidth/compute
+            with Image.open(temp_path) as img:
+                img.thumbnail((800, 800))
+                img.save(temp_path)
+            
+            # 2. Analyze with Gemini
+            diagnosis = analyze_plant_image(temp_path)
+            
+        except Exception as e:
+            print(f"Error processing image: {e}")
+            error = "chavi ko processing karte samay truti hui. kripya punah prayas karen." # Using Hinglish/Hindi for consistency with error messages in this file
+        
+        finally:
+            # 3. Cleanup: Delete the file
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+    
+    return render(request, 'plant_doctor.html', {
+        'diagnosis': diagnosis, 
+        'error': error
+    })
 

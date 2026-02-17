@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AgriPath - Plant Doctor{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+    body {
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 50%, #a5d6a7 100%);
+        font-family: 'Poppins', sans-serif;
+    }
+
+    .floating-elements {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+    }
+
+    .floating-icon {
+        position: absolute;
+        font-size: 2rem;
+        opacity: 0.1;
+        animation: float 20s infinite;
+    }
+
+    @keyframes float {
+
+        0%,
+        100% {
+            transform: translateY(0) rotate(0deg);
+        }
+
+        25% {
+            transform: translateY(-100px) rotate(90deg);
+        }
+
+        50% {
+            transform: translateY(-50px) rotate(180deg);
+        }
+
+        75% {
+            transform: translateY(-150px) rotate(270deg);
+        }
+    }
+
+    .container {
+        position: relative;
+        z-index: 1;
+        padding: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .hero-section {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: linear-gradient(135deg, #ef5350, #c62828);
+        /* Red/Medical theme */
+        border-radius: 20px;
+        margin-bottom: 3rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(198, 40, 40, 0.3);
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+        animation: pulse 4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+        0%,
+        100% {
+            transform: scale(1);
+            opacity: 0.5;
+        }
+
+        50% {
+            transform: scale(1.1);
+            opacity: 0.8;
+        }
+    }
+
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    }
+
+    .hero-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.95;
+        position: relative;
+        z-index: 1;
+    }
+
+    .doctor-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .upload-area {
+        border: 3px dashed #e0e0e0;
+        border-radius: 15px;
+        padding: 3rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        background: #fafafa;
+    }
+
+    .upload-area:hover {
+        border-color: #ef5350;
+        background: #ffebee;
+    }
+
+    .upload-icon {
+        font-size: 4rem;
+        color: #ef5350;
+        margin-bottom: 1rem;
+    }
+
+    .file-input {
+        display: none;
+    }
+
+    .submit-btn {
+        background: linear-gradient(135deg, #ef5350, #c62828);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        border-radius: 50px;
+        cursor: pointer;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+        width: 100%;
+        max-width: 300px;
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(198, 40, 40, 0.4);
+    }
+
+    /* Result Styling */
+    .diagnosis-result h3 {
+        color: #c62828;
+        font-size: 1.4rem;
+        margin-top: 1.5rem;
+        border-bottom: 2px solid #ffebee;
+        padding-bottom: 0.5rem;
+    }
+
+    .diagnosis-result ul {
+        padding-left: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .diagnosis-result li {
+        margin-bottom: 0.5rem;
+        color: #455a64;
+    }
+
+    .diagnosis-result p {
+        color: #455a64;
+        line-height: 1.6;
+    }
+
+    .loading-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(255, 255, 255, 0.9);
+        z-index: 1000;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+    }
+
+    .loading-spinner {
+        width: 60px;
+        height: 60px;
+        border: 5px solid #ffebee;
+        border-top: 5px solid #ef5350;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-bottom: 1rem;
+    }
+
+    @keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="floating-elements">
+    <i class="fas fa-seedling floating-icon" style="top: 10%; left: 10%; animation-delay: 0s;"></i>
+    <i class="fas fa-stethoscope floating-icon" style="top: 20%; right: 15%; animation-delay: 2s; color: #ef5350;"></i>
+    <i class="fas fa-user-md floating-icon" style="bottom: 20%; left: 20%; animation-delay: 4s; color: #ef5350;"></i>
+    <i class="fas fa-leaf floating-icon" style="top: 60%; right: 10%; animation-delay: 6s;"></i>
+    <i class="fas fa-sun floating-icon" style="bottom: 30%; right: 25%; animation-delay: 8s;"></i>
+</div>
+
+<div class="container">
+    <div class="hero-section">
+        <h1 class="hero-title">
+            <i class="fas fa-user-md"></i> AI Plant Doctor
+        </h1>
+        <p class="hero-subtitle">Upload a photo of your sick plant. Our AI will diagnose the disease and suggest
+            remedies instantly.</p>
+    </div>
+
+    <div class="doctor-card">
+        {% if error %}
+        <div
+            style="background: #ffebee; color: #c62828; padding: 1rem; border-radius: 10px; margin-bottom: 1rem; border-left: 5px solid #ef5350;">
+            <i class="fas fa-exclamation-circle"></i> {{ error }}
+        </div>
+        {% endif %}
+
+        {% if diagnosis %}
+        <div style="animation: slideIn 0.5s ease-out;">
+            <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+                <div
+                    style="background: #e8f5e9; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-check-circle" style="font-size: 2rem; color: #2e7d32;"></i>
+                </div>
+                <div>
+                    <h2 style="margin: 0; color: #2e7d32;">Diagnosis Complete</h2>
+                    <p style="margin: 0; color: #666;">Here is the AI analysis of your plant.</p>
+                </div>
+            </div>
+
+            <div class="diagnosis-result">
+                {{ diagnosis|safe }}
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <a href="{% url 'plant_doctor' %}" class="submit-btn"
+                    style="text-decoration: none; display: inline-block;">
+                    <i class="fas fa-camera"></i> Scan Another Plant
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
+            {% csrf_token %}
+            <div class="upload-area" id="dropZone">
+                <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                <h3>Drag & Drop or Click to Upload</h3>
+                <p style="color: #666;">Supports JPG, PNG, JPEG</p>
+                <input type="file" name="plant_image" id="fileInput" class="file-input" accept="image/*" required>
+                <div id="fileName" style="margin-top: 1rem; font-weight: 600; color: #ef5350;"></div>
+            </div>
+
+            <div style="text-align: center;">
+                <button type="submit" class="submit-btn" id="submitBtn" style="display: none;">
+                    <i class="fas fa-microscope"></i> Analyze Plant
+                </button>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loading-spinner"></div>
+    <h3 style="color: #ef5350;">Analyzing Plant...</h3>
+    <p>Please wait while AI detects the issue.</p>
+</div>
+
+<script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileName = document.getElementById('fileName');
+    const submitBtn = document.getElementById('submitBtn');
+    const uploadForm = document.getElementById('uploadForm');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+
+    if (dropZone) {
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#c62828';
+            dropZone.style.background = '#ffebee';
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.style.borderColor = '#e0e0e0';
+            dropZone.style.background = '#fafafa';
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.style.borderColor = '#e0e0e0';
+            dropZone.style.background = '#fafafa';
+
+            if (e.dataTransfer.files.length) {
+                fileInput.files = e.dataTransfer.files;
+                updateFile(fileInput.files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', () => {
+            if (fileInput.files.length) {
+                updateFile(fileInput.files[0]);
+            }
+        });
+    }
+
+    function updateFile(file) {
+        fileName.textContent = `Selected: ${file.name}`;
+        submitBtn.style.display = 'inline-block';
+
+        // Show local preview if possible (optional)
+        // const reader = new FileReader();
+        // reader.onload = (e) => { ... }
+        // reader.readAsDataURL(file);
+    }
+
+    if (uploadForm) {
+        uploadForm.addEventListener('submit', () => {
+            loadingOverlay.style.display = 'flex';
+        });
+    }
+</script>
+{% endblock %}
