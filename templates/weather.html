@@ -9,45 +9,52 @@
     body {
         background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
     }
-    
+
     .weather-hero {
         text-align: center;
         padding: 3rem 2rem;
-        background: linear-gradient(135deg, rgba(14,165,233,0.9), rgba(2,132,199,0.9));
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.9), rgba(2, 132, 199, 0.9));
         border-radius: 20px;
         margin-bottom: 2rem;
         color: white;
         position: relative;
         overflow: hidden;
     }
-    
+
     .weather-hero::before {
         content: '';
         position: absolute;
         width: 200px;
         height: 200px;
-        background: rgba(255,255,255,0.1);
+        background: rgba(255, 255, 255, 0.1);
         border-radius: 50%;
         top: -100px;
         right: -100px;
         animation: float 6s ease-in-out infinite;
     }
-    
+
     @keyframes float {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(20px); }
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(20px);
+        }
     }
-    
+
     .current-weather-card {
         background: white;
         border-radius: 25px;
         padding: 3rem;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
         margin-bottom: 2rem;
         position: relative;
         overflow: hidden;
     }
-    
+
     .current-weather-card::before {
         content: '';
         position: absolute;
@@ -59,12 +66,17 @@
         background-size: 200% 100%;
         animation: shimmer 3s linear infinite;
     }
-    
+
     @keyframes shimmer {
-        0% { background-position: -200% 0; }
-        100% { background-position: 200% 0; }
+        0% {
+            background-position: -200% 0;
+        }
+
+        100% {
+            background-position: 200% 0;
+        }
     }
-    
+
     .temp-display {
         font-size: 5rem;
         font-weight: 300;
@@ -73,33 +85,47 @@
         margin: 1rem 0;
         animation: pulse 2s ease-in-out infinite;
     }
-    
+
     @keyframes pulse {
-        0%, 100% { transform: scale(1); }
-        50% { transform: scale(1.05); }
+
+        0%,
+        100% {
+            transform: scale(1);
+        }
+
+        50% {
+            transform: scale(1.05);
+        }
     }
-    
+
     .weather-icon-large {
         width: 150px;
         height: 150px;
         margin: 0 auto;
         display: block;
-        filter: drop-shadow(0 10px 20px rgba(14,165,233,0.3));
+        filter: drop-shadow(0 10px 20px rgba(14, 165, 233, 0.3));
         animation: bounce 3s ease-in-out infinite;
     }
-    
+
     @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-20px); }
+
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+
+        50% {
+            transform: translateY(-20px);
+        }
     }
-    
+
     .weather-stats {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 1.5rem;
         margin-top: 2rem;
     }
-    
+
     .stat-box {
         background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
         padding: 1.5rem;
@@ -108,45 +134,45 @@
         transition: all 0.3s;
         border: 2px solid transparent;
     }
-    
+
     .stat-box:hover {
         transform: translateY(-5px);
         border-color: #0ea5e9;
-        box-shadow: 0 10px 25px rgba(14,165,233,0.2);
+        box-shadow: 0 10px 25px rgba(14, 165, 233, 0.2);
     }
-    
+
     .stat-icon {
         font-size: 2rem;
         color: #0ea5e9;
         margin-bottom: 0.5rem;
     }
-    
+
     .stat-value {
         font-size: 1.8rem;
         font-weight: 700;
         color: #0c4a6e;
     }
-    
+
     .stat-label {
         font-size: 0.9rem;
         color: #64748b;
         text-transform: uppercase;
     }
-    
+
     .forecast-container {
         background: white;
         border-radius: 20px;
         padding: 2rem;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     }
-    
+
     .forecast-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
         gap: 1rem;
         margin-top: 1.5rem;
     }
-    
+
     .forecast-card {
         background: linear-gradient(135deg, #f8fafc, #f1f5f9);
         padding: 1.5rem;
@@ -155,25 +181,25 @@
         transition: all 0.3s;
         border: 2px solid transparent;
     }
-    
+
     .forecast-card:hover {
         transform: scale(1.05);
         border-color: #0ea5e9;
         background: linear-gradient(135deg, #e0f2fe, #bae6fd);
     }
-    
+
     .forecast-day {
         font-weight: 700;
         color: #0c4a6e;
         margin-bottom: 0.5rem;
     }
-    
+
     .forecast-icon {
         width: 60px;
         height: 60px;
         margin: 0.5rem auto;
     }
-    
+
     .section-title {
         font-size: 1.8rem;
         font-weight: 700;
@@ -200,10 +226,12 @@
     </div>
 
     {% if error %}
-    <div style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-left: 5px solid #f59e0b; padding: 2rem; border-radius: 15px; text-align: center;">
+    <div
+        style="background: linear-gradient(135deg, #fef3c7, #fde68a); border-left: 5px solid #f59e0b; padding: 2rem; border-radius: 15px; text-align: center;">
         <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #f59e0b; margin-bottom: 1rem;"></i>
         <p style="font-size: 1.2rem; color: #92400e;">{{ error }}</p>
-        <a href="{% url 'view_profile' %}" style="display: inline-block; margin-top: 1rem; background: #f59e0b; color: white; padding: 0.8rem 2rem; border-radius: 50px; text-decoration: none; font-weight: 600;">
+        <a href="{% url 'view_profile' %}"
+            style="display: inline-block; margin-top: 1rem; background: #f59e0b; color: white; padding: 0.8rem 2rem; border-radius: 50px; text-decoration: none; font-weight: 600;">
             Update Profile
         </a>
     </div>
@@ -211,12 +239,15 @@
 
     <!-- Current Weather -->
     <div class="current-weather-card">
-        <img src="http://openweathermap.org/img/wn/{{ current_data.icon }}@4x.png" alt="Weather" class="weather-icon-large">
+        <div class="weather-icon-large" style="text-align: center;">
+            <i class="fas {{ current_data.icon_style.icon }} {{ current_data.icon_style.animation }}"
+                style="color: {{ current_data.icon_style.color }}; font-size: 8rem;"></i>
+        </div>
         <div class="temp-display">{{ current_data.temperature|floatformat:0 }}°C</div>
         <p style="text-align: center; font-size: 1.5rem; color: #64748b; margin-bottom: 2rem;">
             {{ current_data.description|capfirst }}
         </p>
-        
+
         <div class="weather-stats">
             <div class="stat-box">
                 <div class="stat-icon"><i class="fas fa-tint"></i></div>
@@ -256,7 +287,8 @@
             {% for day in forecast %}
             <div class="forecast-card">
                 <div class="forecast-day">{{ day.date|date:"D" }}</div>
-                <img src="http://openweathermap.org/img/wn/{{ day.icon }}@2x.png" alt="{{ day.description }}" class="forecast-icon">
+                <img src="http://openweathermap.org/img/wn/{{ day.icon }}@2x.png" alt="{{ day.description }}"
+                    class="forecast-icon">
                 <div style="font-size: 1.3rem; font-weight: 700; color: #0ea5e9; margin: 0.5rem 0;">
                     {{ day.max_temp|floatformat:0 }}°
                 </div>
@@ -272,7 +304,8 @@
     </div>
 
     {% if alerts %}
-    <div style="background: linear-gradient(135deg, #fee2e2, #fecaca); border-left: 5px solid #ef4444; padding: 2rem; border-radius: 15px; margin-top: 2rem;">
+    <div
+        style="background: linear-gradient(135deg, #fee2e2, #fecaca); border-left: 5px solid #ef4444; padding: 2rem; border-radius: 15px; margin-top: 2rem;">
         <h3 style="color: #991b1b; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
             <i class="fas fa-exclamation-circle"></i> Severe Weather Alert
         </h3>

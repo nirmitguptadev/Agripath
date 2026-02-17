@@ -15,6 +15,32 @@ from core.ai_fallback import generate_ai_response, analyze_plant_image
 
 OPENWEATHER_API_KEY = getattr(settings, 'OPENWEATHER_API_KEY', None)
 
+def get_weather_style(icon_code):
+    """
+    Maps OpenWeatherMap icon code to FontAwesome class and color.
+    """
+    mapping = {
+        '01d': {'icon': 'fa-sun', 'color': '#f59e0b', 'animation': 'spin-slow'},       # Clear Day - Orange
+        '01n': {'icon': 'fa-moon', 'color': '#cbd5e1', 'animation': 'pulse'},          # Clear Night - Light Grey
+        '02d': {'icon': 'fa-cloud-sun', 'color': '#fcd34d', 'animation': 'float'},     # Few Clouds Day
+        '02n': {'icon': 'fa-cloud-moon', 'color': '#94a3b8', 'animation': 'float'},    # Few Clouds Night
+        '03d': {'icon': 'fa-cloud', 'color': '#e2e8f0', 'animation': 'float'},         # Scattered Clouds
+        '03n': {'icon': 'fa-cloud', 'color': '#64748b', 'animation': 'float'},
+        '04d': {'icon': 'fa-cloud', 'color': '#94a3b8', 'animation': 'float'},         # Broken Clouds
+        '04n': {'icon': 'fa-cloud', 'color': '#475569', 'animation': 'float'},
+        '09d': {'icon': 'fa-cloud-showers-heavy', 'color': '#3b82f6', 'animation': 'pulse'}, # Shower Rain
+        '09n': {'icon': 'fa-cloud-showers-heavy', 'color': '#1d4ed8', 'animation': 'pulse'},
+        '10d': {'icon': 'fa-cloud-sun-rain', 'color': '#60a5fa', 'animation': 'pulse'}, # Rain Day
+        '10n': {'icon': 'fa-cloud-moon-rain', 'color': '#3b82f6', 'animation': 'pulse'}, # Rain Night
+        '11d': {'icon': 'fa-bolt', 'color': '#fbbf24', 'animation': 'shake'},          # Thunderstorm
+        '11n': {'icon': 'fa-bolt', 'color': '#fbbf24', 'animation': 'shake'},
+        '13d': {'icon': 'fa-snowflake', 'color': '#bae6fd', 'animation': 'spin'},      # Snow
+        '13n': {'icon': 'fa-snowflake', 'color': '#bae6fd', 'animation': 'spin'},
+        '50d': {'icon': 'fa-smog', 'color': '#94a3b8', 'animation': 'float'},          # Mist
+        '50n': {'icon': 'fa-smog', 'color': '#64748b', 'animation': 'float'},
+    }
+    return mapping.get(icon_code, {'icon': 'fa-cloud', 'color': '#94a3b8', 'animation': ''})
+
 def get_current_weather_data(city_name):
     if not OPENWEATHER_API_KEY: return None, "Weather API key not configured."
     base_url = "http://api.openweathermap.org/data/2.5/weather"
@@ -24,12 +50,19 @@ def get_current_weather_data(city_name):
         if response.status_code == 404: return None, f"City '{city_name}' not found."
         response.raise_for_status()
         data = response.json()
+        
+        # Get icon style
+        icon_code = data["weather"][0]["icon"]
+        icon_style = get_weather_style(icon_code)
+
         return {
             "lat": data["coord"]["lat"],
             "lon": data["coord"]["lon"],
             "city": data.get("name"), 
             "temperature": data["main"]["temp"],
             "description": data["weather"][0]["description"], 
+            "icon": icon_code,
+            "icon_style": icon_style, # Add style data
             "humidity": data["main"]["humidity"],
             "pressure": data["main"]["pressure"], 
             "wind_speed": data["wind"]["speed"], 
