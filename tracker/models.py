@@ -34,6 +34,9 @@ class CropTracker(models.Model):
     cost = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     revenue = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     
+    # Snapshot of location where this crop was grown (fixes issue when user moves)
+    location = models.CharField(max_length=100, blank=True)
+    
     strategy = models.TextField(blank=True, help_text="Notes or strategy for this crop")
     
     created_at = models.DateTimeField(auto_now_add=True)

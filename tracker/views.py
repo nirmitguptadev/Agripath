@@ -59,6 +59,9 @@ def add_crop(request):
         if form.is_valid():
             crop_tracker = form.save(commit=False)
             crop_tracker.user = request.user
+            # Save the location where this crop is being grown (snapshot)
+            if hasattr(request.user, 'profile') and request.user.profile.location:
+                crop_tracker.location = request.user.profile.location
             crop_tracker.save()
             return redirect('tracker_dashboard')
     else:

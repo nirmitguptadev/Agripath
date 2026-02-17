@@ -13,8 +13,9 @@ def get_location_based_recommendations(user_location, limit=6):
         return []
     
     # Get all completed profitable crops from users in the same location
+    # FIX: Use the location where the crop was ACTUALLY grown, not where the user is now.
     location_crops = CropTracker.objects.filter(
-        user__profile__location__iexact=user_location,
+        location__iexact=user_location,
         status='Completed',
         revenue__gt=F('cost')
     ).select_related('crop', 'user__profile')

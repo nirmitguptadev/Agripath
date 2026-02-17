@@ -13,7 +13,7 @@ GROQ_CLIENT = None
 if GEMINI_API_KEY:
     try:
         genai.configure(api_key=GEMINI_API_KEY)
-        GEMINI_MODEL = genai.GenerativeModel('gemini-2.5-flash-lite')
+        GEMINI_MODEL = genai.GenerativeModel('gemini-1.5-flash')
     except Exception as e:
         print(f"Gemini config error: {e}")
 

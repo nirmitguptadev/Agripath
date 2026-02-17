@@ -25,7 +25,7 @@ def request_otp(request):
         user = authenticate(request, username=username, password=password)
         if user:
             login(request, user)
-            return redirect('ai')
+            return redirect('dashboard')
         else:
             return render(request, 'accounts/request_otp.html', {
                 'form': PhoneForm(),
@@ -101,14 +101,14 @@ def setup_profile(request):
     # Check if the profile is already complete (based on location being set)
     # If the user somehow navigated back here but has a location, redirect them away.
     if profile.location and not request.GET.get('force'):
-        return redirect('ai')
+        return redirect('dashboard')
 
     if request.method == 'POST':
         # [MODIFIED] Use the full ProfileEditForm for comprehensive setup
         form = ProfileEditForm(request.POST, request.FILES, instance=profile)
         if form.is_valid():
             form.save()
-            return redirect('ai') 
+            return redirect('dashboard') 
     else:
         # Pass the full form for the user to complete all details
         form = ProfileEditForm(instance=profile)
