@@ -40,16 +40,33 @@ PERSONA_PROMPT = {
 PERSONA_ACK = {'role': 'model', 'parts': ['जी, मैं समझ गया। मैं एक किसान मित्र की तरह सरल हिंदी में बात करूँगा।']}
 
 
-def handle_weather_query(user_prompt, history):
-    city_extraction_prompt = f"इस वाक्य से केवल शहर का नाम निकालें: '{user_prompt}'. केवल एक शब्द में उत्तर दें।"
-    city_name = generate_ai_response(city_extraction_prompt).strip()
-
-    if not city_name or "क्षमा करें" in city_name or len(city_name.split()) > 3:
-        return "मैं आपका शहर समझ नहीं पाया। क्या आप कृपया फिर से बता सकते हैं।"
+def handle_weather_query(user_prompt, history, user_location=None):
+    # Simple check: if query doesn't contain common city indicators, use default location
+    common_cities = ['दिल्ली', 'मुंबई', 'कोलकाता', 'चेन्नई', 'बेंगलुरु', 'हैदराबाद', 'अहमदाबाद', 'पुणे', 'जयपुर', 'लखनउ', 'कानपुर', 'delhi', 'mumbai', 'kolkata', 'chennai', 'bangalore', 'hyderabad']
+    
+    city_mentioned = False
+    for city in common_cities:
+        if city.lower() in user_prompt.lower():
+            city_mentioned = True
+            break
+    
+    if not city_mentioned:
+        # No specific city mentioned, use user's location
+        if user_location:
+            city_name = user_location
+        else:
+            return "कृपया अपनी प्रोफाइल में अपना स्थान अपडेट करें या शहर का नाम बताएं।"
+    else:
+        # Extract city name using AI
+        city_extraction_prompt = f"इस वाक्य से केवल शहर का नाम निकालें: '{user_prompt}'. केवल शहर का नाम दें, कुछ और नहीं।"
+        city_name = generate_ai_response(city_extraction_prompt).strip()
+        
+        if not city_name or "क्षमा करें" in city_name or len(city_name.split()) > 3:
+            return "मैं शहर का नाम समझ नहीं पाया। कृपया फिर से बताएं।"
 
     weather_data, error = get_weather_data(city_name)
     if error:
-        return f"मुझे '{city_name}' नाम کا شہر नहीं मिला। कृपया शहर का नाम जांच लें।"
+        return f"मुझे '{city_name}' का मौसम डेटा नहीं मिला। कृपया शहर का नाम जांचें।"
 
     final_prompt_list = [
         PERSONA_PROMPT,
@@ -128,7 +145,11 @@ def process_voice(request):
         
         final_response_text = ""
         if 'weather' in category:
-            final_response_text = handle_weather_query(user_prompt, conversation_context)
+            try:
+                user_location = request.user.profile.location
+            except:
+                user_location = None
+            final_response_text = handle_weather_query(user_prompt, conversation_context, user_location)
         elif 'crop' in category:
             final_response_text = handle_crop_recommendation(user_prompt, conversation_context)
         elif 'scheme' in category or 'yojana' in category or 'sarkari' in category:

@@ -95,15 +95,24 @@
             <button id="closeSidebar" class="close-sidebar-btn" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; font-size: 1.2rem;">✕</button>
         </div>
         <div class="ai-sidebar-content" style="flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column;">
-            <div id="status" style="text-align: center; margin-bottom: 1rem; color: #10b981; font-weight: 500;"></div>
-            <button id="startButton" style="background-color: #1B5E20; color: white; border: none; width: 70px; height: 70px; border-radius: 50%; cursor: pointer; margin: 0 auto 1rem auto; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
-                <svg width="30" height="30" viewBox="0 0 24 24" fill="white">
-                    <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
-                    <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
-                </svg>
-            </button>
-            <div id="chatArea" class="chat-area" style="height: 400px; overflow-y: auto; padding: 1rem; border-radius: 10px; background-color: rgba(0,0,0,0.05); margin-bottom: 1rem; display: flex; flex-direction: column;"></div>
-            <button id="newChatBtn" style="width: 100%; background: #10b981; color: white; border: none; padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer;">New Chat</button>
+            <div id="chatArea" class="chat-area" style="flex: 1; overflow-y: auto; padding: 1rem; border-radius: 10px; background-color: rgba(0,0,0,0.05); margin-bottom: 1rem; display: flex; flex-direction: column;"></div>
+            <div id="status" style="text-align: center; margin-bottom: 0.8rem; color: #10b981; font-weight: 500; min-height: 20px;"></div>
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <button id="startButton" style="flex: 1; background: #10b981; color: white; border: none; padding: 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                        <path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/>
+                        <path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/>
+                    </svg>
+                    <span>Start</span>
+                </button>
+                <button id="stopButton" style="flex: 1; background: #ef4444; color: white; border: none; padding: 1rem; border-radius: 8px; cursor: pointer; font-weight: 600; display: none; align-items: center; justify-content: center; gap: 0.5rem;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
+                        <rect x="6" y="6" width="12" height="12" rx="2"/>
+                    </svg>
+                    <span>Stop</span>
+                </button>
+            </div>
+            <button id="newChatBtn" style="width: 100%; background: #6b7280; color: white; border: none; padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer;">New Chat</button>
         </div>
     </div>
 
@@ -141,11 +150,24 @@
         const aiSidebar = document.getElementById('aiSidebar');
         const openAiBtn = document.getElementById('openAiBtn');
         const closeSidebar = document.getElementById('closeSidebar');
+        let hasGreeted = false;
 
-        openAiBtn.addEventListener('click', () => {
+        openAiBtn.addEventListener('click', async () => {
             aiSidebar.style.right = '0';
             aiSidebar.classList.add('open');
             openAiBtn.style.display = 'none';
+            
+            if (!hasGreeted) {
+                hasGreeted = true;
+                try {
+                    const response = await fetch('/api/get-greeting/');
+                    const data = await response.json();
+                    addMessage(data.greeting, 'ai');
+                    speak(data.greeting);
+                } catch (error) {
+                    addMessage('नमस्ते! मैं आपकी मदद के लिए तैयार हूँ।', 'ai');
+                }
+            }
         });
 
         closeSidebar.addEventListener('click', () => {
@@ -156,6 +178,7 @@
 
         // AI Assistant Logic
         const startButton = document.getElementById('startButton');
+        const stopButton = document.getElementById('stopButton');
         const chatArea = document.getElementById('chatArea');
         const statusDiv = document.getElementById('status');
         const newChatBtn = document.getElementById('newChatBtn');
@@ -171,8 +194,8 @@
 
             recognition.onstart = () => {
                 isListening = true;
-                startButton.classList.add('listening');
-                startButton.style.backgroundColor = '#d32f2f';
+                startButton.style.display = 'none';
+                stopButton.style.display = 'flex';
                 statusDiv.textContent = '🎤 सुन रहा हूँ...';
             };
 
@@ -208,18 +231,27 @@
 
         startButton.addEventListener('click', () => {
             if (recognition) {
-                if (isListening) {
-                    recognition.stop();
-                } else {
-                    recognition.start();
-                }
+                recognition.start();
             } else {
                 statusDiv.textContent = 'आपका ब्राउज़र वॉइस को सपोर्ट नहीं करता।';
             }
         });
 
+        stopButton.addEventListener('click', () => {
+            if (recognition && isListening) {
+                recognition.stop();
+            }
+            if (window.speechSynthesis && window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+            }
+            statusDiv.textContent = 'रुक गया';
+            resetButton();
+            setTimeout(() => { statusDiv.textContent = ''; }, 2000);
+        });
+
         newChatBtn.addEventListener('click', async () => {
             chatArea.innerHTML = '';
+            hasGreeted = false;
             await fetch('/api/clear-chat/', {method: 'POST'});
         });
 
@@ -236,17 +268,27 @@
 
         function speak(text) {
             if ('speechSynthesis' in window) {
+                startButton.style.display = 'none';
+                stopButton.style.display = 'flex';
+                statusDiv.textContent = '🔊 बोल रहा हूँ...';
+                
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'hi-IN';
                 utterance.rate = 0.9;
+                
+                utterance.onend = () => {
+                    resetButton();
+                    statusDiv.textContent = '';
+                };
+                
                 speechSynthesis.speak(utterance);
             }
         }
 
         function resetButton() {
             isListening = false;
-            startButton.classList.remove('listening');
-            startButton.style.backgroundColor = '#1B5E20';
+            startButton.style.display = 'flex';
+            stopButton.style.display = 'none';
         }
     </script>
     {% block extra_js %}{% endblock %}

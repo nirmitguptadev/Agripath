@@ -4,236 +4,385 @@
 {% block title %}AgriPath - Dashboard{% endblock %}
 
 {% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
 <style>
-    .dashboard-container {
-        max-width: 1400px;
-        margin: 2rem auto;
-        padding: 0 2rem;
+    body {
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 50%, #a5d6a7 100%);
+        font-family: 'Poppins', sans-serif;
     }
     
-    .dashboard-title {
-        font-size: 2.5rem;
-        font-weight: 800;
-        color: #1B5E20;
-        margin-bottom: 2rem;
+    .dashboard-hero {
         text-align: center;
+        padding: 3rem 2rem;
+        background: linear-gradient(135deg, rgba(27,94,32,0.9), rgba(46,125,50,0.9));
+        border-radius: 20px;
+        margin-bottom: 3rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
     }
     
-    .widgets-grid {
+    .dashboard-hero::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+        animation: pulse 4s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.5; }
+        50% { transform: scale(1.1); opacity: 0.8; }
+    }
+    
+    .hero-title {
+        font-size: 3rem;
+        font-weight: 800;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+    }
+    
+    .hero-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.95;
+        position: relative;
+        z-index: 1;
+    }
+    
+    .feature-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
         gap: 2rem;
-        margin-bottom: 2rem;
+        margin-bottom: 3rem;
     }
     
-    .widget {
+    .feature-card {
         background: white;
-        border-radius: 16px;
+        border-radius: 20px;
         padding: 2rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-        transition: all 0.3s ease;
-        border: 1px solid #e0e0e0;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
     }
     
-    .widget:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 5px;
+        background: linear-gradient(90deg, #10b981, #059669);
+        transform: scaleX(0);
+        transition: transform 0.3s;
     }
     
-    .widget-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 1.5rem;
-        padding-bottom: 1rem;
-        border-bottom: 2px solid #10b981;
+    .feature-card:hover::before {
+        transform: scaleX(1);
     }
     
-    .widget-title {
-        font-size: 1.3rem;
+    .feature-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(16,185,129,0.3);
+    }
+    
+    .feature-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+        display: inline-block;
+        animation: bounce 2s ease-in-out infinite;
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .feature-card:hover .feature-icon {
+        animation: spin 0.6s ease-in-out;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg) scale(1); }
+        50% { transform: rotate(180deg) scale(1.2); }
+        100% { transform: rotate(360deg) scale(1); }
+    }
+    
+    .feature-title {
+        font-size: 1.5rem;
         font-weight: 700;
         color: #1B5E20;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+        margin-bottom: 0.5rem;
     }
     
-    .widget-icon {
-        font-size: 1.5rem;
-    }
-    
-    .expand-btn {
-        background: #10b981;
-        color: white;
-        border: none;
-        padding: 0.5rem 1rem;
-        border-radius: 8px;
-        cursor: pointer;
-        font-weight: 600;
-        font-size: 0.85rem;
-        transition: all 0.2s;
-    }
-    
-    .expand-btn:hover {
-        background: #059669;
-        transform: scale(1.05);
-    }
-    
-    .widget-content {
+    .feature-desc {
         color: #546e7a;
-        font-size: 1rem;
+        margin-bottom: 1rem;
+        line-height: 1.6;
     }
     
-    .weather-temp {
-        font-size: 3rem;
-        font-weight: 300;
-        color: #1B5E20;
-        margin: 1rem 0;
+    .feature-stats {
+        display: flex;
+        justify-content: space-around;
+        margin: 1.5rem 0;
+        padding: 1rem;
+        background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+        border-radius: 12px;
+    }
+    
+    .stat-item {
+        text-align: center;
     }
     
     .stat-value {
-        font-size: 2.5rem;
-        font-weight: 700;
+        font-size: 2rem;
+        font-weight: 800;
         color: #10b981;
-        margin: 1rem 0;
+        display: block;
     }
     
     .stat-label {
-        font-size: 0.9rem;
-        color: #546e7a;
+        font-size: 0.8rem;
+        color: #64748b;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
     }
     
-    .no-location-msg {
-        background: #fff7ed;
-        border: 2px solid #f97316;
-        border-radius: 12px;
+    .feature-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        padding: 0.8rem 1.5rem;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+        border: none;
+        cursor: pointer;
+    }
+    
+    .feature-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(16,185,129,0.4);
+        color: white;
+    }
+    
+    .weather-widget {
+        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        color: white;
+    }
+    
+    .weather-widget .feature-icon {
+        filter: drop-shadow(0 0 10px rgba(255,255,255,0.5));
+    }
+    
+    .tracker-widget {
+        background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+        color: white;
+    }
+    
+    .tracker-widget .feature-title,
+    .weather-widget .feature-title {
+        color: white;
+    }
+    
+    .tracker-widget .feature-desc,
+    .weather-widget .feature-desc {
+        color: rgba(255,255,255,0.9);
+    }
+    
+    .floating-elements {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 0;
+        overflow: hidden;
+    }
+    
+    .floating-icon {
+        position: absolute;
+        font-size: 2rem;
+        opacity: 0.1;
+        animation: float 20s infinite;
+    }
+    
+    @keyframes float {
+        0%, 100% { transform: translateY(0) rotate(0deg); }
+        25% { transform: translateY(-100px) rotate(90deg); }
+        50% { transform: translateY(-50px) rotate(180deg); }
+        75% { transform: translateY(-150px) rotate(270deg); }
+    }
+    
+    .container {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .no-location-alert {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        border-left: 5px solid #f59e0b;
         padding: 1.5rem;
-        text-align: center;
-        color: #c2410c;
+        border-radius: 15px;
         margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        animation: shake 0.5s;
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
     }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="dashboard-container">
-    <h1 class="dashboard-title">🌾 AgriPath Dashboard</h1>
+<div class="floating-elements">
+    <i class="fas fa-seedling floating-icon" style="top: 10%; left: 10%; animation-delay: 0s;"></i>
+    <i class="fas fa-cloud-sun floating-icon" style="top: 20%; right: 15%; animation-delay: 2s;"></i>
+    <i class="fas fa-tractor floating-icon" style="bottom: 20%; left: 20%; animation-delay: 4s;"></i>
+    <i class="fas fa-leaf floating-icon" style="top: 60%; right: 10%; animation-delay: 6s;"></i>
+    <i class="fas fa-sun floating-icon" style="bottom: 30%; right: 25%; animation-delay: 8s;"></i>
+</div>
+
+<div class="container" style="padding: 2rem; max-width: 1400px; margin: 0 auto;">
+    <div class="dashboard-hero">
+        <h1 class="hero-title">
+            <i class="fas fa-leaf"></i> Welcome to AgriPath
+        </h1>
+        <p class="hero-subtitle">Your Smart Farming Companion - Empowering Agriculture with AI</p>
+    </div>
     
     {% if not location %}
-    <div class="no-location-msg">
-        <strong>⚠️ Location Required:</strong> Please update your profile location to unlock all features.
+    <div class="no-location-alert">
+        <i class="fas fa-map-marker-alt" style="font-size: 2rem; color: #f59e0b;"></i>
+        <div>
+            <strong style="font-size: 1.1rem;">Location Required</strong>
+            <p style="margin: 0.5rem 0 0 0;">Update your profile location to unlock personalized insights!</p>
+        </div>
     </div>
     {% endif %}
     
-    <div class="widgets-grid">
+    <div class="feature-grid">
         <!-- Weather Widget -->
-        <div class="widget">
-            <div class="widget-header">
-                <h2 class="widget-title">
-                    <span class="widget-icon">🌤️</span>
-                    Weather
-                </h2>
-                <a href="{% url 'Weather' %}" class="expand-btn">View Details →</a>
+        <div class="feature-card weather-widget">
+            <div class="feature-icon">
+                <i class="fas fa-cloud-sun-rain"></i>
             </div>
-            <div class="widget-content">
-                {% if weather_data %}
-                    <div class="weather-temp">{{ weather_data.temperature|floatformat:0 }}°C</div>
-                    <p><strong>{{ weather_data.city }}</strong></p>
-                    <p>{{ weather_data.description|title }}</p>
-                    <p>Humidity: {{ weather_data.humidity }}%</p>
-                {% else %}
-                    <p>Location required to show weather data.</p>
-                {% endif %}
+            <h3 class="feature-title">Live Weather</h3>
+            <p class="feature-desc">Real-time weather updates and 5-day forecast for your location</p>
+            {% if weather_data %}
+            <div class="feature-stats">
+                <div class="stat-item">
+                    <span class="stat-value">{{ weather_data.temperature|floatformat:0 }}°</span>
+                    <span class="stat-label">Temperature</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">{{ weather_data.humidity }}%</span>
+                    <span class="stat-label">Humidity</span>
+                </div>
             </div>
+            {% endif %}
+            <a href="{% url 'Weather' %}" class="feature-btn">
+                <i class="fas fa-arrow-right"></i> View Details
+            </a>
         </div>
         
         <!-- Crop Tracker Widget -->
-        <div class="widget">
-            <div class="widget-header">
-                <h2 class="widget-title">
-                    <span class="widget-icon">📊</span>
-                    Crop Tracker
-                </h2>
-                <a href="{% url 'tracker_dashboard' %}" class="expand-btn">View Details →</a>
+        <div class="feature-card tracker-widget">
+            <div class="feature-icon">
+                <i class="fas fa-chart-line"></i>
             </div>
-            <div class="widget-content">
-                <div class="stat-value">{{ active_crops_count }}</div>
-                <p class="stat-label">Active Crops</p>
-                <div class="stat-value" style="font-size: 1.8rem; margin-top: 1.5rem;">₹{{ total_profit|floatformat:0 }}</div>
-                <p class="stat-label">Total Profit</p>
+            <h3 class="feature-title">Crop Tracker</h3>
+            <p class="feature-desc">Monitor your crops and track profitability in real-time</p>
+            <div class="feature-stats">
+                <div class="stat-item">
+                    <span class="stat-value">{{ active_crops_count }}</span>
+                    <span class="stat-label">Active Crops</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">₹{{ total_profit|floatformat:0 }}</span>
+                    <span class="stat-label">Total Profit</span>
+                </div>
             </div>
-        </div>
-        
-        <!-- AI Assistant Widget -->
-        <div class="widget">
-            <div class="widget-header">
-                <h2 class="widget-title">
-                    <span class="widget-icon">🤖</span>
-                    AI Assistant
-                </h2>
-                <a href="{% url 'assistant_page' %}" class="expand-btn">Start Chat →</a>
-            </div>
-            <div class="widget-content">
-                <p>Get instant answers to your farming questions in Hindi.</p>
-                <ul style="margin-top: 1rem; line-height: 2;">
-                    <li>✓ Weather queries</li>
-                    <li>✓ Crop recommendations</li>
-                    <li>✓ Government schemes</li>
-                    <li>✓ General farming advice</li>
-                </ul>
-            </div>
+            <a href="{% url 'tracker_dashboard' %}" class="feature-btn">
+                <i class="fas fa-arrow-right"></i> View Dashboard
+            </a>
         </div>
         
         <!-- Crop Advisory Widget -->
-        <div class="widget">
-            <div class="widget-header">
-                <h2 class="widget-title">
-                    <span class="widget-icon">🌱</span>
-                    Crop Advisory
-                </h2>
-                <a href="{% url 'CropAdvisory' %}" class="expand-btn">Get Advisory →</a>
+        <div class="feature-card">
+            <div class="feature-icon" style="color: #10b981;">
+                <i class="fas fa-brain"></i>
             </div>
-            <div class="widget-content">
-                <p>AI-powered crop recommendations based on your location's soil and weather conditions.</p>
-                <p style="margin-top: 1rem;"><strong>Get personalized planting calendar</strong></p>
+            <h3 class="feature-title">AI Crop Advisory</h3>
+            <p class="feature-desc">Get ML-powered crop recommendations based on soil and weather conditions</p>
+            <div style="text-align: center; margin: 1.5rem 0;">
+                <i class="fas fa-robot" style="font-size: 3rem; color: #10b981; opacity: 0.3;"></i>
             </div>
+            <a href="{% url 'CropAdvisory' %}" class="feature-btn">
+                <i class="fas fa-lightbulb"></i> Get Recommendations
+            </a>
         </div>
         
         <!-- Government Policies Widget -->
-        <div class="widget">
-            <div class="widget-header">
-                <h2 class="widget-title">
-                    <span class="widget-icon">📋</span>
-                    Policies
-                </h2>
-                <a href="{% url 'Policies' %}" class="expand-btn">View Schemes →</a>
+        <div class="feature-card">
+            <div class="feature-icon" style="color: #f59e0b;">
+                <i class="fas fa-landmark"></i>
             </div>
-            <div class="widget-content">
-                <p>Discover government schemes and subsidies available for farmers in your region.</p>
-                <ul style="margin-top: 1rem; line-height: 2;">
-                    <li>• Crop Insurance</li>
-                    <li>• Financial Aid</li>
-                    <li>• Modern Agriculture</li>
-                    <li>• Farmer Welfare</li>
-                </ul>
+            <h3 class="feature-title">Government Schemes</h3>
+            <p class="feature-desc">Discover subsidies and schemes available for farmers in your region</p>
+            <div style="text-align: center; margin: 1.5rem 0;">
+                <i class="fas fa-file-contract" style="font-size: 3rem; color: #f59e0b; opacity: 0.3;"></i>
             </div>
+            <a href="{% url 'Policies' %}" class="feature-btn">
+                <i class="fas fa-search"></i> Browse Schemes
+            </a>
         </div>
         
         <!-- Crop Dictionary Widget -->
-        <div class="widget">
-            <div class="widget-header">
-                <h2 class="widget-title">
-                    <span class="widget-icon">📖</span>
-                    Crop Dictionary
-                </h2>
-                <a href="{% url 'crop_list' %}" class="expand-btn">Browse Crops →</a>
+        <div class="feature-card">
+            <div class="feature-icon" style="color: #06b6d4;">
+                <i class="fas fa-book-open"></i>
             </div>
-            <div class="widget-content">
-                <p>Comprehensive database of crops with detailed information on cultivation, care, and harvesting.</p>
-                <p style="margin-top: 1rem;"><strong>Search from 100+ crops</strong></p>
+            <h3 class="feature-title">Crop Encyclopedia</h3>
+            <p class="feature-desc">Comprehensive database with detailed cultivation guides for 100+ crops</p>
+            <div style="text-align: center; margin: 1.5rem 0;">
+                <i class="fas fa-database" style="font-size: 3rem; color: #06b6d4; opacity: 0.3;"></i>
             </div>
+            <a href="{% url 'crop_list' %}" class="feature-btn">
+                <i class="fas fa-search"></i> Explore Crops
+            </a>
+        </div>
+        
+        <!-- About Widget -->
+        <div class="feature-card">
+            <div class="feature-icon" style="color: #8b5cf6;">
+                <i class="fas fa-info-circle"></i>
+            </div>
+            <h3 class="feature-title">About AgriPath</h3>
+            <p class="feature-desc">Learn more about our mission to empower farmers with technology</p>
+            <div style="text-align: center; margin: 1.5rem 0;">
+                <i class="fas fa-users" style="font-size: 3rem; color: #8b5cf6; opacity: 0.3;"></i>
+            </div>
+            <a href="{% url 'about' %}" class="feature-btn">
+                <i class="fas fa-arrow-right"></i> Learn More
+            </a>
         </div>
     </div>
 </div>

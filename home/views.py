@@ -207,55 +207,64 @@ def Policies(request):
     try:
         location = request.user.profile.location
     except:
-        location = None
+        location = "India"
 
     if not location:
-        return render(request, 'Policies.html', {
-            'error': 'कृपया अपनी प्रोफाइल में अपना स्थान (Location) अपडेट करें ताकि हम आपके लिए योजनाएं ढूंढ सकें।'
-        })
+        return render(request, 'Policies.html', {'error': 'Location missing.'})
+
+    categories = [
+        "फसल बीमा और सुरक्षा",
+        "वित्तीय सहायता और ऋण",
+        "आधुनिक कृषि और तकनीक",
+        "किसान कल्याण"
+    ]
 
     prompt = f"""
-    Act as an expert on Indian government agricultural schemes.
-    For farmers in {location}, India, provide schemes organized by use cases.
+    Act as an Indian Agriculture Expert. Provide government schemes for farmers in {location}.
+    Return a JSON list with exactly these 4 'use_case' categories:
+    {", ".join(categories)}
+
+    For each category, provide 2 relevant schemes.
     
-    Strictly output ONLY raw JSON. No markdown formatting.
-    Format:
+    JSON Format:
     [
-        {{
-            "use_case": "Use case name in Hindi",
-            "schemes": [
-                {{
-                    "name": "योजना का नाम",
-                    "description": "विवरण (1-2 वाक्य)",
-                    "benefits": "मुख्य लाभ",
-                    "link": "https://official-link.gov.in"
-                }}
-            ]
-        }}
+      {{
+        "use_case": "Heading from list above",
+        "schemes": [
+          {{ "name": "Scheme Name", "description": "1 sentence", "benefits": "1 sentence", "link": "URL" }}
+        ]
+      }}
     ]
-    
-    Include 4 use cases: "फसल बीमा और सुरक्षा", "वित्तीय सहायता और ऋण", "आधुनिक कृषि और तकनीक", "किसान कल्याण".
-    Each use case should have 2-3 relevant schemes.
+    Output ONLY raw JSON. No markdown, no intro text.
     """
 
     try:
-        text = generate_ai_response(prompt)
-        text = re.sub(r'^```json', '', text)
-        text = re.sub(r'^```', '', text)
-        text = re.sub(r'```$', '', text)
+        raw_text = generate_ai_response(prompt)
         
-        policies_by_usecase = json.loads(text)
-        
+        # 1. Clean the response
+        json_match = re.search(r'\[.*\]', raw_text, re.DOTALL)
+        clean_json = json_match.group(0) if json_match else raw_text
+        policies_data = json.loads(clean_json)
+
+        # 2. THE FIX: Snap gibberish back to real Hindi headings
+        for i, item in enumerate(policies_data):
+            # Map both 'usecase' and 'use_case'
+            current_title = item.get('use_case') or item.get('usecase') or ""
+            
+            # If the title is gibberish or not in our list, assign from our 'categories' list
+            if i < len(categories):
+                item['use_case'] = categories[i]
+            else:
+                item['use_case'] = current_title
+
         return render(request, 'Policies.html', {
             'location': location,
-            'policies_by_usecase': policies_by_usecase
+            'policies_by_usecase': policies_data
         })
 
     except Exception as e:
-        print(f"Error fetching/parsing policies: {e}")
-        return render(request, 'Policies.html', {
-            'error': f'{location} के लिए योजनाओं को लोड करने में समस्या आई। कृपया पुनः प्रयास करें।'
-        })
+        print(f"Error: {e}")
+        return render(request, 'Policies.html', {'error': 'सर्वर से डेटा प्राप्त करने में त्रुटि हुई।'})
 
 
 
