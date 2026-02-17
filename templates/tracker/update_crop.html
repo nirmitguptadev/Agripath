@@ -1,62 +1,191 @@
+
+
 {% extends 'base.html' %}
 
 {% block title %}AgriPath - Update Crop{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    body {
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+    }
+
+    .update-hero {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        border-radius: 20px;
+        margin-bottom: -3rem;
+        color: white;
+        position: relative;
+        z-index: 1;
+        box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3);
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 25px;
+        padding: 3rem 2rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        position: relative;
+        z-index: 2;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #334155;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.8rem 1rem;
+        transition: all 0.3s;
+        background-color: #f8fafc;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #0ea5e9;
+        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
+        background-color: white;
+    }
+
+    .input-group-text {
+        background-color: #f0f9ff;
+        border: 2px solid #e2e8f0;
+        border-right: none;
+        color: #0284c7;
+        font-weight: 600;
+        border-radius: 12px 0 0 12px;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 12px;
+        font-weight: 700;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(14, 165, 233, 0.5);
+    }
+    
+    .btn-cancel {
+        background: white;
+        border: 2px solid #cbd5e1;
+        color: #64748b;
+        padding: 1rem;
+        border-radius: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        text-align: center;
+        transition: all 0.2s;
+    }
+    
+    .btn-cancel:hover {
+        background: #f1f5f9;
+        color: #334155;
+    }
+
+    .decorative-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        border-radius: 20px;
+        opacity: 0.1;
+    }
+    
+    .bg-icon {
+        position: absolute;
+        font-size: 10rem;
+        color: white;
+        transform: rotate(-15deg);
+        top: -20px;
+        left: -20px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-5" style="max-width: 600px;">
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h2 class="h5 mb-0">Update: {{ crop.display_name }}</h2>
-            <small>{{ crop.planting_date }}</small>
+<div class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
+
+    <div class="update-hero">
+        <div class="decorative-bg">
+            <i class="fas fa-edit bg-icon"></i>
         </div>
-        <div class="card-body">
-            <form method="post">
-                {% csrf_token %}
+        <h1 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem;">Update Status</h1>
+        <p style="opacity: 0.9; font-size: 1.1rem;">{{ crop.display_name }}</p>
+        <span style="background: rgba(255,255,255,0.2); padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.9rem;">
+            <i class="fas fa-calendar-day"></i> Planted: {{ crop.planting_date }}
+        </span>
+    </div>
 
-                <div class="mb-3">
-                    <label for="id_growth_phase" class="form-label">Current Growth Phase</label>
-                    {{ form.growth_phase }}
-                </div>
+    <div class="form-card">
+        <form method="post">
+            {% csrf_token %}
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="id_cost" class="form-label">Total Cost to Date</label>
-                        <div class="input-group">
-                            <span class="input-group-text">₹</span>
-                            {{ form.cost }}
-                        </div>
+            <div class="mb-4">
+                <label for="id_growth_phase" class="form-label"><i class="fas fa-layer-group text-primary"></i> Current Growth Phase</label>
+                {{ form.growth_phase }}
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <label for="id_cost" class="form-label"><i class="fas fa-hand-holding-usd text-danger"></i> Total Cost to Date</label>
+                    <div class="input-group">
+                        <span class="input-group-text">₹</span>
+                        {{ form.cost }}
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="id_revenue" class="form-label">Total Revenue (If sold)</label>
-                        <div class="input-group">
-                            <span class="input-group-text">₹</span>
-                            {{ form.revenue }}
-                        </div>
+                </div>
+                <div class="col-md-6 mb-4">
+                    <label for="id_revenue" class="form-label"><i class="fas fa-sack-dollar text-success"></i> Revenue (If Sold)</label>
+                    <div class="input-group">
+                        <span class="input-group-text">₹</span>
+                        {{ form.revenue }}
                     </div>
                 </div>
+            </div>
 
-                <div class="mb-3">
-                    <label for="id_status" class="form-label">Status</label>
-                    {{ form.status }}
-                    <div class="form-text">Mark as 'Completed' when harvested and sold.</div>
-                </div>
+            <div class="mb-4">
+                <label for="id_status" class="form-label"><i class="fas fa-tasks text-info"></i> Tracking Status</label>
+                {{ form.status }}
+                <div class="form-text text-muted mt-1"><i class="fas fa-info-circle"></i> Select 'Completed' only after final harvest.</div>
+            </div>
 
-                <div class="mb-3" id="harvest-date-group">
-                    <label for="id_harvest_date" class="form-label">Harvest Date</label>
-                    {{ form.harvest_date }}
-                </div>
+            <div class="mb-4" id="harvest-date-group">
+                <label for="id_harvest_date" class="form-label"><i class="fas fa-calendar-check text-warning"></i> Harvest Date</label>
+                {{ form.harvest_date }}
+            </div>
 
-                <div class="mb-3">
-                    <label for="id_strategy" class="form-label">Update Notes/Strategy</label>
-                    {{ form.strategy }}
-                </div>
+            <div class="mb-4">
+                <label for="id_strategy" class="form-label"><i class="fas fa-clipboard-check"></i> Notes / Strategy Update</label>
+                {{ form.strategy }}
+            </div>
 
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary flex-grow-1">Save Updates</button>
-                    <a href="{% url 'tracker_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
-                </div>
-            </form>
-        </div>
+            <div class="d-grid gap-2 d-md-flex">
+                <button type="submit" class="btn-save flex-grow-1">
+                    <i class="fas fa-save"></i> Save Updates
+                </button>
+                <a href="{% url 'tracker_dashboard' %}" class="btn-cancel">
+                    Cancel
+                </a>
+            </div>
+        </form>
     </div>
 </div>
 {% endblock %}

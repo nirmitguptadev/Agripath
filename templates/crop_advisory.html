@@ -1,87 +1,318 @@
+--- START OF FILE crop_advisory.html ---
+
 {% extends 'base.html' %}
 {% load static %}
 
 {% block title %}AgriPath - Crop Advisory{% endblock %}
 
-{% block content %}
-<div class="container" style="padding-top: 2rem; padding-bottom: 2rem; max-width: 900px;">
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    /* Green Theme for Agriculture/Crops */
+    body {
+        background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 50%, #86efac 100%);
+    }
 
-    <div style="text-align: center; margin-bottom: 2rem;">
-        <h1 class="main-title">Crop Advisory</h1>
+    .advisory-hero {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: linear-gradient(135deg, #059669, #047857);
+        border-radius: 20px;
+        margin-bottom: 2rem;
+        color: white;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 25px rgba(5, 150, 105, 0.3);
+    }
+
+    /* Floating leaf animation background */
+    .advisory-hero::before {
+        content: '\f06c'; /* FontAwesome leaf icon */
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        position: absolute;
+        font-size: 15rem;
+        color: rgba(255, 255, 255, 0.05);
+        top: -40px;
+        right: -40px;
+        transform: rotate(20deg);
+        animation: sway 4s ease-in-out infinite;
+    }
+
+    .advisory-hero::after {
+        content: '';
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        bottom: -50px;
+        left: -50px;
+    }
+
+    @keyframes sway {
+        0%, 100% { transform: rotate(20deg) scale(1); }
+        50% { transform: rotate(25deg) scale(1.05); }
+    }
+
+    .main-card {
+        background: white;
+        border-radius: 25px;
+        padding: 2.5rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+        border-top: 6px solid #10b981;
+    }
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 2px solid #f0fdf4;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #065f46;
+        margin: 0;
+    }
+
+    /* Crop Badges */
+    .crops-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: center;
+        margin-bottom: 2rem;
+    }
+
+    .crop-pill {
+        background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+        color: #047857;
+        padding: 0.8rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid #a7f3d0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .crop-pill:hover {
+        transform: translateY(-5px) scale(1.05);
+        background: #10b981;
+        color: white;
+        box-shadow: 0 10px 15px rgba(16, 185, 129, 0.3);
+        border-color: #10b981;
+    }
+
+    /* Soil Data Grid */
+    .soil-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .soil-box {
+        background: #f8fafc;
+        padding: 1.5rem;
+        border-radius: 15px;
+        text-align: center;
+        transition: all 0.3s;
+        border: 2px solid transparent;
+        position: relative;
+    }
+
+    .soil-box:hover {
+        background: #f0fdf4;
+        border-color: #10b981;
+        transform: translateY(-5px);
+    }
+
+    .soil-icon {
+        font-size: 1.8rem;
+        color: #10b981;
+        margin-bottom: 0.8rem;
+    }
+
+    .soil-value {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #064e3b;
+    }
+
+    .soil-label {
+        font-size: 0.85rem;
+        color: #64748b;
+        text-transform: uppercase;
+        margin-top: 0.2rem;
+        font-weight: 600;
+    }
+
+    /* Advisory Text Area */
+    .advisory-content {
+        background: #fcfcfc;
+        border-left: 4px solid #f59e0b; /* Amber accent for 'advice' */
+        padding: 2rem;
+        border-radius: 0 15px 15px 0;
+        font-size: 1.05rem;
+        line-height: 1.8;
+        color: #374151;
+    }
+
+    .advisory-content h3 {
+        color: #92400e;
+        margin-top: 1.5rem;
+    }
+    
+    .advisory-content ul {
+        margin-left: 1.5rem;
+    }
+
+    /* Error / Loading States */
+    .status-container {
+        text-align: center;
+        padding: 3rem;
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    
+    .loading-icon {
+        font-size: 3rem;
+        color: #10b981;
+        animation: spin 2s linear infinite;
+        margin-bottom: 1rem;
+    }
+    
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2rem; max-width: 1000px; margin: 0 auto;">
+
+    <div class="advisory-hero">
+        <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 0.5rem; position: relative; z-index: 1;">
+            <i class="fas fa-seedling"></i> Smart Crop Advisory
+        </h1>
         {% if location %}
-        <p style="color: var(--text-secondary);">📍 For {{ location }}</p>
+        <p style="font-size: 1.2rem; opacity: 0.95; position: relative; z-index: 1;">
+            <i class="fas fa-map-marker-alt"></i> Analysis for {{ location }}
+        </p>
         {% endif %}
     </div>
 
     {% if error %}
-    <div class="message-box">
-        ⚠️ {{ error }} <br><br>
-        <a href="{% url 'view_profile' %}" style="color: var(--accent-green);">Update Profile</a>
+    <div style="background: linear-gradient(135deg, #fee2e2, #fecaca); border-left: 5px solid #ef4444; padding: 2rem; border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);">
+        <i class="fas fa-exclamation-triangle" style="font-size: 3rem; color: #dc2626; margin-bottom: 1rem;"></i>
+        <p style="font-size: 1.2rem; color: #991b1b; font-weight: 600;">{{ error }}</p>
+        <p style="color: #7f1d1d; margin-bottom: 1.5rem;">We couldn't retrieve your soil data.</p>
+        <a href="{% url 'view_profile' %}" style="display: inline-block; background: #dc2626; color: white; padding: 0.8rem 2rem; border-radius: 50px; text-decoration: none; font-weight: 600; transition: transform 0.2s;">
+            <i class="fas fa-user-edit"></i> Update Profile
+        </a>
     </div>
+
     {% elif suitable_crops %}
 
-    <div class="advisory-card">
-        <div style="text-align: center;">
-            <p style="font-size: 1.3rem; color: var(--secondary-green); font-weight: 600; margin-bottom: 1rem;">Best
-                Crops for Your Area:</p>
-
-            <!-- Display the list of suitable crops -->
-            <div class="suitable-crops-list">
-                {% for crop in suitable_crops %}
-                <span class="crop-badge">{{ crop }}</span>
-                {% endfor %}
+    <!-- Recommended Crops Section -->
+    <div class="main-card" style="text-align: center;">
+        <h2 style="color: #065f46; font-size: 1.8rem; margin-bottom: 1.5rem;">
+            <i class="fas fa-check-circle" style="color: #10b981;"></i> Best Crops for Your Farm
+        </h2>
+        
+        <div class="crops-container">
+            {% for crop in suitable_crops %}
+            <div class="crop-pill">
+                <i class="fas fa-leaf"></i> {{ crop }}
             </div>
+            {% endfor %}
+        </div>
+        <p style="color: #64748b; font-size: 0.9rem;">
+            <i class="fas fa-info-circle"></i> Selected based on your soil composition and current weather.
+        </p>
+    </div>
+
+    <!-- Soil Analysis Data -->
+    <div class="main-card">
+        <div class="section-header">
+            <i class="fas fa-flask" style="font-size: 1.5rem; color: #10b981;"></i>
+            <h3 class="section-title">Soil Analysis Data</h3>
         </div>
 
-        <!-- Soil Data Used -->
-        <h3
-            style="text-align: left; margin-top: 2rem; border-bottom: 1px solid var(--card-border); padding-bottom: 0.5rem; color: var(--text-primary); font-size: 1.2rem;">
-            Soil Analysis Data:</h3>
-        <div class="soil-data-grid">
-            <div class="soil-item">
-                <div class="soil-label">Nitrogen (N)</div>
+        <div class="soil-grid">
+            <div class="soil-box">
+                <div class="soil-icon"><i class="fas fa-vial"></i></div>
                 <div class="soil-value">{{ soil_data.N }}</div>
+                <div class="soil-label">Nitrogen (N)</div>
             </div>
-            <div class="soil-item">
-                <div class="soil-label">Phosphorus (P)</div>
+            <div class="soil-box">
+                <div class="soil-icon"><i class="fas fa-atom"></i></div>
                 <div class="soil-value">{{ soil_data.P }}</div>
+                <div class="soil-label">Phosphorus (P)</div>
             </div>
-            <div class="soil-item">
-                <div class="soil-label">Potassium (K)</div>
+            <div class="soil-box">
+                <div class="soil-icon"><i class="fas fa-cubes"></i></div>
                 <div class="soil-value">{{ soil_data.K }}</div>
+                <div class="soil-label">Potassium (K)</div>
             </div>
-            <div class="soil-item">
-                <div class="soil-label">pH Level</div>
+            <div class="soil-box">
+                <div class="soil-icon"><i class="fas fa-balance-scale"></i></div>
                 <div class="soil-value">{{ soil_data.ph|floatformat:1 }}</div>
+                <div class="soil-label">pH Level</div>
             </div>
-            <div class="soil-item">
-                <div class="soil-label">Temp (°C)</div>
-                <div class="soil-value">{{ soil_data.temperature|floatformat:1 }}</div>
+            <div class="soil-box">
+                <div class="soil-icon"><i class="fas fa-temperature-high"></i></div>
+                <div class="soil-value">{{ soil_data.temperature|floatformat:1 }}°C</div>
+                <div class="soil-label">Temp</div>
             </div>
-            <div class="soil-item">
-                <div class="soil-label">Humidity (%)</div>
-                <div class="soil-value">{{ soil_data.humidity|floatformat:0 }}</div>
+            <div class="soil-box">
+                <div class="soil-icon"><i class="fas fa-tint"></i></div>
+                <div class="soil-value">{{ soil_data.humidity|floatformat:0 }}%</div>
+                <div class="soil-label">Humidity</div>
             </div>
-            <div class="soil-item">
-                <div class="soil-label">Rainfall (mm)</div>
+            <div class="soil-box">
+                <div class="soil-icon"><i class="fas fa-cloud-rain"></i></div>
                 <div class="soil-value">{{ soil_data.rainfall }}</div>
+                <div class="soil-label">Rain (mm)</div>
             </div>
         </div>
+    </div>
 
-        <!-- Gemini Advisory -->
-        <h3
-            style="text-align: left; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--card-border); color: var(--text-primary); font-size: 1.2rem;">
-            Year-Round Planting Plan:</h3>
-        <div class="advisory-text">
-            {{ advisory|safe }}
+    <!-- AI Detailed Advisory -->
+    <div class="main-card" style="padding: 0; overflow: hidden;">
+        <div style="padding: 2rem 2rem 0 2rem;">
+            <div class="section-header" style="border-bottom: none;">
+                <i class="fas fa-robot" style="font-size: 1.5rem; color: #f59e0b;"></i>
+                <h3 class="section-title">AI Planting Insights</h3>
+            </div>
+        </div>
+        
+        <div style="padding: 0 2rem 2rem 2rem;">
+            <div class="advisory-content">
+                {{ advisory|safe }}
+            </div>
         </div>
     </div>
 
     {% else %}
-    <div class="message-box">
-        🔄 Analyzing soil data... Please wait.
+    <div class="status-container">
+        <i class="fas fa-circle-notch loading-icon"></i>
+        <h2 style="color: #064e3b; margin-bottom: 0.5rem;">Analyzing Soil Data</h2>
+        <p style="color: #64748b;">Our AI is generating the best crop recommendations for you...</p>
     </div>
     {% endif %}
 
 </div>
 {% endblock %}
+--- END OF FILE crop_advisory.html ---

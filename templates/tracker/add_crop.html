@@ -1,66 +1,167 @@
+
+
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}AgriPath - Add New Crop{% endblock %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    body {
+        background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    }
+
+    .form-hero {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: linear-gradient(135deg, #10b981, #059669);
+        border-radius: 20px;
+        margin-bottom: -3rem;
+        color: white;
+        position: relative;
+        z-index: 1;
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 25px;
+        padding: 3rem 2rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+        position: relative;
+        z-index: 2;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #064e3b;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-control, .form-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 0.8rem 1rem;
+        transition: all 0.3s;
+        background-color: #f8fafc;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #10b981;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        background-color: white;
+    }
+
+    .input-group-text {
+        background-color: #ecfdf5;
+        border: 2px solid #e2e8f0;
+        border-right: none;
+        color: #059669;
+        font-weight: 600;
+        border-radius: 12px 0 0 12px;
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: white;
+        border: none;
+        padding: 1rem;
+        border-radius: 12px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        transition: all 0.3s;
+        width: 100%;
+        margin-top: 1rem;
+        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+    }
+
+    .decorative-icon {
+        position: absolute;
+        top: -20px;
+        right: -20px;
+        font-size: 8rem;
+        color: rgba(255, 255, 255, 0.1);
+        transform: rotate(15deg);
+        z-index: 0;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container py-5" style="max-width: 600px;">
-    <div class="card shadow">
-        <div class="card-header bg-success text-white">
-            <h2 class="h5 mb-0">Start Tracking a New Crop</h2>
-        </div>
-        <div class="card-body">
-            <form method="post">
-                {% csrf_token %}
+<div class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
 
-                <div class="mb-3">
-                    <label for="id_crop" class="form-label">Select Crop</label>
-                    {{ form.crop }}
-                    <div class="form-text">Choose from our dictionary for better recommendations.</div>
+    <div class="form-hero">
+        <i class="fas fa-seedling decorative-icon"></i>
+        <h1 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem;">New Crop Tracking</h1>
+        <p style="opacity: 0.9;">Start monitoring a new planting cycle</p>
+    </div>
+
+    <div class="form-card">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-4">
+                <label for="id_crop" class="form-label"><i class="fas fa-book-open text-warning"></i> Select Crop</label>
+                {{ form.crop }}
+                <div class="form-text text-muted small mt-1"><i class="fas fa-info-circle"></i> Choose from our dictionary for AI recommendations.</div>
+            </div>
+
+            <div class="mb-4">
+                <label for="id_crop_name_custom" class="form-label"><i class="fas fa-pen text-success"></i> Or Custom Name</label>
+                {{ form.crop_name_custom }}
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <label for="id_quantity" class="form-label"><i class="fas fa-balance-scale text-primary"></i> Quantity / Area</label>
+                    {{ form.quantity }}
                 </div>
-
-                <div class="mb-3">
-                    <label for="id_crop_name_custom" class="form-label">Or Custom Crop Name</label>
-                    {{ form.crop_name_custom }}
+                <div class="col-md-6 mb-4">
+                    <label for="id_unit" class="form-label"><i class="fas fa-ruler text-primary"></i> Unit</label>
+                    {{ form.unit }}
                 </div>
+            </div>
 
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="id_quantity" class="form-label">Quantity / Area</label>
-                        {{ form.quantity }}
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="id_unit" class="form-label">Unit</label>
-                        {{ form.unit }}
-                    </div>
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <label for="id_planting_date" class="form-label"><i class="fas fa-calendar-alt text-danger"></i> Planting Date</label>
+                    {{ form.planting_date }}
                 </div>
-
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label for="id_planting_date" class="form-label">Planting Date</label>
-                        {{ form.planting_date }}
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label for="id_growth_phase" class="form-label">Current Phase</label>
-                        {{ form.growth_phase }}
-                    </div>
+                <div class="col-md-6 mb-4">
+                    <label for="id_growth_phase" class="form-label"><i class="fas fa-chart-line text-info"></i> Initial Phase</label>
+                    {{ form.growth_phase }}
                 </div>
+            </div>
 
-                <div class="mb-3">
-                    <label for="id_cost" class="form-label">Initial Cost (Seeds/Fertilizer)</label>
-                    <div class="input-group">
-                        <span class="input-group-text">₹</span>
-                        {{ form.cost }}
-                    </div>
+            <div class="mb-4">
+                <label for="id_cost" class="form-label"><i class="fas fa-wallet text-secondary"></i> Initial Investment</label>
+                <div class="input-group">
+                    <span class="input-group-text">₹</span>
+                    {{ form.cost }}
                 </div>
+                <div class="form-text small">Include costs for seeds, fertilizer, and labor.</div>
+            </div>
 
-                <div class="mb-3">
-                    <label for="id_strategy" class="form-label">Notes / Strategy</label>
-                    {{ form.strategy }}
-                </div>
+            <div class="mb-4">
+                <label for="id_strategy" class="form-label"><i class="fas fa-clipboard-list"></i> Notes / Strategy</label>
+                {{ form.strategy }}
+            </div>
 
-                <button type="submit" class="btn btn-success w-100">Start Tracking</button>
-            </form>
-        </div>
+            <button type="submit" class="btn-submit">
+                <i class="fas fa-plus-circle"></i> Start Tracking
+            </button>
+        </form>
     </div>
 </div>
 {% endblock %}
