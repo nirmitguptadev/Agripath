@@ -73,7 +73,7 @@ def generate_ai_response(prompt_content):
     
     return "क्षमा करें, मेरा AI कनेक्शन ठीक से काम नहीं कर रहा है।"
 
-def analyze_plant_image(image_path):
+def analyze_plant_image(image_path, user_type='Farmer'):
     """
     Analyzes a plant image using Gemini Vision to detect diseases and suggest remedies.
     """
@@ -84,11 +84,15 @@ def analyze_plant_image(image_path):
         import PIL.Image
         img = PIL.Image.open(image_path)
         
-        prompt = """
+        persona_context = "Commercial Farmer focused on crop yield and scalability" if user_type == 'Farmer' else "Hobby plant enthusiast focused on plant aesthetics, indoor care, and simple home remedies"
+        
+        prompt = f"""
         You are an expert plant pathologist. Analyze this image of a plant.
         1. Identify the plant and any disease/deficiency visible.
         2. If healthy, say "The plant appears healthy."
         3. If sick, list the name of the disease, symptoms observed, and 2-3 organic/chemical remedies.
+        
+        Context: The user asking is a {persona_context}. Tailor your advice to them.
         
         Provide the response in Hindi, formatted as HTML (no markdown blocks, just tags).
         Use <h3> for headings, <p> for text, and <ul>/<li> for lists.

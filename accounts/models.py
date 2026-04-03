@@ -6,7 +6,12 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 class Profile(models.Model):
+    USER_TYPE_CHOICES = [
+        ('Farmer', 'Commercial Farmer'),
+        ('Hobbyist', 'Hobbyist/Gardener'),
+    ]
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user_type = models.CharField(max_length=20, choices=USER_TYPE_CHOICES, default='Farmer')
     name = models.CharField(max_length=100, blank=True, default='')
     age = models.PositiveSmallIntegerField(null=True, blank=True)
     profile_picture = models.ImageField(upload_to='profile_pics/', default='default_profile.png', blank=True)

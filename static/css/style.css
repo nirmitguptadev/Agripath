@@ -38,6 +38,17 @@
     --transition: all 0.3s ease;
 }
 
+body.hobbyist-theme {
+    /* Soft Terracotta, Sage & Warm Botanical Theme for Hobbyists */
+    --primary-green: #8F9779;      /* Earthy sage green */
+    --secondary-green: #B38B6D;    /* Warm aesthetic clay/terracotta */
+    --accent-green: #A3A380;       /* Lighter olive/sage accent */
+    --light-green: #FAF9F6;        /* Cream/warm white */
+    --dark-bg: #FDFBFB;            /* Muted off-white */
+    --text-primary: #3B3C36;       /* Warm dark grey */
+    --shadow-glow: 0 4px 12px rgba(179, 139, 109, 0.25);
+}
+
 /* AI Sidebar Styles */
 .ai-sidebar {
     position: fixed !important;

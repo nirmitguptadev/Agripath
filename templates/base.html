@@ -20,7 +20,7 @@
     {% block extra_css %}{% endblock %}
 </head>
 
-<body style="position: relative; min-height: 100vh;">
+<body class="{% if request.user.is_authenticated and request.user.profile.user_type == 'Hobbyist' %}hobbyist-theme{% endif %}" style="position: relative; min-height: 100vh;">
 
     <!-- Header / Navbar -->
     <nav class="navbar">

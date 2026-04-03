@@ -31,34 +31,43 @@ def get_weather_data(city_name):
 # ==============================================================================
 
 
-PERSONA_PROMPT = {
-    'role': 'user', 
-    'parts': [
-        """
-        आप 'AgriPath' नाम के एक मित्रवत और जानकार AI कृषि मित्र हैं। आपकी बोली सरल और स्पष्ट हिंदी में है, जैसे आप गाँव के किसी किसान मित्र से बात कर रहे हों।
+def get_persona_prompt(user_type='Farmer'):
+    if user_type == 'Farmer':
+        role_desc = "आप 'AgriPath' नाम के एक मित्रवत और जानकार AI कृषि मित्र हैं। आपकी बोली सरल और स्पष्ट हिंदी में है, जैसे आप गाँव के किसी किसान मित्र से बात कर रहे हों।"
+        objective = "**आपका उद्देश्य:** किसानों को खेती, मौसम, और 'AgriPath' वेबसाइट के फीचर्स के बारे में मदद करना।"
+    else:
+        role_desc = "आप 'AgriPath' नाम के एक मित्रवत और जानकार AI गार्डनिंग और हाउसप्लांट विशेषज्ञ हैं। आपकी बोली सरल और स्पष्ट हिंदी में है, और आप हॉबी गार्डनर्स व पौधे प्रेमियों से बात कर रहे हैं।"
+        objective = "**आपका उद्देश्य:** हॉबी गार्डनर्स को पौधों की देखभाल (Plant Care), हाउसप्लांट्स, और 'AgriPath' वेबसाइट के फीचर्स के बारे में मदद करना।"
 
-        **आपका उद्देश्य:** किसानों को खेती, मौसम, और 'AgriPath' वेबसाइट के फीचर्स के बारे में मदद करना।
+    return {
+        'role': 'user', 
+        'parts': [
+            f"""
+            {role_desc}
 
-        **AgriPath वेबसाइट के मुख्य फीचर्स (Features) की जानकारी:**
-        1. **Dashboard (डैशबोर्ड):** यह मुख्य पेज है जहाँ मौसम, एक्टिव फसलें, और सभी टूल्स के शॉर्टकट मिलते हैं।
-        2. **Crop Tracker (फसल ट्रैकर):** यहाँ किसान अपनी चल रही फसलों को जोड़ सकते हैं, उनकी प्रगति (progress) देख सकते हैं, और यह भी देख सकते हैं कि कितना मुनाफा या नुकसान हो रहा है।
-        3. **AI Plant Doctor (पौधा डॉक्टर):** अगर किसी पौधे में बीमारी है, तो किसान उसकी फोटो खींचकर यहाँ अपलोड कर सकते हैं। AI बीमारी की पहचान करेगा और इलाज बताएगा।
-        4. **AI Crop Advisory (फसल सलाहकार):** यह टूल मिट्टी और मौसम के आधार पर सबसे अच्छी फसल उगाने की सलाह देता है।
-        5. **Weather (मौसम):** यहाँ अगले 5 दिनों का मौसम पूर्वानुमान और अलर्ट मिलते हैं।
-        6. **Government Schemes (सरकारी योजनाएं):** यहाँ किसानों के लिए उपलब्ध सरकारी योजनाओं और सब्सिडी की जानकारी मिलती है।
-        7. **Crop Encyclopedia (फसल ज्ञानकोश):** यहाँ 100+ फसलों की खेती की पूरी जानकारी (बुवाई से कटाई तक) मिलती है।
+            {objective}
 
-        **निर्देश:**
-        - उत्तर संक्षिप्त (1-3 वाक्य) और मददगार रखें।
-        - अगर कोई पूछे "मैं यह कैसे करूँ?", तो उन्हें सही फीचर का नाम बताएं।
-        - हमेशा हिंदी में बात करें।
-        """
-    ]
-}
-PERSONA_ACK = {'role': 'model', 'parts': ['जी, मैं समझ गया। मैं एक किसान मित्र की तरह सरल हिंदी में बात करूँगा।']}
+            **AgriPath वेबसाइट के मुख्य फीचर्स (Features) की जानकारी:**
+            1. **Dashboard (डैशबोर्ड):** यह मुख्य पेज है जहाँ मौसम, एक्टिव फसलें, और सभी टूल्स के शॉर्टकट मिलते हैं।
+            2. **Crop Tracker (फसल ट्रैकर):** यहाँ किसान अपनी चल रही फसलों को जोड़ सकते हैं, उनकी प्रगति (progress) देख सकते हैं, और यह भी देख सकते हैं।
+            3. **AI Plant Doctor (पौधा डॉक्टर):** अगर किसी पौधे में बीमारी है, तो किसान उसकी फोटो खींचकर यहाँ अपलोड कर सकते हैं। AI बीमारी की पहचान करेगा और इलाज बताएगा।
+            4. **AI Crop Advisory (फसल सलाहकार):** यह टूल मिट्टी और मौसम के आधार पर सबसे अच्छी फसल उगाने की सलाह देता है।
+            5. **Weather (मौसम):** यहाँ अगले 5 दिनों का मौसम पूर्वानुमान और अलर्ट मिलते हैं।
+            6. **Government Schemes (सरकारी योजनाएं):** यहाँ किसानों के लिए उपलब्ध सरकारी योजनाओं और सब्सिडी की जानकारी मिलती है।
+            7. **Crop Encyclopedia (फसल ज्ञानकोश):** यहाँ 100+ फसलों की खेती की पूरी जानकारी (बुवाई से कटाई तक) मिलती है।
+
+            **निर्देश:**
+            - उत्तर संक्षिप्त (1-3 वाक्य) और मददगार रखें।
+            - अगर कोई पूछे "मैं यह कैसे करूँ?", तो उन्हें सही फीचर का नाम बताएं।
+            - हमेशा हिंदी में बात करें।
+            """
+        ]
+    }
+
+PERSONA_ACK = {'role': 'model', 'parts': ['जी, मैं समझ गया।']}
 
 
-def handle_weather_query(user_prompt, history, user_location=None):
+def handle_weather_query(user_prompt, history, user_location=None, user_type='Farmer'):
     # Simple check: if query doesn't contain common city indicators, use default location
     common_cities = ['दिल्ली', 'मुंबई', 'कोलकाता', 'चेन्नई', 'बेंगलुरु', 'हैदराबाद', 'अहमदाबाद', 'पुणे', 'जयपुर', 'लखनउ', 'कानपुर', 'delhi', 'mumbai', 'kolkata', 'chennai', 'bangalore', 'hyderabad']
     
@@ -87,7 +96,7 @@ def handle_weather_query(user_prompt, history, user_location=None):
         return f"मुझे '{city_name}' का मौसम डेटा नहीं मिला। कृपया शहर का नाम जांचें।"
 
     final_prompt_list = [
-        PERSONA_PROMPT,
+        get_persona_prompt(user_type),
         PERSONA_ACK,
         *history,
         {'role': 'user', 'parts': [f"""
@@ -95,32 +104,32 @@ def handle_weather_query(user_prompt, history, user_location=None):
         - तापमान: {weather_data['temperature']}°C
         - विवरण: {weather_data['description']}
         - नमी (Humidity): {weather_data['humidity']}%
-        इस डेटा के आधार पर, किसान को एक सरल और स्वाभाविक सारांश (1-2 वाक्यों में) प्रदान करें।
+        इस डेटा के आधार पर, एक सरल और स्वाभाविक सारांश (1-2 वाक्यों में) प्रदान करें।
         """]}
     ]
     return generate_ai_response(final_prompt_list)
 
-def handle_crop_recommendation(user_prompt, history):
+def handle_crop_recommendation(user_prompt, history, user_type='Farmer'):
     final_prompt_list = [
-        PERSONA_PROMPT,
+        get_persona_prompt(user_type),
         PERSONA_ACK,
         {'role': 'user', 'parts': ['जब आप फसलों की सूची सुझाते हैं, तो हर फसल का नाम एक नई लाइन पर दें। सूची बनाने के लिए किसी भी बुलेट पॉइंट या नंबरिंग का प्रयोग न करें।']},
-        {'role': 'model', 'parts': ['जी, मैं हर फसल का नाम एक नई लाइन पर दूंगा, बिना किसी निशान के।']},
+        {'role': 'model', 'parts': ['जी, मैं हर पौधे/फसल का नाम एक नई लाइन पर दूंगा, बिना किसी निशान के।']},
         *history
     ]
     return generate_ai_response(final_prompt_list)
 
-def handle_government_scheme(user_prompt, history):
+def handle_government_scheme(user_prompt, history, user_type='Farmer'):
     final_prompt_list = [
-        PERSONA_PROMPT,
+        get_persona_prompt(user_type),
         PERSONA_ACK,
         *history
     ]
     return generate_ai_response(final_prompt_list)
 
-def handle_general_conversation(user_prompt, history):
+def handle_general_conversation(user_prompt, history, user_type='Farmer'):
     final_prompt_list = [
-        PERSONA_PROMPT,
+        get_persona_prompt(user_type),
         PERSONA_ACK,
         *history
     ]
@@ -136,7 +145,18 @@ def assistant_page(request):
 
 def get_greeting(request):
     fallback_greeting = "नमस्ते! मैं आपकी मदद के लिए तैयार हूँ।"
-    greeting_prompt = "आप AgriPath नाम के एक AI कृषि सहायक हैं। एक किसान के लिए एक छोटा, स्वाभाविक और मैत्रीपूर्ण नमस्ते हिंदी में उत्पन्न करें। केवल एक वाक्य।"
+    
+    user_type = 'Farmer'
+    if request.user.is_authenticated:
+        try:
+            user_type = request.user.profile.user_type
+        except Exception:
+            pass
+
+    target_audience = "एक किसान (Farmer)" if user_type == "Farmer" else "एक गार्डनिंग और हाउसप्लांट के शौकीन (Hobbiyst)"
+    
+    greeting_prompt = f"आप AgriPath नाम के एक AI सहायक हैं। {target_audience} के लिए एक छोटा, स्वाभाविक और मैत्रीपूर्ण नमस्ते हिंदी में उत्पन्न करें। केवल एक वाक्य।"
+    
     greeting_text = generate_ai_response(greeting_prompt)
     if "क्षमा करें" in greeting_text:
         return JsonResponse({'greeting': fallback_greeting})
@@ -161,19 +181,24 @@ def process_voice(request):
 
         conversation_context = list(history)
         
+        user_type = 'Farmer'
+        user_location = None
+        if request.user.is_authenticated:
+            try:
+                user_type = request.user.profile.user_type
+                user_location = request.user.profile.location
+            except Exception:
+                pass
+
         final_response_text = ""
         if 'weather' in category:
-            try:
-                user_location = request.user.profile.location
-            except:
-                user_location = None
-            final_response_text = handle_weather_query(user_prompt, conversation_context, user_location)
+            final_response_text = handle_weather_query(user_prompt, conversation_context, user_location, user_type)
         elif 'crop' in category:
-            final_response_text = handle_crop_recommendation(user_prompt, conversation_context)
+            final_response_text = handle_crop_recommendation(user_prompt, conversation_context, user_type)
         elif 'scheme' in category or 'yojana' in category or 'sarkari' in category:
-            final_response_text = handle_government_scheme(user_prompt, conversation_context)
+            final_response_text = handle_government_scheme(user_prompt, conversation_context, user_type)
         else:
-            final_response_text = handle_general_conversation(user_prompt, conversation_context)
+            final_response_text = handle_general_conversation(user_prompt, conversation_context, user_type)
 
         history.append({'role': 'model', 'parts': [final_response_text]})
         request.session['chat_history'] = history
