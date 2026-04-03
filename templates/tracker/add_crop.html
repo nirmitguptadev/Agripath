@@ -1,5 +1,3 @@
-
-
 {% extends 'base.html' %}
 {% load static %}
 
@@ -9,91 +7,89 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
     body {
-        background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+        background-color: #f8fafc;
     }
 
     .form-hero {
         text-align: center;
         padding: 3rem 2rem;
-        background: linear-gradient(135deg, #10b981, #059669);
-        border-radius: 20px;
-        margin-bottom: -3rem;
+        background: #1B5E20;
+        border-radius: 12px;
+        margin-bottom: 2rem;
         color: white;
-        position: relative;
-        z-index: 1;
-        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+    }
+
+    .form-hero h1 {
+        font-size: 2.8rem;
+        font-weight: 800;
     }
 
     .form-card {
         background: white;
-        border-radius: 25px;
-        padding: 3rem 2rem;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-        position: relative;
-        z-index: 2;
-        max-width: 700px;
+        border-radius: 12px;
+        padding: 3rem;
+        border: 2px solid #e2e8f0;
+        max-width: 800px;
         margin: 0 auto;
     }
 
+    /* Huge Accessible Form Controls */
     .form-label {
-        font-weight: 600;
-        color: #064e3b;
-        margin-bottom: 0.5rem;
+        font-weight: 800;
+        font-size: 1.4rem;
+        color: #1e293b;
+        margin-bottom: 0.8rem;
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.8rem;
     }
 
     .form-control, .form-select {
-        border: 2px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 0.8rem 1rem;
-        transition: all 0.3s;
+        height: 70px;
+        font-size: 1.3rem;
+        border: 3px solid #cbd5e1;
+        border-radius: 10px;
+        padding: 0.8rem 1.2rem;
         background-color: #f8fafc;
     }
 
     .form-control:focus, .form-select:focus {
         border-color: #10b981;
-        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2);
         background-color: white;
     }
 
     .input-group-text {
         background-color: #ecfdf5;
-        border: 2px solid #e2e8f0;
+        border: 3px solid #cbd5e1;
         border-right: none;
         color: #059669;
-        font-weight: 600;
-        border-radius: 12px 0 0 12px;
+        font-size: 1.5rem;
+        font-weight: 800;
+        padding: 0 1.5rem;
+        border-radius: 10px 0 0 10px;
     }
 
     .btn-submit {
-        background: linear-gradient(135deg, #10b981, #059669);
+        background: #10b981;
         color: white;
         border: none;
-        padding: 1rem;
+        padding: 1.5rem;
+        font-size: 1.8rem;
         border-radius: 12px;
-        font-weight: 700;
-        letter-spacing: 0.5px;
-        transition: all 0.3s;
+        font-weight: 800;
         width: 100%;
-        margin-top: 1rem;
-        box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4);
+        margin-top: 2rem;
     }
 
     .btn-submit:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+        background: #059669;
     }
 
-    .decorative-icon {
-        position: absolute;
-        top: -20px;
-        right: -20px;
-        font-size: 8rem;
-        color: rgba(255, 255, 255, 0.1);
-        transform: rotate(15deg);
-        z-index: 0;
+    .form-text {
+        font-size: 1.1rem;
+        color: #64748b;
+        margin-top: 0.5rem;
     }
 </style>
 {% endblock %}
@@ -102,64 +98,54 @@
 <div class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
 
     <div class="form-hero">
-        <i class="fas fa-seedling decorative-icon"></i>
-        <h1 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem;">New Crop Tracking</h1>
-        <p style="opacity: 0.9;">Start monitoring a new planting cycle</p>
+        <h1><i class="fas fa-tractor"></i> Add a New Crop</h1>
+        <p style="font-size: 1.4rem; opacity: 0.9;">Start tracking your farm expenses.</p>
     </div>
 
     <div class="form-card">
         <form method="post">
             {% csrf_token %}
 
-            <div class="mb-4">
-                <label for="id_crop" class="form-label"><i class="fas fa-book-open text-warning"></i> Select Crop</label>
-                {{ form.crop }}
-                <div class="form-text text-muted small mt-1"><i class="fas fa-info-circle"></i> Choose from our dictionary for AI recommendations.</div>
-            </div>
-
-            <div class="mb-4">
-                <label for="id_crop_name_custom" class="form-label"><i class="fas fa-pen text-success"></i> Or Custom Name</label>
+            <div class="mb-5">
+                <label for="id_crop_name_custom" class="form-label text-success"><i class="fas fa-seedling"></i> What are you planting?</label>
                 {{ form.crop_name_custom }}
             </div>
 
             <div class="row">
-                <div class="col-md-6 mb-4">
-                    <label for="id_quantity" class="form-label"><i class="fas fa-balance-scale text-primary"></i> Quantity / Area</label>
+                <div class="col-md-6 mb-5">
+                    <label for="id_quantity" class="form-label text-primary"><i class="fas fa-balance-scale"></i> How much area?</label>
                     {{ form.quantity }}
                 </div>
-                <div class="col-md-6 mb-4">
-                    <label for="id_unit" class="form-label"><i class="fas fa-ruler text-primary"></i> Unit</label>
+                <div class="col-md-6 mb-5">
+                    <label for="id_unit" class="form-label text-primary"><i class="fas fa-ruler"></i> Unit (e.g. Acres)</label>
                     {{ form.unit }}
                 </div>
             </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-4">
-                    <label for="id_planting_date" class="form-label"><i class="fas fa-calendar-alt text-danger"></i> Planting Date</label>
+            <div class="mb-5">
+                <label for="id_planting_date" class="form-label text-danger"><i class="far fa-calendar-alt"></i> Planting Date</label>
+                <div style="font-size: 1.3rem;">
                     {{ form.planting_date }}
-                </div>
-                <div class="col-md-6 mb-4">
-                    <label for="id_growth_phase" class="form-label"><i class="fas fa-chart-line text-info"></i> Initial Phase</label>
-                    {{ form.growth_phase }}
                 </div>
             </div>
 
-            <div class="mb-4">
-                <label for="id_cost" class="form-label"><i class="fas fa-wallet text-secondary"></i> Initial Investment</label>
+            <div class="mb-5">
+                <label for="id_cost" class="form-label text-info"><i class="fas fa-wallet"></i> Total Starting Cost</label>
                 <div class="input-group">
                     <span class="input-group-text">₹</span>
                     {{ form.cost }}
                 </div>
-                <div class="form-text small">Include costs for seeds, fertilizer, and labor.</div>
+                <div class="form-text">Include money spent on seeds, plowing, etc.</div>
             </div>
 
-            <div class="mb-4">
-                <label for="id_strategy" class="form-label"><i class="fas fa-clipboard-list"></i> Notes / Strategy</label>
+            <!-- Hide Complex Fields -->
+            <div style="display: none;">
+                {{ form.growth_phase }}
                 {{ form.strategy }}
             </div>
 
             <button type="submit" class="btn-submit">
-                <i class="fas fa-plus-circle"></i> Start Tracking
+                <i class="fas fa-check-circle"></i> Save Crop Details
             </button>
         </form>
     </div>

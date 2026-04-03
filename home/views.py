@@ -10,7 +10,6 @@ from PIL import Image
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-from core.crop_model import predict_suitable_crops, get_soil_data_by_location, CROP_PREDICTOR_MODEL
 from core.ai_fallback import generate_ai_response, analyze_plant_image
 
 OPENWEATHER_API_KEY = getattr(settings, 'OPENWEATHER_API_KEY', None)
@@ -115,8 +114,32 @@ def get_alerts_and_forecast(lat, lon):
             if len(forecast) >= 5:
                 break
             
-        # [ALERTS REMOVED]
-        alerts = [] 
+        # Generating actionable alerts from forecast based on REAL weather data
+        alerts = []
+        for i, item in enumerate(forecast):
+            desc = item['description'].lower()
+            day_offset = "Today" if i == 0 else f"in {i} day{'s' if i > 1 else ''}"
+            
+            if 'rain' in desc or 'shower' in desc or 'storm' in desc:
+                alerts.append({
+                    'message': f"💧 Rain expected {day_offset}. Advisable to delay applying exterior fertilizers or pesticides to prevent runoff.",
+                    'type': 'warning',
+                })
+                break # Only need one warning of this type
+                
+            elif item['max_temp'] > 38:
+                 alerts.append({
+                    'message': f"🔥 High heat stress warning ({item['max_temp']}°C) expected {day_offset}. Ensure deep irrigation and avoid spraying during peak daylight.",
+                    'type': 'danger',
+                })
+                 break
+                 
+            elif item['min_temp'] < 5:
+                 alerts.append({
+                    'message': f"❄️ Frost warning: Temperature dropping to {item['min_temp']}°C {day_offset}. Protect early vegetative crops.",
+                    'type': 'info',
+                })
+                 break
 
         return {'forecast': forecast, 'alerts': alerts}, None
 
@@ -124,82 +147,7 @@ def get_alerts_and_forecast(lat, lon):
         print(f"🔴 OpenWeatherMap Forecast API request error: {e}")
         return {'forecast': [], 'alerts': []}, "Could not connect to the forecast service."
     
-@login_required
-def CropAdvisory(request):
-    # Ensure model is loaded
-    if not CROP_PREDICTOR_MODEL:
-        try:
-            load_and_train_model()
-        except Exception as e:
-            return render(request, 'crop_advisory.html', {'error': 'फसल सलाहकार मॉडल लोड नहीं हो सका।'})
-    
-    try:
-        location = request.user.profile.location
-    except:
-        return render(request, 'crop_advisory.html', {'error': 'प्रोफ़ाइल स्थान आवश्यक है।'})
 
-    if not location:
-        return render(request, 'crop_advisory.html', {
-            'error': 'कृपया अपनी प्रोफाइल में अपना स्थान (Location) अपडेट करें ताकि हम आपके लिए सलाह दे सकें।'
-        })
-
-    if not CROP_PREDICTOR_MODEL:
-         return render(request, 'crop_advisory.html', {'error': 'फसल सलाहकार मॉडल लोड नहीं हो सका।'})
-
-    # 1. Get Real-time Weather Data for Model Input
-    current_weather, weather_error = get_current_weather_data(location)
-    if weather_error or not current_weather:
-         return render(request, 'crop_advisory.html', {'error': f'मौसम डेटा प्राप्त करने में विफलता: {weather_error}.'})
-
-    # 2. Get Soil Data (Mocked/Estimated NPK, pH, Rainfall)
-    soil_data = get_soil_data_by_location(location)
-    
-    # 3. Combine Real-time and Estimated Data for the Model Input
-    model_input = {
-        'N': soil_data['N'],
-        'P': soil_data['P'],
-        'K': soil_data['K'],
-        'temperature': current_weather['temperature'],
-        'humidity': current_weather['humidity'],
-        'ph': soil_data['ph'],
-        'rainfall': soil_data['rainfall']
-    }
-
-    # 4. Predict MULTIPLE Suitable Crops
-    suitable_crops = predict_suitable_crops(model_input)
-    
-    if not suitable_crops:
-        return render(request, 'crop_advisory.html', {'error': 'इस मिट्टी और मौसम डेटा के लिए कोई उपयुक्त फसल नहीं मिली।'})
-        
-    crops_list_str = ", ".join(suitable_crops)
-
-    # 5. Use Gemini to create the Year-Round Planting Calendar
-    gemini_prompt = f"""
-    आप एक विशेषज्ञ भारतीय कृषि वैज्ञानिक हैं।
-    आपके पास एक मॉडल से प्राप्त {location} क्षेत्र के लिए {len(suitable_crops)} सबसे उपयुक्त फसलों की सूची है: {crops_list_str}
-    
-    इस सूची का उपयोग करते हुए, एक संवादात्मक, हिंदी में, साल भर की बुवाई की योजना (Year-Round Planting Calendar) बनाएं।
-    
-    कृपया उत्तर को **HTML Unordered List (`<ul>`)** के रूप में दें।
-    प्रत्येक फसल के लिए `<li>` टैग का उपयोग करें।
-    प्रारूप: `<li><strong>फसल का नाम</strong>: बुवाई का समय और मुख्य देखभाल/मिट्टी की जानकारी।</li>`
-    
-    कोई अतिरिक्त भूमिका या निष्कर्ष न लिखें, केवल `<ul>` सूची दें।
-    """
-    
-    advisory_text = "क्षमा करें, सलाह देने वाला AI इस समय अनुपलब्ध है।"
-    try:
-        advisory_text = generate_ai_response(gemini_prompt)
-    except Exception as e:
-        print(f"AI Advisory Error: {e}")
-
-    # 6. Return the final render
-    return render(request, 'crop_advisory.html', {
-        'location': location,
-        'suitable_crops': suitable_crops, 
-        'soil_data': model_input, 
-        'advisory': advisory_text
-    })
 
 @login_required
 def Weather(request):

@@ -118,3 +118,49 @@ def analyze_plant_image(image_path, user_type='Farmer'):
     except Exception as e:
         print(f"Plant Doctor Error: {e}")
         return "क्षमा करें, छवि का विश्लेषण करते समय त्रुटि हुई। कृपया बाद में प्रयास करें।"
+
+
+def get_agronomic_info(crop_name):
+    """
+    Fetches structured agronomic info (sowing, fertilizers, diseases) for a crop using AI.
+    """
+    if not GEMINI_MODEL and not GROQ_CLIENT:
+        return "AI models not configured."
+        
+    prompt = f"""
+    You are an expert Indian agronomist. Provide structured farming information for the crop '{crop_name}' specifically tailored to the Indian agricultural context (e.g. referencing typical Indian states, Indian climates, Kharif/Rabi seasons, etc.).
+    Provide the response strictly as valid HTML (do NOT use markdown code blocks like ```html).
+    Use <h3> for the headers and <ul>/<li> for the bullet points.
+    
+    Include exactly these 4 sections:
+    <div class="agronomy-card">
+        <h3>Sowing Period & Seasons in India</h3>
+        <ul>...</ul>
+        <h3>Fertilizer Requirements</h3>
+        <ul>...</ul>
+        <h3>Common Diseases & Pests (Indian Subcontinent)</h3>
+        <ul>...</ul>
+        <h3>Water & Irrigation</h3>
+        <ul>...</ul>
+    </div>
+    """
+    
+    try:
+        if GEMINI_MODEL:
+            response = GEMINI_MODEL.generate_content(prompt)
+            text = response.text
+        else:
+            response = GROQ_CLIENT.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.3,
+                max_tokens=1000
+            )
+            text = response.choices[0].message.content
+            
+        text = re.sub(r'```html\n?', '', text)
+        text = re.sub(r'```\n?', '', text)
+        return text.strip()
+    except Exception as e:
+        print(f"Agronomy Extractor Error: {e}")
+        return "<p>Agronomic data unavailable at the moment.</p>"

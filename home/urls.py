@@ -12,6 +12,5 @@ urlpatterns = [
     path('Weather', views.Weather, name='Weather'),
     path('plant-doctor/', views.plant_doctor, name='plant_doctor'),
     path('Fertilizer',views.Fertilizer,name= 'Fertilizer'),
-    path('CropAdvisory', views.CropAdvisory, name='CropAdvisory'),
     path('toggle-persona/', views.toggle_persona, name='toggle_persona'),
 ]

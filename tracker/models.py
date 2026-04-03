@@ -37,6 +37,10 @@ class CropTracker(models.Model):
     # Snapshot of location where this crop was grown (fixes issue when user moves)
     location = models.CharField(max_length=100, blank=True)
     
+    # Field Mapping Coordinates and Acreage (Phase 2 Pro Feature)
+    field_polygon = models.TextField(blank=True, help_text="GeoJSON or coordinate string for the field map")
+    field_area_acres = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    
     strategy = models.TextField(blank=True, help_text="Notes or strategy for this crop")
     
     created_at = models.DateTimeField(auto_now_add=True)
@@ -76,3 +80,44 @@ class CropTracker(models.Model):
         if self.total_days > 0:
             return min(max(0, (self.days_elapsed / self.total_days) * 100), 100)
         return 0
+
+class FinancialEntry(models.Model):
+    ENTRY_TYPES = [
+        ('Expense', 'Expense'),
+        ('Revenue', 'Revenue'),
+    ]
+    
+    CATEGORIES = [
+        ('Seed', 'Seed'),
+        ('Fertilizer', 'Fertilizer'),
+        ('Pesticide', 'Pesticide'),
+        ('Labor', 'Labor'),
+        ('Equipment', 'Equipment'),
+        ('Harvest/Sale', 'Harvest/Sale'),
+        ('Other', 'Other'),
+    ]
+    
+    crop_tracker = models.ForeignKey(CropTracker, related_name='financials', on_delete=models.CASCADE)
+    entry_type = models.CharField(max_length=20, choices=ENTRY_TYPES)
+    category = models.CharField(max_length=50, choices=CATEGORIES)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    date = models.DateField(auto_now_add=True)
+    description = models.CharField(max_length=255, blank=True)
+    
+    class Meta:
+        ordering = ['-date']
+        
+    def __str__(self):
+        return f"{self.entry_type} - {self.category} : ₹{self.amount}"
+
+class Task(models.Model):
+    crop_tracker = models.ForeignKey(CropTracker, related_name='tasks', on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    due_date = models.DateField()
+    is_completed = models.BooleanField(default=False)
+    
+    class Meta:
+        ordering = ['due_date']
+        
+    def __str__(self):
+        return f"{self.title} - {'Done' if self.is_completed else 'Pending'}"

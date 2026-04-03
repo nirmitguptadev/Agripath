@@ -18,6 +18,17 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 
     {% block extra_css %}{% endblock %}
+    
+    <style>
+        /* Force theme application bypassing cache */
+        body.hobbyist-theme .navbar {
+            background-color: #8F9779 !important;
+            border-bottom: 2px solid #A3A380;
+        }
+        body.hobbyist-theme .footer {
+            background-color: #3B3C36 !important;
+        }
+    </style>
 </head>
 
 <body class="{% if request.user.is_authenticated and request.user.profile.user_type == 'Hobbyist' %}hobbyist-theme{% endif %}" style="position: relative; min-height: 100vh;">
@@ -32,11 +43,23 @@
             <div class="nav-links">
                 <a href="/" class="nav-link">Dashboard</a>
                 <a href="{% url 'about' %}" class="nav-link">About Us</a>
+                
+                <!-- Common Features -->
                 <a href="{% url 'crop_list' %}" class="nav-link">Dictionary</a>
-                <a href="{% url 'Policies' %}" class="nav-link">Policies</a>
                 <a href="{% url 'Weather' %}" class="nav-link">Weather</a>
-                <a href="{% url 'CropAdvisory' %}" class="nav-link">Advisory</a>
+
+                <!-- Farmer Features -->
+                {% if request.user.is_authenticated and request.user.profile.user_type != 'Hobbyist' %}
+                <a href="{% url 'Policies' %}" class="nav-link">Policies</a>
+
                 <a href="{% url 'tracker_dashboard' %}" class="nav-link">Tracker</a>
+                {% endif %}
+
+                <!-- Hobbyist Features -->
+                {% if request.user.is_authenticated and request.user.profile.user_type == 'Hobbyist' %}
+                <a href="{% url 'plant_doctor' %}" class="nav-link">Plant Doctor</a>
+                {% endif %}
+
                 <a href="{% url 'view_profile' %}" class="nav-link">
                     {% if user.is_authenticated %}
                     {{ user.username }}
@@ -75,7 +98,7 @@
                 <h3>Quick Links</h3>
                 <ul>
                     <li><a href="{% url 'Weather' %}" class="footer-link">Weather Forecast</a></li>
-                    <li><a href="{% url 'CropAdvisory' %}" class="footer-link">Crop Advisory</a></li>
+
                     <li><a href="{% url 'Policies' %}" class="footer-link">Government Schemes</a></li>
                 </ul>
             </div>

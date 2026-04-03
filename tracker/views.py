@@ -1,8 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import CropTracker
-from .forms import CropTrackerForm, CropUpdateForm
-from .recommendation_engine import get_hybrid_recommendations
+from .models import CropTracker, FinancialEntry, Task
+from .forms import CropTrackerForm, CropUpdateForm, FinancialEntryForm, TaskForm
 from dictionary.models import Crop
 from django.db.models import Sum
 from django.db import models
@@ -18,13 +17,11 @@ def tracker_dashboard(request):
     # Calculate Total Profit
     total_profit = sum(c.profit for c in completed_crops)
 
-    # 3. Recommendations using hybrid approach
+    # 3. Location tracking (if needed for other features)
     try:
         location = request.user.profile.location
     except:
         location = None
-    
-    recommendations = get_hybrid_recommendations(request.user, location, limit=6) if location else []
 
     # Financial Aggregates for Chart
     active_crops_cost = active_crops.aggregate(Sum('cost'))['cost__sum'] or 0
@@ -45,7 +42,6 @@ def tracker_dashboard(request):
         'active_crops': active_crops,
         'completed_crops': completed_crops,
         'total_profit': total_profit,
-        'recommendations': recommendations,
         'location': location,
         'active_crops_cost': active_crops_cost,
         'completed_crops_cost': completed_crops_cost,
@@ -83,5 +79,46 @@ def update_crop(request, tracker_id):
     
     return render(request, 'tracker/update_crop.html', {
         'form': form, 
-        'crop': crop_tracker
+        'crop': crop_tracker,
+        'financial_form': FinancialEntryForm(),
+        'task_form': TaskForm(),
+        'financials': crop_tracker.financials.all(),
+        'tasks': crop_tracker.tasks.all(),
     })
+
+@login_required
+def add_financial_entry(request, tracker_id):
+    crop_tracker = get_object_or_404(CropTracker, id=tracker_id, user=request.user)
+    if request.method == 'POST':
+        form = FinancialEntryForm(request.POST)
+        if form.is_valid():
+            entry = form.save(commit=False)
+            entry.crop_tracker = crop_tracker
+            entry.save()
+            
+            # Auto-update the ledger totals
+            if entry.entry_type == 'Expense':
+                crop_tracker.cost += entry.amount
+            else:
+                crop_tracker.revenue += entry.amount
+            crop_tracker.save()
+            
+    return redirect('update_tracked_crop', tracker_id=tracker_id)
+
+@login_required
+def add_task(request, tracker_id):
+    crop_tracker = get_object_or_404(CropTracker, id=tracker_id, user=request.user)
+    if request.method == 'POST':
+        form = TaskForm(request.POST)
+        if form.is_valid():
+            task = form.save(commit=False)
+            task.crop_tracker = crop_tracker
+            task.save()
+    return redirect('update_tracked_crop', tracker_id=tracker_id)
+
+@login_required
+def toggle_task(request, task_id):
+    task = get_object_or_404(Task, id=task_id, crop_tracker__user=request.user)
+    task.is_completed = not task.is_completed
+    task.save()
+    return redirect('update_tracked_crop', tracker_id=task.crop_tracker.id)

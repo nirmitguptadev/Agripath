@@ -318,7 +318,7 @@
 
 {% block content %}
 <div class="floating-elements">
-    {% if request.user.profile.user_type == 'Hobbyist' %}
+    {% if user.is_authenticated and user.profile.user_type == 'Hobbyist' %}
     <i class="fas fa-seedling floating-icon" style="top: 10%; left: 10%; animation-delay: 0s; color: #8F9779; opacity: 0.15;"></i>
     <i class="fas fa-spa floating-icon" style="top: 20%; right: 15%; animation-delay: 2s; color: #B38B6D; opacity: 0.15;"></i>
     <i class="fas fa-droplet floating-icon" style="bottom: 20%; left: 20%; animation-delay: 4s; color: #8F9779; opacity: 0.15;"></i>
@@ -343,10 +343,10 @@
         <form method="POST" action="{% url 'toggle_persona' %}" style="margin-top: 2rem; display: flex; justify-content: center;">
             {% csrf_token %}
             <div style="display: inline-flex; align-items: center; background: rgba(255, 255, 255, 0.2); border-radius: 50px; padding: 5px; position: relative; width: 350px;">
-                <button type="submit" name="user_type" value="Farmer" style="flex: 1; padding: 10px 20px; border: none; border-radius: 50px; background: {% if request.user.profile.user_type != 'Hobbyist' %}white{% else %}transparent{% endif %}; color: {% if request.user.profile.user_type != 'Hobbyist' %}#1B5E20{% else %}white{% endif %}; font-weight: bold; cursor: pointer; transition: all 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                <button type="submit" name="user_type" value="Farmer" style="flex: 1; padding: 10px 20px; border: none; border-radius: 50px; background: {% if user.is_authenticated and user.profile.user_type != 'Hobbyist' %}white{% else %}transparent{% endif %}; color: {% if user.is_authenticated and user.profile.user_type != 'Hobbyist' %}#1B5E20{% else %}white{% endif %}; font-weight: bold; cursor: pointer; transition: all 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;">
                     <i class="fas fa-tractor"></i> Pro Farmer
                 </button>
-                <button type="submit" name="user_type" value="Hobbyist" style="flex: 1; padding: 10px 20px; border: none; border-radius: 50px; background: {% if request.user.profile.user_type == 'Hobbyist' %}white{% else %}transparent{% endif %}; color: {% if request.user.profile.user_type == 'Hobbyist' %}#1B5E20{% else %}white{% endif %}; font-weight: bold; cursor: pointer; transition: all 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                <button type="submit" name="user_type" value="Hobbyist" style="flex: 1; padding: 10px 20px; border: none; border-radius: 50px; background: {% if user.is_authenticated and user.profile.user_type == 'Hobbyist' %}white{% else %}transparent{% endif %}; color: {% if user.is_authenticated and user.profile.user_type == 'Hobbyist' %}#1B5E20{% else %}white{% endif %}; font-weight: bold; cursor: pointer; transition: all 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;">
                     <i class="fas fa-seedling"></i> Hobby Garden
                 </button>
             </div>
@@ -388,7 +388,7 @@
             </a>
         </div>
 
-        {% if request.user.profile.user_type != 'Hobbyist' %}
+        {% if user.is_authenticated and user.profile.user_type != 'Hobbyist' %}
         <!-- Crop Tracker Widget -->
         <div class="feature-card tracker-widget">
             <div class="feature-icon">
@@ -412,24 +412,9 @@
         </div>
         {% endif %}
 
-        {% if request.user.profile.user_type != 'Hobbyist' %}
-        <!-- Crop Advisory Widget -->
-        <div class="feature-card">
-            <div class="feature-icon" style="color: #10b981;">
-                <i class="fas fa-brain"></i>
-            </div>
-            <h3 class="feature-title">AI Crop Advisory</h3>
-            <p class="feature-desc">Get ML-powered crop recommendations based on soil and weather conditions</p>
-            <div style="text-align: center; margin: 1.5rem 0;">
-                <i class="fas fa-robot" style="font-size: 3rem; color: #10b981; opacity: 0.3;"></i>
-            </div>
-            <a href="{% url 'CropAdvisory' %}" class="feature-btn">
-                <i class="fas fa-lightbulb"></i> Get Recommendations
-            </a>
-        </div>
-        {% endif %}
 
-        {% if request.user.profile.user_type == 'Hobbyist' %}
+
+        {% if user.is_authenticated and user.profile.user_type == 'Hobbyist' %}
         <!-- Plant Doctor Widget -->
         <div class="feature-card">
             <div class="feature-icon" style="color: #ef5350;">
@@ -447,7 +432,7 @@
         </div>
         {% endif %}
 
-        {% if request.user.profile.user_type != 'Hobbyist' %}
+        {% if user.is_authenticated and user.profile.user_type != 'Hobbyist' %}
         <!-- Government Policies Widget -->
         <div class="feature-card">
             <div class="feature-icon" style="color: #f59e0b;">

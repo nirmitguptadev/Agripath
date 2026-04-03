@@ -1,191 +1,287 @@
-
-
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}AgriPath - Update Crop{% endblock %}
+{% block title %}AgriPath - Crop Ledger{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
     body {
-        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
-    }
-
-    .update-hero {
-        text-align: center;
-        padding: 3rem 2rem;
-        background: linear-gradient(135deg, #0ea5e9, #0284c7);
-        border-radius: 20px;
-        margin-bottom: -3rem;
-        color: white;
-        position: relative;
-        z-index: 1;
-        box-shadow: 0 10px 25px rgba(14, 165, 233, 0.3);
-    }
-
-    .form-card {
-        background: white;
-        border-radius: 25px;
-        padding: 3rem 2rem;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-        position: relative;
-        z-index: 2;
-        max-width: 700px;
-        margin: 0 auto;
-    }
-
-    .form-label {
-        font-weight: 600;
-        color: #334155;
-        margin-bottom: 0.5rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .form-control, .form-select {
-        border: 2px solid #e2e8f0;
-        border-radius: 12px;
-        padding: 0.8rem 1rem;
-        transition: all 0.3s;
         background-color: #f8fafc;
     }
 
-    .form-control:focus, .form-select:focus {
-        border-color: #0ea5e9;
-        box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.1);
-        background-color: white;
-    }
-
-    .input-group-text {
-        background-color: #f0f9ff;
-        border: 2px solid #e2e8f0;
-        border-right: none;
-        color: #0284c7;
-        font-weight: 600;
-        border-radius: 12px 0 0 12px;
-    }
-
-    .btn-save {
-        background: linear-gradient(135deg, #0ea5e9, #0284c7);
+    .dashboard-header {
+        background: #1B5E20;
         color: white;
-        border: none;
-        padding: 1rem;
+        padding: 3rem 2rem;
         border-radius: 12px;
-        font-weight: 700;
-        transition: all 0.3s;
-        box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
-    }
-
-    .btn-save:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(14, 165, 233, 0.5);
-    }
-    
-    .btn-cancel {
-        background: white;
-        border: 2px solid #cbd5e1;
-        color: #64748b;
-        padding: 1rem;
-        border-radius: 12px;
-        font-weight: 600;
-        text-decoration: none;
+        margin-bottom: 2rem;
         text-align: center;
-        transition: all 0.2s;
     }
     
-    .btn-cancel:hover {
-        background: #f1f5f9;
-        color: #334155;
+    .dashboard-header h2 {
+        font-size: 2.5rem;
+        font-weight: 800;
     }
 
-    .decorative-bg {
-        position: absolute;
-        top: 0;
-        left: 0;
+    .dashboard-header p {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+
+    .summary-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 12px;
+        border: 2px solid #e2e8f0;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .summary-card h3 {
+        font-size: 1.2rem;
+        color: #475569;
+        text-transform: uppercase;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+
+    .summary-card .value {
+        font-size: 2.5rem;
+        font-weight: 800;
+    }
+
+    .card-panel {
+        background: white;
+        border-radius: 12px;
+        border: 2px solid #e2e8f0;
+        padding: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .card-title {
+        color: #1B5E20;
+        font-size: 1.5rem;
+        font-weight: 800;
+        border-bottom: 3px solid #10b981;
+        padding-bottom: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    /* Huge Accessible Form Elements */
+    .form-control, .form-select {
+        height: 60px;
+        font-size: 1.2rem;
+        border-radius: 10px;
+        border: 2px solid #cbd5e1;
+    }
+
+    label {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-massive {
+        font-size: 1.3rem;
+        font-weight: 800;
+        padding: 1rem 2rem;
+        border-radius: 10px;
         width: 100%;
-        height: 100%;
-        overflow: hidden;
-        border-radius: 20px;
-        opacity: 0.1;
     }
-    
-    .bg-icon {
-        position: absolute;
-        font-size: 10rem;
-        color: white;
-        transform: rotate(-15deg);
-        top: -20px;
-        left: -20px;
+
+    /* Task Items */
+    .task-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.5rem;
+        background: #f1f5f9;
+        border-radius: 10px;
+        margin-bottom: 1rem;
+        border: 2px solid #e2e8f0;
     }
+
+    .task-item h6 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.3rem;
+    }
+
+    .task-item small {
+        font-size: 1rem;
+    }
+
+    .btn-check-task {
+        width: 60px;
+        height: 60px;
+        font-size: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+    }
+
+    /* Table styling for rural ease */
+    .table th { font-size: 1.1rem; }
+    .table td { font-size: 1.2rem; vertical-align: middle; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="container" style="padding-top: 2rem; padding-bottom: 4rem;">
-
-    <div class="update-hero">
-        <div class="decorative-bg">
-            <i class="fas fa-edit bg-icon"></i>
-        </div>
-        <h1 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem;">Update Status</h1>
-        <p style="opacity: 0.9; font-size: 1.1rem;">{{ crop.display_name }}</p>
-        <span style="background: rgba(255,255,255,0.2); padding: 0.3rem 1rem; border-radius: 20px; font-size: 0.9rem;">
-            <i class="fas fa-calendar-day"></i> Planted: {{ crop.planting_date }}
-        </span>
+<div class="container" style="padding-top: 2rem; padding-bottom: 4rem; max-width: 1200px;">
+    
+    <!-- Mega Header -->
+    <div class="dashboard-header">
+        <h2>{{ crop.display_name }}</h2>
+        <p>Planted: {{ crop.planting_date }} &bull; Current Phase: {{ crop.growth_phase }}</p>
+        <a href="{% url 'tracker_dashboard' %}" class="btn btn-light btn-massive mx-auto mt-3" style="max-width: 300px;"><i class="fas fa-arrow-left"></i> Go Back</a>
     </div>
 
-    <div class="form-card">
-        <form method="post">
-            {% csrf_token %}
-
-            <div class="mb-4">
-                <label for="id_growth_phase" class="form-label"><i class="fas fa-layer-group text-primary"></i> Current Growth Phase</label>
-                {{ form.growth_phase }}
+    <!-- Huge Financial Overview -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="summary-card">
+                <h3><i class="fas fa-arrow-down text-danger"></i> Total Cost</h3>
+                <div class="value text-danger">₹{{ crop.cost }}</div>
             </div>
+        </div>
+        <div class="col-md-4">
+            <div class="summary-card">
+                <h3><i class="fas fa-arrow-up text-success"></i> Total Revenue</h3>
+                <div class="value text-success">₹{{ crop.revenue }}</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="summary-card" style="border-color: #10b981; background: #ecfdf5;">
+                <h3 style="color: #047857;"><i class="fas fa-wallet text-success"></i> Net Profit</h3>
+                <div class="value" style="color: #047857;">₹{{ crop.profit }}</div>
+            </div>
+        </div>
+    </div>
 
+    <!-- Update Crop Details -->
+    <div class="card-panel">
+        <h4 class="card-title">Update Crop Details</h4>
+        <form method="post" id="crop-update-form">
+            {% csrf_token %}
             <div class="row">
                 <div class="col-md-6 mb-4">
-                    <label for="id_cost" class="form-label"><i class="fas fa-hand-holding-usd text-danger"></i> Total Cost to Date</label>
-                    <div class="input-group">
-                        <span class="input-group-text">₹</span>
-                        {{ form.cost }}
-                    </div>
+                    <label>Current Growth Phase</label>
+                    {{ form.growth_phase }}
                 </div>
                 <div class="col-md-6 mb-4">
-                    <label for="id_revenue" class="form-label"><i class="fas fa-sack-dollar text-success"></i> Revenue (If Sold)</label>
-                    <div class="input-group">
-                        <span class="input-group-text">₹</span>
-                        {{ form.revenue }}
-                    </div>
+                    <label>Crop Status</label>
+                    {{ form.status }}
                 </div>
             </div>
-
-            <div class="mb-4">
-                <label for="id_status" class="form-label"><i class="fas fa-tasks text-info"></i> Tracking Status</label>
-                {{ form.status }}
-                <div class="form-text text-muted mt-1"><i class="fas fa-info-circle"></i> Select 'Completed' only after final harvest.</div>
-            </div>
-
-            <div class="mb-4" id="harvest-date-group">
-                <label for="id_harvest_date" class="form-label"><i class="fas fa-calendar-check text-warning"></i> Harvest Date</label>
-                {{ form.harvest_date }}
-            </div>
-
-            <div class="mb-4">
-                <label for="id_strategy" class="form-label"><i class="fas fa-clipboard-check"></i> Notes / Strategy Update</label>
-                {{ form.strategy }}
-            </div>
-
-            <div class="d-grid gap-2 d-md-flex">
-                <button type="submit" class="btn-save flex-grow-1">
-                    <i class="fas fa-save"></i> Save Updates
-                </button>
-                <a href="{% url 'tracker_dashboard' %}" class="btn-cancel">
-                    Cancel
-                </a>
-            </div>
+            <div style="display:none;">{{ form.cost }}{{ form.revenue }}{{ form.harvest_date }}{{ form.strategy }}</div>
+            <button type="submit" class="btn btn-success btn-massive">Update Status</button>
         </form>
     </div>
+
+    <!-- Simple Ledger -->
+    <div class="card-panel">
+        <h4 class="card-title"><i class="fas fa-book"></i> Money Tracker (Ledger)</h4>
+        
+        <!-- Add Expense Form -->
+        <div class="bg-light p-4 rounded mb-5 border">
+            <h5 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem;">Add New Expense or Income</h5>
+            <form method="post" action="{% url 'add_financial_entry' crop.id %}">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label>Income or Expense?</label>
+                        {{ financial_form.entry_type }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>Category</label>
+                        {{ financial_form.category }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>Amount (₹)</label>
+                        {{ financial_form.amount }}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label>Short Note (Optional)</label>
+                        {{ financial_form.description }}
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-massive mt-3"><i class="fas fa-plus"></i> Save to Ledger</button>
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Category</th>
+                        <th>Note</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in financials %}
+                    <tr>
+                        <td>{{ entry.date }}</td>
+                        <td>
+                            {% if entry.entry_type == 'Expense' %}
+                            <span class="text-danger fw-bold"><i class="fas fa-arrow-down"></i> {{ entry.category }}</span>
+                            {% else %}
+                            <span class="text-success fw-bold"><i class="fas fa-arrow-up"></i> {{ entry.category }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ entry.description|default:"-" }}</td>
+                        <td class="fw-bold">₹{{ entry.amount }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="4" class="text-center text-muted py-4">No entries added yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Easy Tasks -->
+    <div class="card-panel">
+        <h4 class="card-title"><i class="fas fa-clipboard-list"></i> Daily Tasks</h4>
+        
+        <form method="post" action="{% url 'add_task' crop.id %}" class="bg-light p-4 rounded mb-4 border">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label>What needs to be done?</label>
+                    {{ task_form.title }}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label>By When?</label>
+                    {{ task_form.due_date }}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-secondary btn-massive mt-3"><i class="fas fa-plus"></i> Add Task</button>
+        </form>
+
+        <div class="task-list">
+            {% for task in tasks %}
+            <div class="task-item {% if task.is_completed %}opacity-50{% endif %}">
+                <div>
+                    <h6 class="{% if task.is_completed %}text-decoration-line-through{% endif %}">{{ task.title }}</h6>
+                    <small class="text-danger fw-bold"><i class="far fa-clock"></i> Date: {{ task.due_date }}</small>
+                </div>
+                <form method="post" action="{% url 'toggle_task' task.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn {% if task.is_completed %}btn-secondary{% else %}btn-success{% endif %} btn-check-task">
+                        <i class="fas {% if task.is_completed %}fa-undo{% else %}fa-check{% endif %}"></i>
+                    </button>
+                </form>
+            </div>
+            {% empty %}
+            <p class="text-muted text-center py-4 fs-4">No tasks added.</p>
+            {% endfor %}
+        </div>
+    </div>
+
 </div>
 {% endblock %}

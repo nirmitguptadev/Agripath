@@ -6,48 +6,57 @@
 
 {% block content %}
 <div class="container" style="padding-top: 2rem; padding-bottom: 2rem;">
-    <h1 style="text-align: center; margin-bottom: 2rem; color: var(--primary-green);">Crop Dictionary</h1>
+    <h1 style="text-align: center; margin-bottom: 1rem; color: var(--primary-green);">Global Crop Encyclopedia</h1>
+    <p style="text-align: center; margin-bottom: 2rem; color: var(--text-secondary); max-width: 600px; margin-left: auto; margin-right: auto;">
+        Powered by Wikipedia. Search the largest database of agriculture, botanics, and crops in the world.
+    </p>
 
-    <div class="crop-grid"
-        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem;">
-        {% for crop in crops %}
-        <div class="crop-card"
-            style="background: var(--card-bg); border-radius: 15px; overflow: hidden; box-shadow: var(--shadow-sm); transition: transform 0.3s ease; border: 1px solid rgba(0,0,0,0.05);">
-            <div class="crop-image"
-                style="height: 180px; background-color: #e0e0e0; position: relative; overflow: hidden;">
-                {% if crop.header_image %}
-                <img src="{% static crop.header_image %}" alt="{{ crop.name }}"
-                    style="width: 100%; height: 100%; object-fit: cover;">
-                {% else %}
-                <!-- Placeholder using a gradient if no image -->
-                <div
-                    style="width: 100%; height: 100%; background: linear-gradient(135deg, var(--secondary-green), var(--primary-green)); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
-                    {{ crop.name|slice:":1" }}
+    <!-- Search Bar -->
+    <div style="max-width: 600px; margin: 0 auto 3rem auto;">
+        <form method="GET" action="{% url 'crop_list' %}" style="display: flex; gap: 10px;">
+            <input type="text" name="q" value="{{ query }}" placeholder="Search for any crop (e.g. Wheat, Tomato, Coffee)" 
+                style="flex: 1; padding: 1rem 1.5rem; border-radius: 50px; border: 2px solid #e0e0e0; font-size: 1.1rem; outline: none; transition: all 0.3s;"
+                onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#e0e0e0'">
+            <button type="submit" style="background: var(--primary-green); color: white; border: none; border-radius: 50px; padding: 0 2rem; font-weight: 600; cursor: pointer; transition: background 0.3s; font-size: 1.1rem;">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </form>
+    </div>
+
+    <!-- Results Grid -->
+    <div class="crop-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2rem;">
+        {% if crops %}
+            {% for crop in crops %}
+            <div class="crop-card" style="background: var(--card-bg); border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: transform 0.3s ease; border: 1px solid rgba(0,0,0,0.05);">
+                
+                <div class="crop-image" style="height: 120px; background: linear-gradient(135deg, var(--secondary-green), var(--primary-green)); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; color: white;">
+                    <i class="fas fa-leaf" style="font-size: 3rem; opacity: 0.3;"></i>
                 </div>
-                {% endif %}
+
+                <div class="crop-info" style="padding: 1.5rem; text-align: center;">
+                    <h3 style="margin: 0 0 1rem 0; color: var(--primary-green); font-size: 1.3rem;">{{ crop.title }}</h3>
+
+                    <a href="{% url 'crop_detail' crop.title %}" class="btn"
+                        style="display: block; background-color: var(--accent-green); color: white; padding: 0.8rem; border-radius: 8px; text-decoration: none; font-weight: 500; transition: background 0.3s;">
+                        Read Full Profile
+                    </a>
+                </div>
             </div>
-
-            <div class="crop-info" style="padding: 1.5rem;">
-                <h3 style="margin: 0 0 0.5rem 0; color: var(--primary-green);">{{ crop.name }}</h3>
-
-                <p style="font-size: 0.9rem; color: var(--text-primary); line-height: 1.5; margin-bottom: 1.5rem;">
-                    {{ crop.overview|truncatewords:20 }}
-                </p>
-
-                <a href="{% url 'crop_detail' crop.id %}" class="btn"
-                    style="display: block; text-align: center; background-color: var(--accent-green); color: white; padding: 0.8rem; border-radius: 8px; text-decoration: none; font-weight: 500;">
-                    View Details
-                </a>
+            {% endfor %}
+        {% else %}
+            <div style="grid-column: 1 / -1; text-align: center; padding: 4rem; color: #888;">
+                <i class="fas fa-search" style="font-size: 4rem; margin-bottom: 1rem; color: #ccc;"></i>
+                <h2>No crops found for "{{ query }}"</h2>
+                <p>Try searching with a different term.</p>
             </div>
-        </div>
-        {% endfor %}
+        {% endif %}
     </div>
 </div>
 
 <style>
     .crop-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow-main);
+        transform: translateY(-8px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important;
     }
 </style>
 {% endblock %}
