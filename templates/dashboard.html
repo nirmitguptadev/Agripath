@@ -313,6 +313,108 @@
             transform: translateX(10px);
         }
     }
+
+    /* ── Mandi Market Ticker ────────────────────────────── */
+    .mandi-board {
+        background: #0d1117;
+        border-radius: 16px;
+        padding: 0;
+        margin-bottom: 2.5rem;
+        overflow: hidden;
+        border: 1px solid #30363d;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    }
+    .mandi-board-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.5rem;
+        background: #161b22;
+        border-bottom: 1px solid #30363d;
+    }
+    .mandi-board-header h3 {
+        margin: 0;
+        color: #f0f6fc;
+        font-size: 1rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+    .live-dot {
+        width: 8px;
+        height: 8px;
+        background: #3fb950;
+        border-radius: 50%;
+        display: inline-block;
+        animation: pulse-dot 1.5s infinite;
+    }
+    @keyframes pulse-dot {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.4; transform: scale(0.7); }
+    }
+    .mandi-ticker-wrap {
+        overflow: hidden;
+        position: relative;
+        padding: 1.2rem 0;
+    }
+    .mandi-ticker-track {
+        display: flex;
+        gap: 1.2rem;
+        animation: ticker-scroll 35s linear infinite;
+        width: max-content;
+    }
+    .mandi-ticker-track:hover { animation-play-state: paused; }
+    @keyframes ticker-scroll {
+        0%   { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+    .mandi-chip {
+        background: #161b22;
+        border: 1px solid #30363d;
+        border-radius: 10px;
+        padding: 0.7rem 1.2rem;
+        min-width: 180px;
+        flex-shrink: 0;
+        transition: border-color 0.2s;
+    }
+    .mandi-chip:hover { border-color: #3fb950; }
+    .mandi-chip-name {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #8b949e;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.3rem;
+    }
+    .mandi-chip-price {
+        font-size: 1.45rem;
+        font-weight: 900;
+        color: #3fb950;
+        letter-spacing: -0.02em;
+    }
+    .mandi-chip-sub {
+        font-size: 0.7rem;
+        color: #6e7681;
+        margin-top: 0.25rem;
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+    .mandi-chip-sub .lo  { color: #3fb950; }
+    .mandi-chip-sub .hi  { color: #f85149; }
+    .mandi-chip-sub .sep { color: #30363d; }
+    .mandi-board-footer {
+        padding: 0.5rem 1.5rem;
+        background: #161b22;
+        border-top: 1px solid #30363d;
+        font-size: 0.7rem;
+        color: #6e7681;
+        display: flex;
+        justify-content: space-between;
+    }
 </style>
 {% endblock %}
 
@@ -363,6 +465,51 @@
     </div>
     {% endif %}
 
+    {% if user.is_authenticated and user.profile.user_type != 'Hobbyist' and mandi_prices %}
+    <!-- ── Stock-Market Style Mandi Board ─────────────────────────── -->
+    <div class="mandi-board">
+        <div class="mandi-board-header">
+            <h3><span class="live-dot"></span> Agri Market Prices</h3>
+            <span style="color: #8b949e; font-size: 0.75rem;">Agmarknet &bull; ₹ / Quintal &bull; Updated Today</span>
+        </div>
+
+        <div class="mandi-ticker-wrap">
+            <div class="mandi-ticker-track" id="mandiTrack">
+                {% for crop_name, price in mandi_prices.items %}
+                <div class="mandi-chip">
+                    <div class="mandi-chip-name">{{ crop_name }}</div>
+                    <div class="mandi-chip-price">₹{{ price.modal }}</div>
+                    <div class="mandi-chip-sub">
+                        <span class="lo">↓ ₹{{ price.min }}</span>
+                        <span class="sep">|</span>
+                        <span class="hi">↑ ₹{{ price.max }}</span>
+                    </div>
+                    <div class="mandi-chip-sub" style="margin-top:0.15rem;">📍 {{ price.state }}</div>
+                </div>
+                {% endfor %}
+                {# Duplicate chips for seamless loop #}
+                {% for crop_name, price in mandi_prices.items %}
+                <div class="mandi-chip">
+                    <div class="mandi-chip-name">{{ crop_name }}</div>
+                    <div class="mandi-chip-price">₹{{ price.modal }}</div>
+                    <div class="mandi-chip-sub">
+                        <span class="lo">↓ ₹{{ price.min }}</span>
+                        <span class="sep">|</span>
+                        <span class="hi">↑ ₹{{ price.max }}</span>
+                    </div>
+                    <div class="mandi-chip-sub" style="margin-top:0.15rem;">📍 {{ price.state }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="mandi-board-footer">
+            <span>Source: data.gov.in (Agmarknet)</span>
+            <span>Prices refresh every hour &bull; Hover to pause</span>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="feature-grid">
         <!-- Weather Widget -->
         <div class="feature-card weather-widget">
@@ -383,7 +530,20 @@
                 </div>
             </div>
             {% endif %}
-            <a href="{% url 'Weather' %}" class="feature-btn">
+            {% if weather_alerts %}
+            <div style="margin-bottom:1rem;">
+                {% for alert in weather_alerts %}
+                <div style="display:flex; align-items:flex-start; gap:0.5rem; padding:0.45rem 0.7rem; margin-bottom:0.4rem; border-radius:8px; font-size:0.8rem; font-weight:600;
+                    {% if alert.level == 'danger' %}background:rgba(239,68,68,0.2); color:#fecaca;
+                    {% elif alert.level == 'warning' %}background:rgba(245,158,11,0.2); color:#fde68a;
+                    {% else %}background:rgba(255,255,255,0.15); color:rgba(255,255,255,0.9);{% endif %}">
+                    <span style="flex-shrink:0;">{{ alert.icon }}</span>
+                    <span>{{ alert.msg }}</span>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+    <a href="{% url 'Weather' %}" class="feature-btn">
                 <i class="fas fa-arrow-right"></i> View Details
             </a>
         </div>
@@ -402,7 +562,9 @@
                     <span class="stat-label">Active Crops</span>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-value">₹{{ total_profit|floatformat:0 }}</span>
+                    <span class="stat-value">
+                        {% if total_profit < 0 %}-₹{{ total_profit|floatformat:0|slice:"1:" }}{% else %}₹{{ total_profit|floatformat:0 }}{% endif %}
+                    </span>
                     <span class="stat-label">Total Profit</span>
                 </div>
             </div>
@@ -411,8 +573,6 @@
             </a>
         </div>
         {% endif %}
-
-
 
         {% if user.is_authenticated and user.profile.user_type == 'Hobbyist' %}
         <!-- Plant Doctor Widget -->
@@ -480,4 +640,55 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+{% if weather_alerts %}
+<script>
+(function() {
+    const alerts = [
+        {% for alert in weather_alerts %}{% if alert.level == 'danger' or alert.level == 'warning' %}'{{ alert.icon }} {{ alert.msg|escapejs }}',{% endif %}{% endfor %}
+    ];
+    if (!alerts.length) return;
+
+    // Only fire once per calendar day — store last-sent date in localStorage
+    const TODAY = new Date().toDateString();
+    const STORE_KEY = 'agripath_weather_notif_date';
+    const lastSent = localStorage.getItem(STORE_KEY);
+    if (lastSent === TODAY) return;  // already notified today
+
+    function send() {
+        alerts.forEach((msg, i) => setTimeout(() =>
+            new Notification('🌾 AgriPath — मौसम चेतावनी', {
+                body: msg,
+                icon: '/static/logo.png',
+                tag: 'agripath-weather-' + i,
+                requireInteraction: false
+            })
+        , i * 2000));
+        localStorage.setItem(STORE_KEY, TODAY);
+    }
+
+    if (!('Notification' in window)) return;
+
+    if (Notification.permission === 'granted') {
+        send();
+    } else if (Notification.permission === 'default') {
+        // Show a visible prompt button instead of auto-requesting (browsers block auto-requests)
+        const btn = document.createElement('button');
+        btn.innerHTML = '🔔 Enable weather alerts';
+        btn.style.cssText = 'position:fixed;bottom:100px;right:20px;z-index:9999;background:#ef4444;color:white;border:none;padding:0.7rem 1.2rem;border-radius:50px;font-weight:700;cursor:pointer;box-shadow:0 4px 15px rgba(239,68,68,0.4);font-size:0.9rem;';
+        btn.onclick = () => {
+            Notification.requestPermission().then(p => {
+                if (p === 'granted') send();
+                btn.remove();
+            });
+        };
+        document.body.appendChild(btn);
+        // Auto-remove after 15 seconds
+        setTimeout(() => btn.remove(), 15000);
+    }
+})();
+</script>
+{% endif %}
 {% endblock %}

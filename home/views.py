@@ -14,6 +14,11 @@ from core.ai_fallback import generate_ai_response, analyze_plant_image
 
 OPENWEATHER_API_KEY = getattr(settings, 'OPENWEATHER_API_KEY', None)
 
+def _is_rain(icon): return icon[:2] in ('09', '10')
+def _is_storm(icon): return icon[:2] == '11'
+def _is_snow(icon): return icon[:2] == '13'
+def _is_rain_or_storm(icon): return icon[:2] in ('09', '10', '11')
+
 def get_weather_style(icon_code):
     """
     Maps OpenWeatherMap icon code to FontAwesome class and color.
@@ -117,29 +122,21 @@ def get_alerts_and_forecast(lat, lon):
         # Generating actionable alerts from forecast based on REAL weather data
         alerts = []
         for i, item in enumerate(forecast):
-            desc = item['description'].lower()
+            icon = item['icon']
             day_offset = "Today" if i == 0 else f"in {i} day{'s' if i > 1 else ''}"
-            
-            if 'rain' in desc or 'shower' in desc or 'storm' in desc:
-                alerts.append({
-                    'message': f"💧 Rain expected {day_offset}. Advisable to delay applying exterior fertilizers or pesticides to prevent runoff.",
-                    'type': 'warning',
-                })
-                break # Only need one warning of this type
-                
+
+            if _is_storm(icon):
+                alerts.append({'message': f"⛈️ Thunderstorm expected {day_offset}. Secure equipment and support tall crops.", 'type': 'danger'})
+                break
+            elif _is_rain(icon):
+                alerts.append({'message': f"💧 Rain expected {day_offset}. Delay fertilizers/pesticides to prevent runoff.", 'type': 'warning'})
+                break
             elif item['max_temp'] > 38:
-                 alerts.append({
-                    'message': f"🔥 High heat stress warning ({item['max_temp']}°C) expected {day_offset}. Ensure deep irrigation and avoid spraying during peak daylight.",
-                    'type': 'danger',
-                })
-                 break
-                 
+                alerts.append({'message': f"🔥 High heat ({item['max_temp']}°C) expected {day_offset}. Irrigate early, avoid midday spraying.", 'type': 'danger'})
+                break
             elif item['min_temp'] < 5:
-                 alerts.append({
-                    'message': f"❄️ Frost warning: Temperature dropping to {item['min_temp']}°C {day_offset}. Protect early vegetative crops.",
-                    'type': 'info',
-                })
-                 break
+                alerts.append({'message': f"❄️ Frost warning ({item['min_temp']}°C) {day_offset}. Protect early vegetative crops.", 'type': 'info'})
+                break
 
         return {'forecast': forecast, 'alerts': alerts}, None
 

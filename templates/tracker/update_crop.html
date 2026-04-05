@@ -188,8 +188,9 @@
         <!-- Add Expense Form -->
         <div class="bg-light p-4 rounded mb-5 border">
             <h5 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem;">Add New Expense or Income</h5>
-            <form method="post" action="{% url 'add_financial_entry' crop.id %}">
+            <form method="post" action="{% url 'add_financial_entry' %}">
                 {% csrf_token %}
+                <input type="hidden" name="crop_tracker_id" value="{{ crop.id }}">
                 <div class="row">
                     <div class="col-md-6 mb-3">
                         <label>Income or Expense?</label>
@@ -248,8 +249,9 @@
     <div class="card-panel">
         <h4 class="card-title"><i class="fas fa-clipboard-list"></i> Daily Tasks</h4>
         
-        <form method="post" action="{% url 'add_task' crop.id %}" class="bg-light p-4 rounded mb-4 border">
+        <form method="post" action="{% url 'add_task' %}" class="bg-light p-4 rounded mb-4 border">
             {% csrf_token %}
+            <input type="hidden" name="crop_tracker_id" value="{{ crop.id }}">
             <div class="row">
                 <div class="col-md-6 mb-3">
                     <label>What needs to be done?</label>

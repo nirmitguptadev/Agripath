@@ -1,8 +1,10 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from home.views import get_current_weather_data
+from home.views import get_current_weather_data, get_alerts_and_forecast, _is_rain, _is_storm, _is_rain_or_storm
 from tracker.models import CropTracker
 from django.db.models import Sum
+from core.mandi_api import get_mandi_prices, DEFAULT_CROPS
+
 
 @login_required
 def dashboard(request):
@@ -10,23 +12,115 @@ def dashboard(request):
         location = request.user.profile.location
     except:
         location = None
-    
-    # Weather data
+
+    # Weather data + forecast
     weather_data = None
+    weather_alerts = []
     if location:
         weather_data, _ = get_current_weather_data(location)
-    
+        if weather_data:
+            forecast_data, _ = get_alerts_and_forecast(weather_data['lat'], weather_data['lon'])
+            forecast = forecast_data.get('forecast', [])
+
+            try:
+                is_hobbyist = request.user.profile.user_type == 'Hobbyist'
+            except:
+                is_hobbyist = False
+
+            # Message variants: (farmer_msg, hobbyist_msg)
+            def rain_msg(label):
+                return (f'{label}: बारिश — खाद/कीटनाशक छिड़काव टालें, सिंचाई न करें'
+                        if not is_hobbyist else
+                        f'{label}: बारिश — गमलों में पानी न डालें, खाद का छिड़काव न करें')
+
+            def storm_msg(label):
+                return (f'{label}: आंधी-तूफान — फसल को सहारा दें, उपकरण सुरक्षित करें'
+                        if not is_hobbyist else
+                        f'{label}: तेज आंधी — गमले/कुंडे अंदर रखें, नाजुक पौधे ढकें')
+
+            def heat_high_msg(label, t):
+                return (f'{label}: भीषण गर्मी ({t:.0f}°C) — सुबह सिंचाई करें'
+                        if not is_hobbyist else
+                        f'{label}: भीषण गर्मी ({t:.0f}°C) — पौधों को छाया दें, सुबह पानी दें')
+
+            def heat_mod_msg(label, t):
+                return (f'{label}: अधिक गर्मी ({t:.0f}°C) — शाम को सिंचाई करें'
+                        if not is_hobbyist else
+                        f'{label}: गर्म दिन ({t:.0f}°C) — शाम को पौधों को पानी दें')
+
+            def frost_msg(label, t):
+                return (f'{label}: पाले की चेतावनी ({t:.0f}°C) — फसल ढकें'
+                        if not is_hobbyist else
+                        f'{label}: पाला पड़ सकता है ({t:.0f}°C) — गमले अंदर ले जाएं')
+
+            def cold_msg(label, t):
+                return (f'{label}: ठंड ({t:.0f}°C) — नर्सरी पौधों की रक्षा करें'
+                        if not is_hobbyist else
+                        f'{label}: ठंड ({t:.0f}°C) — नाजुक इनडोर पौधे खिड़की से दूर रखें')
+
+            def humidity_msg(label, h):
+                return (f'{label}: अत्यधिक नमी ({h}%) — फंगस रोग की जांच करें'
+                        if not is_hobbyist else
+                        f'{label}: अधिक नमी ({h}%) — पत्तियों पर फंगस की जांच करें')
+
+            for i, day in enumerate(forecast):
+                day_label = 'आज' if i == 0 else ('कल' if i == 1 else f'{i} दिन बाद')
+                icon = day['icon']
+                fmax = day['max_temp']
+                fmin = day['min_temp']
+                fhum = day['humidity']
+
+                if _is_storm(icon):
+                    weather_alerts.append({'icon': '⛈️', 'msg': storm_msg(day_label), 'level': 'danger'})
+                elif _is_rain(icon):
+                    weather_alerts.append({'icon': '🌧️', 'msg': rain_msg(day_label), 'level': 'warning'})
+
+                if fmax >= 42:
+                    weather_alerts.append({'icon': '🔥', 'msg': heat_high_msg(day_label, fmax), 'level': 'danger'})
+                elif fmax >= 38:
+                    weather_alerts.append({'icon': '☀️', 'msg': heat_mod_msg(day_label, fmax), 'level': 'warning'})
+
+                if fmin <= 3:
+                    weather_alerts.append({'icon': '🧊', 'msg': frost_msg(day_label, fmin), 'level': 'danger'})
+                elif fmin <= 8:
+                    weather_alerts.append({'icon': '❄️', 'msg': cold_msg(day_label, fmin), 'level': 'warning'})
+
+                if fhum >= 90 and not _is_rain_or_storm(icon):
+                    weather_alerts.append({'icon': '🍄', 'msg': humidity_msg(day_label, fhum), 'level': 'info'})
+
     # Tracker stats
-    active_crops_count = CropTracker.objects.filter(user=request.user, status='Active').count()
-    total_profit = CropTracker.objects.filter(user=request.user, status='Completed').aggregate(
-        profit=Sum('revenue') - Sum('cost')
-    )['profit'] or 0
-    
+    active_crops = CropTracker.objects.filter(user=request.user, status='Active')
+    active_crops_count = active_crops.count()
+    from tracker.models import FinancialEntry
+    all_financials = FinancialEntry.objects.filter(crop_tracker__user=request.user)
+    t_rev = all_financials.filter(entry_type='Revenue').aggregate(Sum('amount'))['amount__sum'] or 0
+    t_exp = all_financials.filter(entry_type='Expense').aggregate(Sum('amount'))['amount__sum'] or 0
+    total_profit = float(t_rev) - float(t_exp)
+
+    # ── Live Mandi prices ─────────────────────────────────────────────────
+    # Only fetch prices for the user's active tracked crops + a small mainstream
+    # baseline. Do NOT fetch the full SUPPORTED_CROP_META list — that list is
+    # only used as a picker UI and should never drive API calls.
+    mandi_prices = {}
+    try:
+        is_farmer = not hasattr(request.user, 'profile') or request.user.profile.user_type != 'Hobbyist'
+        if is_farmer:
+            user_crops = list(
+                active_crops.values_list('crop_name_custom', flat=True).distinct()
+            )
+            user_crops = [c.strip().title() for c in user_crops if c and c.strip()]
+            combined = list(dict.fromkeys(user_crops + DEFAULT_CROPS))
+            mandi_prices = get_mandi_prices(combined)
+    except Exception as e:
+        print(f"Mandi prices error: {e}")
+
     context = {
         'location': location,
         'weather_data': weather_data,
+        'weather_alerts': weather_alerts,
         'active_crops_count': active_crops_count,
         'total_profit': total_profit,
+        'mandi_prices': mandi_prices,
     }
-    
+
     return render(request, 'dashboard.html', context)

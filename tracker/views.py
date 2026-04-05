@@ -1,74 +1,479 @@
+import datetime
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import CropTracker, FinancialEntry, Task
+from .models import CropTracker, FinancialEntry, Task, ActivityLog
 from .forms import CropTrackerForm, CropUpdateForm, FinancialEntryForm, TaskForm
 from dictionary.models import Crop
 from django.db.models import Sum
 from django.db import models
+from core.mandi_api import get_mandi_prices, DEFAULT_CROPS, COMMODITY_ALIASES
+from datetime import date
+from django.http import JsonResponse
+from decimal import Decimal
+from core.ai_fallback import generate_ai_response
 
 @login_required
 def tracker_dashboard(request):
-    # 1. Active Crops
     active_crops = CropTracker.objects.filter(user=request.user, status='Active').order_by('-planting_date')
     
-    # 2. Completed Crops (History)
-    completed_crops = CropTracker.objects.filter(user=request.user, status='Completed').order_by('-harvest_date')
+    # Calculate real-time investments dynamically to bypass cached database fields.
+    for crop in active_crops:
+        expense = FinancialEntry.objects.filter(crop_tracker=crop, entry_type='Expense').aggregate(Sum('amount'))['amount__sum'] or 0
+        crop.real_cost = expense
     
-    # Calculate Total Profit
-    total_profit = sum(c.profit for c in completed_crops)
+    # Pre-fetch recent logs and tasks for each crop to avoid N+1 queries in template
+    # (Django template can loop over crop.logs.all / crop.tasks.filter... but pre-fetching is fine.
+    # We will just let the template do `crop.logs.all|slice:":3"` for simplicity.)
+    
+    # Fetch prices only for the user's active crops + a small mainstream baseline
+    user_crops = list(active_crops.values_list('crop_name_custom', flat=True).distinct())
+    user_crops = [c.strip().title() for c in user_crops if c and c.strip()]
+    combined_mandi_crops = list(dict.fromkeys(user_crops + DEFAULT_CROPS))
+    mandi_prices = get_mandi_prices(combined_mandi_crops)
+    
+    # Average yield in Quintals per Acre (used when unit is area-based)
+    YIELD_PER_ACRE = {
+        # Cereals
+        'Wheat': 15, 'Rice': 18, 'Paddy(Dhan)(Common)': 18, 'Maize': 12,
+        'Bajra(Pearl Millet/Cumbu)': 8, 'Jowar(Sorghum)': 8,
+        'Ragi (Finger Millet)': 10, 'Barley (Jau)': 12,
+        # Pulses
+        'Gram': 7, 'Moong (Green Gram)(Whole)': 5, 'Urad (Black Matpe)(Whole)': 5,
+        'Lentil (Masur)(Whole)': 7, 'Arhar (Tur/Red Gram)(Whole)': 6,
+        'Rajma': 8, 'Moth(Whole)': 4, 'Kulthi(Horse Gram)': 5,
+        # Oilseeds
+        'Mustard': 6, 'Soyabean': 6, 'Groundnut': 15, 'Sunflower': 8,
+        'Sesame(Gingelly)': 3, 'Castor Seed': 10, 'Linseed': 5,
+        'Niger Seed (Ramtil)': 3, 'Safflower': 6, 'Cotton': 6,
+        # Vegetables
+        'Tomato': 100, 'Onion': 80, 'Potato': 100, 'Brinjal': 80,
+        'Cauliflower': 80, 'Cabbage': 120, 'Capsicum': 80,
+        'Ladyfinger(Bhindi)': 50, 'Cucumber': 80, 'Peas Green': 30,
+        'Carrot': 100, 'Radish': 100, 'Beet Root': 80,
+        'Spinach(Palak)': 60, 'Methi(Leaves)': 50, 'Drumstick': 40,
+        'Cluster Beans': 40, 'Bottle Gourd': 80, 'Bitter Gourd': 40,
+        # Spices
+        'Turmeric': 25, 'Garlic': 50, 'Ginger(Dry)': 30,
+        'Chilly Red': 15, 'Coriander(Leaves)': 40, 'Dill(Suva/Soya)': 6,
+        # Fruits (Quintal per acre per season)
+        'Banana': 250, 'Mango': 40, 'Guava': 80, 'Orange': 60,
+        'Papaya': 150, 'Grapes': 100, 'Pomegranate': 60, 'Apple': 60,
+        'Watermelon': 150, 'Muskmelon': 80, 'Coconut': 30,
+        'Arecanut(Betelnut/Supari)': 15,
+        # Cash Crops
+        'Sugarcane Jaggery': 30,
+    }
+    
+    # Calculate estimated selling price and projected profit
+    for crop in active_crops:
+        user_name = crop.crop_name_custom.strip().title()
+        lookup_name = COMMODITY_ALIASES.get(user_name, user_name)
+        if lookup_name in mandi_prices:
+            m_price = mandi_prices[lookup_name]['modal']
+            
+            # Convert UI area/weight unit string into Quintals
+            qty = float(crop.quantity)
+            u = crop.unit.lower()
+            if 'quintal' in u: 
+                est_quintals = qty
+            elif 'ton' in u: 
+                est_quintals = qty * 10
+            elif 'kg' in u or 'kilo' in u: 
+                est_quintals = qty / 100
+            else:
+                yield_ac = YIELD_PER_ACRE.get(lookup_name, YIELD_PER_ACRE.get(user_name, 10))
+                if 'acre' in u:
+                    est_quintals = qty * yield_ac
+                elif 'hectare' in u:
+                    est_quintals = qty * 2.471 * yield_ac
+                elif 'bigha' in u:
+                    est_quintals = qty * 0.625 * yield_ac
+                else:
+                    est_quintals = qty * yield_ac
 
-    # 3. Location tracking (if needed for other features)
+            crop.est_yield_quintals = est_quintals
+            crop.estimated_revenue = est_quintals * float(m_price)
+            crop.estimated_profit = crop.estimated_revenue - float(crop.real_cost)
+        else:
+            crop.est_yield_quintals = None
+            crop.estimated_revenue = None
+            crop.estimated_profit = None
+
+    # Auto-update health based on inactivity (never auto-upgrades)
+    for crop in active_crops:
+        crop.auto_update_health()
+
+    # --- 2. TODAY TAB (Tasks) ---
+    all_pending_tasks = Task.objects.filter(crop_tracker__user=request.user, is_completed=False).order_by('due_date')
+    overdue_tasks = [t for t in all_pending_tasks if t.is_overdue]
+    
+    # Today + Tomorrow: delta 0 or 1
+    today = date.today()
+    today_tomorrow_tasks = [t for t in all_pending_tasks if 0 <= (t.due_date - today).days <= 1 and not t.is_completed]
+    
+    # Later: delta > 1
+    upcoming_tasks = [t for t in all_pending_tasks if (t.due_date - today).days > 1 and not t.is_completed]
+
+    completed_today_tasks = Task.objects.filter(
+        crop_tracker__user=request.user, 
+        is_completed=True,
+    ).order_by('-due_date')[:10]
+
+    # --- Smart Task Recommendations ---
+    # Build per-crop suggestions based on health, inactivity, and growth phase.
+    # AI tips are cached in session keyed by crop_id to avoid repeated API calls.
+
+    # Fetch current weather once for the user's location
+    weather_tasks = []  # global weather-based suggestions shown above crop cards
     try:
         location = request.user.profile.location
-    except:
-        location = None
+        if location and active_crops:
+            from home.views import get_current_weather_data, get_alerts_and_forecast, _is_rain, _is_storm, _is_rain_or_storm
+            w_data, _ = get_current_weather_data(location)
+            if w_data:
+                forecast_data, _ = get_alerts_and_forecast(w_data['lat'], w_data['lon'])
+                forecast = forecast_data.get('forecast', [])
+                current_icon = w_data['icon']
+                current_temp = w_data['temperature']
+                current_humidity = w_data['humidity']
+                current_wind = w_data.get('wind_speed', 0)
 
-    # Financial Aggregates for Chart
-    active_crops_cost = active_crops.aggregate(Sum('cost'))['cost__sum'] or 0
-    completed_crops_cost = completed_crops.aggregate(Sum('cost'))['cost__sum'] or 0
-    total_revenue = completed_crops.aggregate(Sum('revenue'))['revenue__sum'] or 0
+                # --- Today's conditions ---
+                if _is_storm(current_icon):
+                    weather_tasks.append({'icon': '⛈️', 'title': 'आज तूफान — फसल को सहारा दें, उपकरण सुरक्षित करें', 'when': 'आज', 'priority': 'high'})
+                elif _is_rain(current_icon):
+                    weather_tasks.append({'icon': '🌧️', 'title': 'आज बारिश — सिंचाई न करें', 'when': 'आज', 'priority': 'high'})
+                    weather_tasks.append({'icon': '🚫', 'title': 'कीटनाशक/खाद छिड़काव टालें (बारिश में बह जाएगा)', 'when': 'आज', 'priority': 'high'})
+                    weather_tasks.append({'icon': '🌊', 'title': 'खेत में जल निकासी की जांच करें', 'when': 'आज', 'priority': 'medium'})
 
-    # Explicitly cast to float/int to ensure they are primitives and not Django wrappers
-    active_crops_cost = float(active_crops_cost)
-    completed_crops_cost = float(completed_crops_cost)
+                if current_temp >= 40:
+                    weather_tasks.append({'icon': '🔥', 'title': f'अत्यधिक गर्मी ({current_temp:.0f}°C) — सुबह जल्दी सिंचाई करें', 'when': 'आज', 'priority': 'high'})
+                    weather_tasks.append({'icon': '🌿', 'title': 'दोपहर में छिड़काव न करें — पत्तियां जल सकती हैं', 'when': 'आज', 'priority': 'medium'})
+                elif current_temp >= 35:
+                    weather_tasks.append({'icon': '☀️', 'title': f'गर्म दिन ({current_temp:.0f}°C) — शाम को सिंचाई करें', 'when': 'आज', 'priority': 'medium'})
+
+                if current_temp <= 5:
+                    weather_tasks.append({'icon': '❄️', 'title': f'पाला पड़ने की संभावना ({current_temp:.0f}°C) — फसल ढकें', 'when': 'आज', 'priority': 'high'})
+                elif current_temp <= 10:
+                    weather_tasks.append({'icon': '🥶', 'title': f'ठंड अधिक है ({current_temp:.0f}°C) — नर्सरी पौधों की रक्षा करें', 'when': 'आज', 'priority': 'medium'})
+
+                if current_humidity >= 85 and not _is_rain_or_storm(current_icon):
+                    weather_tasks.append({'icon': '🍄', 'title': 'अधिक नमी — फंगस रोग की जांच करें', 'when': 'आज', 'priority': 'medium'})
+
+                if current_wind >= 10:
+                    weather_tasks.append({'icon': '💨', 'title': f'तेज हवा ({current_wind:.0f} m/s) — लंबी फसलों को सहारा दें', 'when': 'आज', 'priority': 'medium'})
+
+                # --- Forecast-based suggestions (next 1–4 days) ---
+                seen_conditions = set()
+                for i, day in enumerate(forecast[:4], start=1):
+                    day_label = f'{i} दिन बाद' if i > 1 else 'कल'
+                    ficon = day['icon']
+                    fmax = day['max_temp']
+                    fmin = day['min_temp']
+                    fhum = day['humidity']
+
+                    if _is_rain_or_storm(ficon) and 'rain' not in seen_conditions:
+                        seen_conditions.add('rain')
+                        weather_tasks.append({'icon': '🌦️', 'title': f'{day_label} बारिश संभव — आज ही खाद/कीटनाशक डालें', 'when': day_label, 'priority': 'high'})
+                        weather_tasks.append({'icon': '🌊', 'title': f'{day_label} बारिश से पहले जल निकासी नाली साफ करें', 'when': day_label, 'priority': 'medium'})
+
+                    if fmax >= 42 and 'heat' not in seen_conditions:
+                        seen_conditions.add('heat')
+                        weather_tasks.append({'icon': '🌡️', 'title': f'{day_label} भीषण गर्मी ({fmax:.0f}°C) — सिंचाई की व्यवस्था करें', 'when': day_label, 'priority': 'high'})
+
+                    if fmin <= 3 and 'frost' not in seen_conditions:
+                        seen_conditions.add('frost')
+                        weather_tasks.append({'icon': '🧊', 'title': f'{day_label} पाले की चेतावनी ({fmin:.0f}°C) — फसल सुरक्षा की तैयारी करें', 'when': day_label, 'priority': 'high'})
+
+                    if fhum >= 90 and not _is_rain_or_storm(ficon) and 'humidity' not in seen_conditions:
+                        seen_conditions.add('humidity')
+                        weather_tasks.append({'icon': '💧', 'title': f'{day_label} अत्यधिक नमी — फफूंदनाशक का छिड़काव करें', 'when': day_label, 'priority': 'medium'})
+
+    except Exception:
+        pass  # Weather is best-effort; never break the dashboard
+
+    recommendations = []
+    ai_tips_cache = request.session.get('ai_tips', {})
+    # Keep only current-format dict entries; drop old string entries and old 2-part keys
+    ai_tips_cache = {k: v for k, v in ai_tips_cache.items() if isinstance(v, dict) and k.count('_') >= 2}
+
+    for crop in active_crops:
+        days_idle = crop.days_since_last_log
+        crop_id_str = str(crop.id)
+
+        # Count pending tasks for this crop today (used to bust AI cache when tasks are added)
+        pending_task_count = Task.objects.filter(
+            crop_tracker=crop, is_completed=False, due_date=date.today()
+        ).count()
+
+        # Fetch all task titles for this crop (pending + completed today) to suppress duplicates
+        existing_titles = set(
+            Task.objects.filter(crop_tracker=crop)
+            .filter(models.Q(is_completed=False) | models.Q(due_date=date.today()))
+            .values_list('title', flat=True)
+        )
+
+        # Determine suggestions — skip any whose title already exists as a task
+        suggestions = []
+        if crop.health == 'At Risk':
+            t = f'{crop.display_name} को तुरंत पानी दें'
+            if t not in existing_titles:
+                suggestions.append({'icon': '💧', 'title': t, 'priority': 'high'})
+            t = f'{crop.display_name} की स्वास्थ्य जांच करें'
+            if t not in existing_titles:
+                suggestions.append({'icon': '🔍', 'title': t, 'priority': 'high'})
+        elif crop.health == 'Attention':
+            t = f'{crop.display_name} को पानी दें'
+            if t not in existing_titles:
+                suggestions.append({'icon': '💧', 'title': t, 'priority': 'medium'})
+            t = f'{crop.display_name} की जांच करें'
+            if t not in existing_titles:
+                suggestions.append({'icon': '🔍', 'title': t, 'priority': 'medium'})
+
+        if crop.growth_phase in ('Vegetative', 'Flowering'):
+            t = f'{crop.display_name} में खाद डालें'
+            if t not in existing_titles:
+                suggestions.append({'icon': '🧪', 'title': t, 'priority': 'medium'})
+        if crop.growth_phase in ('Vegetative', 'Fruiting', 'Flowering'):
+            t = f'{crop.display_name} पर कीटनाशक छिड़कें'
+            if t not in existing_titles:
+                suggestions.append({'icon': '🐛', 'title': t, 'priority': 'low'})
+        if days_idle >= 2 and not suggestions:
+            t = f'{crop.display_name} का निरीक्षण करें'
+            if t not in existing_titles:
+                suggestions.append({'icon': '👁️', 'title': t, 'priority': 'low'})
+
+        # Fetch AI tip — cache key includes pending task count so adding a task forces a fresh suggestion
+        cache_key = f"{crop_id_str}_{crop.health}_{pending_task_count}"
+        if cache_key not in ai_tips_cache:
+            existing_str = '、'.join(existing_titles) if existing_titles else 'कोई नहीं'
+            try:
+                prompt = (
+                    f"फसल: {crop.display_name}, अवस्था: {crop.growth_phase}, स्वास्थ्य: {crop.health}. "
+                    f"पहले से जोड़े गए काम: {existing_str}. "
+                    f"JSON में जवाब दो (कोई markdown नहीं): "
+                    f'{{"tip": "2 वाक्य में व्यावहारिक सलाह हिंदी में - किन संकेतों पर ध्यान दें और क्या करें", '
+                    f'"task": "एक नया काम जो ऊपर दी गई सूची में नहीं है (15 शब्द से कम, हिंदी में, इमोजी से शुरू)"}}')
+                import json as _json, re as _re
+                raw = generate_ai_response(prompt)
+                match = _re.search(r'\{.*?\}', raw, _re.DOTALL)
+                parsed = _json.loads(match.group(0)) if match else {}
+                tip = _re.sub(r'<[^>]+>', '', parsed.get('tip', '')).strip()
+                ai_task = _re.sub(r'<[^>]+>', '', parsed.get('task', '')).strip()
+            except Exception:
+                tip = f"{crop.display_name} की नियमित देखभाल करें और पत्तियों पर पीलापन या धब्बे दिखें तो तुरंत उपाय करें।"
+                ai_task = f"🔍 {crop.display_name} की पत्तियों की जांच करें"
+            ai_tips_cache[cache_key] = {'tip': tip, 'task': ai_task}
+
+        cached = ai_tips_cache[cache_key]
+        ai_task = cached.get('task', '')
+        if ai_task and ai_task not in existing_titles:
+            suggestions.append({'icon': '🤖', 'title': ai_task, 'priority': 'ai'})
+
+        if suggestions:
+            recommendations.append({
+                'crop': crop,
+                'suggestions': suggestions,
+                'ai_tip': cached.get('tip', ''),
+            })
+
+    request.session['ai_tips'] = ai_tips_cache
+
+    # --- 3. MONEY TAB ---
+    completed_crops = CropTracker.objects.filter(user=request.user, status='Completed')
+    
+    all_financials = FinancialEntry.objects.filter(crop_tracker__user=request.user).order_by('-date', '-id')
+    
+    total_revenue = all_financials.filter(entry_type='Revenue').aggregate(Sum('amount'))['amount__sum'] or 0
+    total_expense = all_financials.filter(entry_type='Expense').aggregate(Sum('amount'))['amount__sum'] or 0
     total_revenue = float(total_revenue)
-    total_profit = float(total_profit)
+    total_expense = float(total_expense)
+    total_profit = total_revenue - total_expense
 
-    # Debugging types
-    print(f"DEBUG: active_crops_cost: {type(active_crops_cost)} = {active_crops_cost}")
-    print(f"DEBUG: total_profit: {type(total_profit)} = {total_profit}")
+    # --- Chart data ---
+    import json as _json
+    from datetime import timedelta
 
-    return render(request, 'tracker/dashboard.html', {
+    # 1. Expense by category (donut)
+    expense_by_cat = (
+        all_financials.filter(entry_type='Expense')
+        .values('category')
+        .annotate(total=Sum('amount'))
+        .order_by('-total')
+    )
+    chart_expense_labels = _json.dumps([e['category'] for e in expense_by_cat])
+    chart_expense_values = _json.dumps([float(e['total']) for e in expense_by_cat])
+
+    # 2. Per-crop invested vs estimated revenue (bar)
+    chart_crop_names = _json.dumps(
+        [f"{c.emoji} {c.display_name}" for c in active_crops]
+    )
+    chart_crop_invested = _json.dumps([float(c.real_cost) for c in active_crops])
+    chart_crop_revenue = _json.dumps(
+        [float(c.estimated_revenue) if c.estimated_revenue is not None else 0 for c in active_crops]
+    )
+
+    # 3. Daily spending last 30 days (line)
+    thirty_days_ago = date.today() - timedelta(days=29)
+    daily_spend = (
+        all_financials.filter(entry_type='Expense', date__gte=thirty_days_ago)
+        .values('date')
+        .annotate(total=Sum('amount'))
+        .order_by('date')
+    )
+    chart_spend_dates = _json.dumps([str(d['date']) for d in daily_spend])
+    chart_spend_values = _json.dumps([float(d['total']) for d in daily_spend])
+
+    # All Agmarknet-verified commodity names with user-friendly name, API name, emoji
+    SUPPORTED_CROP_META = [
+        # Cereals
+        {'name': 'Wheat',            'alias': 'Wheat',                       'emoji': '🌾', 'category': 'Cereal'},
+        {'name': 'Rice',             'alias': 'Rice',                        'emoji': '🍚', 'category': 'Cereal'},
+        {'name': 'Paddy',            'alias': 'Paddy(Dhan)(Common)',         'emoji': '🌿', 'category': 'Cereal'},
+        {'name': 'Maize',            'alias': 'Maize',                       'emoji': '🌽', 'category': 'Cereal'},
+        {'name': 'Bajra',            'alias': 'Bajra(Pearl Millet/Cumbu)',   'emoji': '🍌', 'category': 'Cereal'},
+        {'name': 'Jowar',            'alias': 'Jowar(Sorghum)',              'emoji': '🌾', 'category': 'Cereal'},
+        {'name': 'Ragi',             'alias': 'Ragi (Finger Millet)',        'emoji': '🌿', 'category': 'Cereal'},
+        {'name': 'Barley',           'alias': 'Barley (Jau)',                'emoji': '🌾', 'category': 'Cereal'},
+        # Pulses
+        {'name': 'Gram',             'alias': 'Gram',                        'emoji': '🫘', 'category': 'Pulse'},
+        {'name': 'Moong',            'alias': 'Moong (Green Gram)(Whole)',   'emoji': '🌱', 'category': 'Pulse'},
+        {'name': 'Urad',             'alias': 'Urad (Black Matpe)(Whole)',   'emoji': '🫘', 'category': 'Pulse'},
+        {'name': 'Masoor',           'alias': 'Lentil (Masur)(Whole)',       'emoji': '🫘', 'category': 'Pulse'},
+        {'name': 'Arhar (Tur)',      'alias': 'Arhar (Tur/Red Gram)(Whole)', 'emoji': '🫘', 'category': 'Pulse'},
+        {'name': 'Rajma',            'alias': 'Rajma',                       'emoji': '🫘', 'category': 'Pulse'},
+        {'name': 'Moth',             'alias': 'Moth(Whole)',                 'emoji': '🫘', 'category': 'Pulse'},
+        {'name': 'Horse Gram',       'alias': 'Kulthi(Horse Gram)',          'emoji': '🫘', 'category': 'Pulse'},
+        # Oilseeds
+        {'name': 'Mustard',          'alias': 'Mustard',                     'emoji': '🌻', 'category': 'Oilseed'},
+        {'name': 'Soyabean',         'alias': 'Soyabean',                    'emoji': '🫘', 'category': 'Oilseed'},
+        {'name': 'Groundnut',        'alias': 'Groundnut',                   'emoji': '🥜', 'category': 'Oilseed'},
+        {'name': 'Sunflower',        'alias': 'Sunflower',                   'emoji': '🌻', 'category': 'Oilseed'},
+        {'name': 'Sesame (Til)',      'alias': 'Sesame(Gingelly)',            'emoji': '🌿', 'category': 'Oilseed'},
+        {'name': 'Castor Seed',      'alias': 'Castor Seed',                 'emoji': '🌿', 'category': 'Oilseed'},
+        {'name': 'Linseed',          'alias': 'Linseed',                     'emoji': '🌿', 'category': 'Oilseed'},
+        {'name': 'Niger Seed',       'alias': 'Niger Seed (Ramtil)',         'emoji': '🌿', 'category': 'Oilseed'},
+        {'name': 'Safflower',        'alias': 'Safflower',                   'emoji': '🌷', 'category': 'Oilseed'},
+        {'name': 'Cotton',           'alias': 'Cotton',                      'emoji': '🌸', 'category': 'Oilseed'},
+        # Vegetables
+        {'name': 'Tomato',           'alias': 'Tomato',                      'emoji': '🍅', 'category': 'Vegetable'},
+        {'name': 'Onion',            'alias': 'Onion',                       'emoji': '🧅', 'category': 'Vegetable'},
+        {'name': 'Potato',           'alias': 'Potato',                      'emoji': '🥔', 'category': 'Vegetable'},
+        {'name': 'Brinjal',          'alias': 'Brinjal',                     'emoji': '🍆', 'category': 'Vegetable'},
+        {'name': 'Cauliflower',      'alias': 'Cauliflower',                 'emoji': '🥦', 'category': 'Vegetable'},
+        {'name': 'Cabbage',          'alias': 'Cabbage',                     'emoji': '🥦', 'category': 'Vegetable'},
+        {'name': 'Capsicum',         'alias': 'Capsicum',                    'emoji': '🌶️', 'category': 'Vegetable'},
+        {'name': 'Bhindi',           'alias': 'Ladyfinger(Bhindi)',          'emoji': '🫑', 'category': 'Vegetable'},
+        {'name': 'Cucumber',         'alias': 'Cucumber',                    'emoji': '🥒', 'category': 'Vegetable'},
+        {'name': 'Peas',             'alias': 'Peas Green',                  'emoji': '🌱', 'category': 'Vegetable'},
+        {'name': 'Carrot',           'alias': 'Carrot',                      'emoji': '🥕', 'category': 'Vegetable'},
+        {'name': 'Radish',           'alias': 'Radish',                      'emoji': '👀',  'category': 'Vegetable'},
+        {'name': 'Beet Root',        'alias': 'Beet Root',                   'emoji': '🛒', 'category': 'Vegetable'},
+        {'name': 'Spinach',          'alias': 'Spinach(Palak)',              'emoji': '🌿', 'category': 'Vegetable'},
+        {'name': 'Methi',            'alias': 'Methi(Leaves)',               'emoji': '🌿', 'category': 'Vegetable'},
+        {'name': 'Drumstick',        'alias': 'Drumstick',                   'emoji': '🌿', 'category': 'Vegetable'},
+        {'name': 'Cluster Beans',    'alias': 'Cluster Beans',               'emoji': '🌱', 'category': 'Vegetable'},
+        # Spices
+        {'name': 'Turmeric',         'alias': 'Turmeric',                    'emoji': '🟡', 'category': 'Spice'},
+        {'name': 'Garlic',           'alias': 'Garlic',                      'emoji': '🧄', 'category': 'Spice'},
+        {'name': 'Ginger',           'alias': 'Ginger(Dry)',                 'emoji': '🫐', 'category': 'Spice'},
+        {'name': 'Chilli',           'alias': 'Chilly Red',                  'emoji': '🌶️', 'category': 'Spice'},
+        {'name': 'Coriander',        'alias': 'Coriander(Leaves)',           'emoji': '🌿', 'category': 'Spice'},
+        {'name': 'Dill',             'alias': 'Dill(Suva/Soya)',             'emoji': '🌿', 'category': 'Spice'},
+        # Fruits
+        {'name': 'Banana',           'alias': 'Banana',                      'emoji': '🍌', 'category': 'Fruit'},
+        {'name': 'Mango',            'alias': 'Mango',                       'emoji': '🥭', 'category': 'Fruit'},
+        {'name': 'Tomato',           'alias': 'Tomato',                      'emoji': '🍅', 'category': 'Fruit'},
+        {'name': 'Guava',            'alias': 'Guava',                       'emoji': '🍏', 'category': 'Fruit'},
+        {'name': 'Orange',           'alias': 'Orange',                      'emoji': '🍊', 'category': 'Fruit'},
+        {'name': 'Papaya',           'alias': 'Papaya',                      'emoji': '🍈', 'category': 'Fruit'},
+        {'name': 'Grapes',           'alias': 'Grapes',                      'emoji': '🍇', 'category': 'Fruit'},
+        {'name': 'Pomegranate',      'alias': 'Pomegranate',                 'emoji': '🍎', 'category': 'Fruit'},
+        {'name': 'Apple',            'alias': 'Apple',                       'emoji': '🍎', 'category': 'Fruit'},
+        {'name': 'Watermelon',       'alias': 'Watermelon',                  'emoji': '🍉', 'category': 'Fruit'},
+        {'name': 'Muskmelon',        'alias': 'Muskmelon',                   'emoji': '🍈', 'category': 'Fruit'},
+        {'name': 'Coconut',          'alias': 'Coconut',                     'emoji': '🥥', 'category': 'Fruit'},
+        {'name': 'Arecanut',         'alias': 'Arecanut(Betelnut/Supari)',   'emoji': '🌰', 'category': 'Fruit'},
+        # Cash Crops
+        {'name': 'Sugarcane',        'alias': 'Sugarcane Jaggery',           'emoji': '🎋', 'category': 'Cash Crop'},
+    ]
+
+    context = {
         'active_crops': active_crops,
-        'completed_crops': completed_crops,
+        'mandi_prices': mandi_prices,
+        'supported_crops': SUPPORTED_CROP_META,
+        
+        'overdue_tasks': overdue_tasks,
+        'today_tomorrow_tasks': today_tomorrow_tasks,
+        'upcoming_tasks': upcoming_tasks,
+        'completed_today_tasks': completed_today_tasks,
+        'recommendations': recommendations,
+        'weather_tasks': weather_tasks,
+        
+        'all_financials': all_financials,
+        'total_revenue': total_revenue,
+        'total_expense': total_expense,
         'total_profit': total_profit,
-        'location': location,
-        'active_crops_cost': active_crops_cost,
-        'completed_crops_cost': completed_crops_cost,
-        'total_revenue': total_revenue
-    })
+        'chart_expense_labels': chart_expense_labels,
+        'chart_expense_values': chart_expense_values,
+        'chart_crop_names': chart_crop_names,
+        'chart_crop_invested': chart_crop_invested,
+        'chart_crop_revenue': chart_crop_revenue,
+        'chart_spend_dates': chart_spend_dates,
+        'chart_spend_values': chart_spend_values,
+    }
+    return render(request, 'tracker/dashboard.html', context)
+
+
+# -------------------------------------------------------------
+# QUICK ACTIONS (Bottom Sheets & One-Tap Actions)
+# -------------------------------------------------------------
 
 @login_required
 def add_crop(request):
     if request.method == 'POST':
-        form = CropTrackerForm(request.POST)
-        if form.is_valid():
-            crop_tracker = form.save(commit=False)
-            crop_tracker.user = request.user
-            # Save the location where this crop is being grown (snapshot)
-            if hasattr(request.user, 'profile') and request.user.profile.location:
-                crop_tracker.location = request.user.profile.location
-            crop_tracker.save()
-            return redirect('tracker_dashboard')
-    else:
-        form = CropTrackerForm()
-    
-    return render(request, 'tracker/add_crop.html', {'form': form})
+        # Create directly from POST data
+        crop_name = request.POST.get('crop_name_custom', 'Unknown')
+        emoji = request.POST.get('emoji', '🌿')
+        location_field = request.POST.get('location', '')
+        quantity = request.POST.get('quantity', 0)
+        unit = request.POST.get('unit', 'acres')
+        plating_date_str = request.POST.get('planting_date') or str(date.today())
+        
+        CropTracker.objects.create(
+            user=request.user,
+            crop_name_custom=crop_name,
+            emoji=emoji,
+            location=location_field, # Using the 'location' field for Field Name as requested
+            quantity=quantity,
+            unit=unit,
+            planting_date=plating_date_str,
+            status='Active'
+        )
+    return redirect('tracker_dashboard')
+
+@login_required
+def update_crop_details(request, tracker_id):
+    crop_tracker = get_object_or_404(CropTracker, id=tracker_id, user=request.user)
+    if request.method == 'POST':
+        crop_name = request.POST.get('crop_name_custom')
+        location = request.POST.get('location')
+        quantity = request.POST.get('quantity')
+        unit = request.POST.get('unit')
+        growth_phase = request.POST.get('growth_phase')
+        
+        if crop_name: crop_tracker.crop_name_custom = crop_name
+        if location is not None: crop_tracker.location = location
+        if quantity: crop_tracker.quantity = quantity
+        if unit: crop_tracker.unit = unit
+        if growth_phase: crop_tracker.growth_phase = growth_phase
+        
+        crop_tracker.save()
+    return redirect('tracker_dashboard')
 
 @login_required
 def update_crop(request, tracker_id):
     crop_tracker = get_object_or_404(CropTracker, id=tracker_id, user=request.user)
-    
     if request.method == 'POST':
         form = CropUpdateForm(request.POST, instance=crop_tracker)
         if form.is_valid():
@@ -87,15 +492,123 @@ def update_crop(request, tracker_id):
     })
 
 @login_required
-def add_financial_entry(request, tracker_id):
+def add_quick_log(request, tracker_id):
     crop_tracker = get_object_or_404(CropTracker, id=tracker_id, user=request.user)
     if request.method == 'POST':
-        form = FinancialEntryForm(request.POST)
-        if form.is_valid():
-            entry = form.save(commit=False)
-            entry.crop_tracker = crop_tracker
-            entry.save()
+        activity_type = request.POST.get('activity_type')
+        details = request.POST.get('details', '')
+        if activity_type:
+            ActivityLog.objects.create(
+                crop_tracker=crop_tracker,
+                activity_type=activity_type,
+                details=details
+            )
+    return redirect('tracker_dashboard')
+
+@login_required
+def update_health(request, tracker_id):
+    crop_tracker = get_object_or_404(CropTracker, id=tracker_id, user=request.user)
+    if request.method == 'POST':
+        new_health = request.POST.get('health')
+        if new_health in dict(CropTracker._meta.get_field('health').choices):
+            crop_tracker.health = new_health
+            crop_tracker.save()
+    return redirect('tracker_dashboard')
+
+@login_required
+def harvest_crop(request, tracker_id):
+    crop_tracker = get_object_or_404(CropTracker, id=tracker_id, user=request.user)
+    if request.method == 'POST':
+        crop_tracker.status = 'Completed'
+        crop_tracker.harvest_date = date.today()
+        crop_tracker.save()
+    return redirect('tracker_dashboard')
+
+@login_required
+def add_suggested_task(request):
+    """Quick-add a pre-filled suggested task from the recommendations panel."""
+    if request.method == 'POST':
+        tracker_id = request.POST.get('crop_tracker_id')
+        title = request.POST.get('title', '').strip()
+        if tracker_id and title:
+            crop_tracker = get_object_or_404(CropTracker, id=tracker_id, user=request.user)
+            Task.objects.create(
+                crop_tracker=crop_tracker,
+                title=title,
+                due_date=date.today()
+            )
+    return redirect('tracker_dashboard')
+
+
+@login_required
+def add_task(request):
+    if request.method == 'POST':
+        tracker_id = request.POST.get('crop_tracker_id')
+        title = request.POST.get('title')
+        due_date = request.POST.get('due_date') or str(date.today())
+        
+        if tracker_id and title:
+            # Check if tracker belongs to user
+            crop_tracker = get_object_or_404(CropTracker, id=tracker_id, user=request.user)
+            Task.objects.create(
+                crop_tracker=crop_tracker,
+                title=title,
+                due_date=due_date
+            )
+    return redirect('tracker_dashboard')
+
+@login_required
+def toggle_task(request, task_id):
+    if request.method == 'POST':
+        task = get_object_or_404(Task, id=task_id, crop_tracker__user=request.user)
+        task.is_completed = not task.is_completed
+        task.save()
+    # It redirects to dashboard instead of update_crop because of new UI
+    return redirect('tracker_dashboard')
+
+@login_required
+def check_custom_crop(request):
+    """AJAX: check if a user-typed crop name exists in the Mandi API."""
+    name = request.GET.get('name', '').strip().title()
+    if not name:
+        return JsonResponse({'found': False})
+    
+    from core.mandi_api import get_mandi_prices, COMMODITY_ALIASES
+    # Try the name directly and via alias
+    lookup = COMMODITY_ALIASES.get(name, name)
+    prices = get_mandi_prices([lookup])
+    
+    if lookup in prices:
+        return JsonResponse({
+            'found': True,
+            'alias': lookup,
+            'price': prices[lookup]['modal'],
+            'market': prices[lookup]['market'],
+        })
+    return JsonResponse({'found': False})
+
+
+@login_required
+def add_financial_entry(request):
+    if request.method == 'POST':
+        tracker_id = request.POST.get('crop_tracker_id')
+        entry_type = request.POST.get('entry_type') # Revenue or Expense
+        category = request.POST.get('category', 'Other')
+        amount_str = request.POST.get('amount', 0)
+        
+        try:
+            amount = Decimal(str(amount_str))
+        except:
+            amount = Decimal(0)
             
+        if tracker_id and amount > 0:
+            crop_tracker = get_object_or_404(CropTracker, id=tracker_id, user=request.user)
+            entry = FinancialEntry.objects.create(
+                crop_tracker=crop_tracker,
+                entry_type=entry_type,
+                category=category,
+                amount=amount
+            )
             # Auto-update the ledger totals
             if entry.entry_type == 'Expense':
                 crop_tracker.cost += entry.amount
@@ -103,22 +616,4 @@ def add_financial_entry(request, tracker_id):
                 crop_tracker.revenue += entry.amount
             crop_tracker.save()
             
-    return redirect('update_tracked_crop', tracker_id=tracker_id)
-
-@login_required
-def add_task(request, tracker_id):
-    crop_tracker = get_object_or_404(CropTracker, id=tracker_id, user=request.user)
-    if request.method == 'POST':
-        form = TaskForm(request.POST)
-        if form.is_valid():
-            task = form.save(commit=False)
-            task.crop_tracker = crop_tracker
-            task.save()
-    return redirect('update_tracked_crop', tracker_id=tracker_id)
-
-@login_required
-def toggle_task(request, task_id):
-    task = get_object_or_404(Task, id=task_id, crop_tracker__user=request.user)
-    task.is_completed = not task.is_completed
-    task.save()
-    return redirect('update_tracked_crop', tracker_id=task.crop_tracker.id)
+    return redirect('tracker_dashboard')
