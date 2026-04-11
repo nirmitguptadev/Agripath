@@ -48,7 +48,7 @@ def get_weather_style(icon_code):
 def get_current_weather_data(city_name):
     if not OPENWEATHER_API_KEY: return None, "Weather API key not configured."
     base_url = "http://api.openweathermap.org/data/2.5/weather"
-    params = {'q': city_name, 'appid': OPENWEATHER_API_KEY, 'units': 'metric', 'lang': 'hi'}
+    params = {'q': city_name, 'appid': OPENWEATHER_API_KEY, 'units': 'metric'}
     try:
         response = requests.get(base_url, params=params)
         if response.status_code == 404: return None, f"City '{city_name}' not found."
@@ -86,8 +86,7 @@ def get_alerts_and_forecast(lat, lon):
         'lat': lat, 
         'lon': lon, 
         'appid': OPENWEATHER_API_KEY, 
-        'units': 'metric', 
-        'lang': 'hi'
+        'units': 'metric'
     }
 
     try:
@@ -197,10 +196,10 @@ def Policies(request):
         return render(request, 'Policies.html', {'error': 'Location missing.'})
 
     categories = [
-        "फसल बीमा और सुरक्षा",
-        "वित्तीय सहायता और ऋण",
-        "आधुनिक कृषि और तकनीक",
-        "किसान कल्याण"
+        "Crop Insurance & Security",
+        "Financial Aid & Loans",
+        "Modern Agriculture & Technology",
+        "Farmer Welfare"
     ]
 
     prompt = f"""
@@ -248,7 +247,7 @@ def Policies(request):
 
     except Exception as e:
         print(f"Error: {e}")
-        return render(request, 'Policies.html', {'error': 'सर्वर से डेटा प्राप्त करने में त्रुटि हुई।'})
+        return render(request, 'Policies.html', {'error': 'Failed to retrieve data from server.'})
 
 
 
@@ -292,7 +291,7 @@ def plant_doctor(request):
             
         except Exception as e:
             print(f"Error processing image: {e}")
-            error = "chavi ko processing karte samay truti hui. kripya punah prayas karen." # Using Hinglish/Hindi for consistency with error messages in this file
+            error = "An error occurred while processing the image. Please try again."
         
         finally:
             # 3. Cleanup: Delete the file

@@ -55,10 +55,12 @@
     const synth = window.speechSynthesis;
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognition;
-    let hindiVoice = null;
+    let currentVoice = null;
 
     function loadVoices() {
-        hindiVoice = synth.getVoices().find(voice => voice.lang === 'hi-IN' || voice.lang.startsWith('hi'));
+        const isHi = localStorage.getItem('agripath_lang') === 'hi';
+        const targetLang = isHi ? 'hi' : 'en';
+        currentVoice = synth.getVoices().find(voice => voice.lang.startsWith(targetLang));
     }
     if (synth.onvoiceschanged !== undefined) {
         synth.onvoiceschanged = loadVoices;
@@ -91,7 +93,8 @@
             // Fetch and display the new greeting
             await fetchAndDisplayGreeting();
             resetUIState();
-            statusDiv.textContent = 'Status: नया चैट शुरू हुआ (New Chat Started)';
+            const isHi = localStorage.getItem('agripath_lang') === 'hi';
+            statusDiv.textContent = isHi ? 'Status: नया चैट शुरू हुआ (New Chat Started)' : 'Status: New Chat Started';
         } catch (error) {
             console.error('Error starting new chat:', error);
         }
@@ -101,10 +104,10 @@
     if (SpeechRecognition) {
         recognition = new SpeechRecognition();
         recognition.continuous = false;
-        recognition.lang = 'hi-IN';
         recognition.interimResults = false;
         recognition.onstart = () => {
-            statusDiv.textContent = 'Status: सुन रहा हूँ... (Listening...)';
+            const isHi = localStorage.getItem('agripath_lang') === 'hi';
+            statusDiv.textContent = isHi ? 'Status: सुन रहा हूँ... (Listening...)' : 'Status: Listening...';
             startButton.classList.add('listening');
             startButton.disabled = true;
         };
@@ -128,12 +131,17 @@
         if (synth.speaking) { synth.cancel(); }
         const lastAiMessage = chatArea.querySelector('.ai-message:last-child');
         const utterThis = new SpeechSynthesisUtterance(textToSpeak);
-        utterThis.lang = 'hi-IN';
-        utterThis.voice = hindiVoice;
+        
+        const isHi = localStorage.getItem('agripath_lang') === 'hi';
+        utterThis.lang = isHi ? 'hi-IN' : 'en-US';
+        // Refresh voice just in case lang changed
+        loadVoices(); 
+        utterThis.voice = currentVoice;
         utterThis.rate = 0.95;
+        
         utterThis.onstart = () => {
             if (lastAiMessage) lastAiMessage.classList.add('talking');
-            statusDiv.textContent = 'Status: बोल रहा हूँ... (Speaking...)';
+            statusDiv.textContent = isHi ? 'Status: बोल रहा हूँ... (Speaking...)' : 'Status: Speaking...';
             startButton.disabled = true;
         };
         utterThis.onend = () => {
@@ -150,12 +158,13 @@
 
     // --- Backend Communication ---
     async function sendTextToBackend(text) {
-        statusDiv.textContent = 'Status: प्रसंस्करण (Processing)...';
+        const isHi = localStorage.getItem('agripath_lang') === 'hi';
+        statusDiv.textContent = isHi ? 'Status: प्रसंस्करण (Processing)...' : 'Status: Processing...';
         try {
             const response = await fetch("{% url 'process_voice' %}", {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
-                body: JSON.stringify({ text: text })
+                body: JSON.stringify({ text: text, lang: isHi ? 'hi' : 'en' })
             });
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
             const data = await response.json();
@@ -163,7 +172,7 @@
             speak(data.response);
         } catch (error) {
             console.error('Error sending/receiving backend data:', error);
-            addMessageToLog("क्षमा करें, सर्वर से कनेक्ट करने में कोई त्रुटि हुई।", 'ai');
+            addMessageToLog(isHi ? "क्षमा करें, सर्वर से कनेक्ट करने में कोई त्रुटि हुई।" : "Sorry, could not connect to server.", 'ai');
             resetUIState();
         }
     }
@@ -172,15 +181,16 @@
      * Fetches and displays the initial greeting.
      */
     async function fetchAndDisplayGreeting() {
+        const isHi = localStorage.getItem('agripath_lang') === 'hi';
         try {
-            const response = await fetch("{% url 'get_greeting' %}");
+            const response = await fetch("{% url 'get_greeting' %}?lang=" + (isHi ? 'hi' : 'en'));
             const data = await response.json();
             if (data.greeting) {
                 addMessageToLog(data.greeting, 'ai');
             }
         } catch (error) {
             console.error('Error fetching greeting:', error);
-            addMessageToLog("नमस्ते! मैं आपकी मदद के लिए तैयार हूँ।", 'ai');
+            addMessageToLog(isHi ? "नमस्ते! मैं आपकी मदद के लिए तैयार हूँ।" : "Hello! How can I assist you?", 'ai');
         }
     }
 
@@ -205,9 +215,10 @@
 
     // --- UI State Management ---
     function resetUIState() {
+        const isHi = localStorage.getItem('agripath_lang') === 'hi';
         startButton.classList.remove('listening');
         startButton.disabled = false;
-        statusDiv.textContent = 'Status: तैयार (Ready)';
+        statusDiv.textContent = isHi ? 'Status: तैयार (Ready)' : 'Status: Ready';
         const talkingMessage = chatArea.querySelector('.ai-message.talking');
         if (talkingMessage) talkingMessage.classList.remove('talking');
     }
@@ -215,7 +226,11 @@
     // --- Event Listeners  ---
     startButton.addEventListener('click', () => {
         if (synth.speaking) { synth.cancel(); }
-        if (recognition) { recognition.start(); }
+        if (recognition) { 
+            const isHi = localStorage.getItem('agripath_lang') === 'hi';
+            recognition.lang = isHi ? 'hi-IN' : 'en-US';
+            recognition.start(); 
+        }
     });
 
     if (newChatButton) {

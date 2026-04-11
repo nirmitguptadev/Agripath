@@ -29,42 +29,42 @@ def dashboard(request):
 
             # Message variants: (farmer_msg, hobbyist_msg)
             def rain_msg(label):
-                return (f'{label}: बारिश — खाद/कीटनाशक छिड़काव टालें, सिंचाई न करें'
+                return (f'{label}: Rain Expected — Delay fertilizer/pesticide spraying'
                         if not is_hobbyist else
-                        f'{label}: बारिश — गमलों में पानी न डालें, खाद का छिड़काव न करें')
+                        f'{label}: Rain Expected — Avoid watering pots and spraying fertilizer')
 
             def storm_msg(label):
-                return (f'{label}: आंधी-तूफान — फसल को सहारा दें, उपकरण सुरक्षित करें'
+                return (f'{label}: Thunderstorm — Support crops, secure loose equipment'
                         if not is_hobbyist else
-                        f'{label}: तेज आंधी — गमले/कुंडे अंदर रखें, नाजुक पौधे ढकें')
+                        f'{label}: Thunderstorm — Move pots indoors, cover delicate plants')
 
             def heat_high_msg(label, t):
-                return (f'{label}: भीषण गर्मी ({t:.0f}°C) — सुबह सिंचाई करें'
+                return (f'{label}: High Heat ({t:.0f}°C) — Irrigate early morning'
                         if not is_hobbyist else
-                        f'{label}: भीषण गर्मी ({t:.0f}°C) — पौधों को छाया दें, सुबह पानी दें')
+                        f'{label}: High Heat ({t:.0f}°C) — Provide shade, water in the morning')
 
             def heat_mod_msg(label, t):
-                return (f'{label}: अधिक गर्मी ({t:.0f}°C) — शाम को सिंचाई करें'
+                return (f'{label}: Moderate Heat ({t:.0f}°C) — Irrigate in the evening'
                         if not is_hobbyist else
-                        f'{label}: गर्म दिन ({t:.0f}°C) — शाम को पौधों को पानी दें')
+                        f'{label}: Warm Day ({t:.0f}°C) — Water plants in the evening')
 
             def frost_msg(label, t):
-                return (f'{label}: पाले की चेतावनी ({t:.0f}°C) — फसल ढकें'
+                return (f'{label}: Frost Warning ({t:.0f}°C) — Cover susceptible crops'
                         if not is_hobbyist else
-                        f'{label}: पाला पड़ सकता है ({t:.0f}°C) — गमले अंदर ले जाएं')
+                        f'{label}: Frost Risk ({t:.0f}°C) — Move sensitive plants indoors')
 
             def cold_msg(label, t):
-                return (f'{label}: ठंड ({t:.0f}°C) — नर्सरी पौधों की रक्षा करें'
+                return (f'{label}: Cold Weather ({t:.0f}°C) — Protect nursery seedlings'
                         if not is_hobbyist else
-                        f'{label}: ठंड ({t:.0f}°C) — नाजुक इनडोर पौधे खिड़की से दूर रखें')
+                        f'{label}: Cold Weather ({t:.0f}°C) — Keep indoor plants away from cold windows')
 
             def humidity_msg(label, h):
-                return (f'{label}: अत्यधिक नमी ({h}%) — फंगस रोग की जांच करें'
+                return (f'{label}: High Humidity ({h}%) — Monitor for fungal diseases'
                         if not is_hobbyist else
-                        f'{label}: अधिक नमी ({h}%) — पत्तियों पर फंगस की जांच करें')
+                        f'{label}: High Humidity ({h}%) — Check leaves for fungal spots')
 
             for i, day in enumerate(forecast):
-                day_label = 'आज' if i == 0 else ('कल' if i == 1 else f'{i} दिन बाद')
+                day_label = 'Today' if i == 0 else ('Tomorrow' if i == 1 else f'in {i} Days')
                 icon = day['icon']
                 fmax = day['max_temp']
                 fmin = day['min_temp']

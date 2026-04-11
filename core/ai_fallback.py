@@ -42,7 +42,7 @@ def generate_ai_response(prompt_content):
                 print("Gemini quota exceeded, switching to Groq")
             else:
                 print(f"Gemini error: {e}")
-                return "क्षमा करें, AI से कनेक्ट करते समय एक त्रुटि हुई।"
+                return "Sorry, an error occurred while connecting to AI."
     
     # Fallback to Groq
     if GROQ_CLIENT:
@@ -69,16 +69,16 @@ def generate_ai_response(prompt_content):
             return cleaned_text.strip()
         except Exception as e:
             print(f"Groq error: {e}")
-            return "क्षमा करें, AI से कनेक्ट करते समय एक त्रुटि हुई।"
+            return "Sorry, an error occurred while connecting to AI."
     
-    return "क्षमा करें, मेरा AI कनेक्शन ठीक से काम नहीं कर रहा है।"
+    return "Sorry, my AI connection is not working properly."
 
 def analyze_plant_image(image_path, user_type='Farmer'):
     """
     Analyzes a plant image using Gemini Vision to detect diseases and suggest remedies.
     """
     if not GEMINI_MODEL:
-        return "AI मॉडल कॉन्फ़िगर नहीं है।"
+        return "AI model is not configured."
 
     try:
         import PIL.Image
@@ -94,15 +94,15 @@ def analyze_plant_image(image_path, user_type='Farmer'):
         
         Context: The user asking is a {persona_context}. Tailor your advice to them.
         
-        Provide the response in Hindi, formatted as HTML (no markdown blocks, just tags).
+        Provide the response formatted as HTML (no markdown blocks, just tags).
         Use <h3> for headings, <p> for text, and <ul>/<li> for lists.
         The structure should be:
         <div class="diagnosis-result">
-            <h3>रोग की पहचान (Diagnosis)</h3>
+            <h3>Diagnosis</h3>
             <p>...details...</p>
-            <h3>लक्षण (Symptoms)</h3>
+            <h3>Symptoms</h3>
             <ul>...</ul>
-            <h3>उपचार (Treatment)</h3>
+            <h3>Treatment</h3>
             <ul>...</ul>
         </div>
         """
@@ -117,7 +117,7 @@ def analyze_plant_image(image_path, user_type='Farmer'):
         
     except Exception as e:
         print(f"Plant Doctor Error: {e}")
-        return "क्षमा करें, छवि का विश्लेषण करते समय त्रुटि हुई। कृपया बाद में प्रयास करें।"
+        return "Sorry, an error occurred while analyzing the image. Please try again later."
 
 
 def get_agronomic_info(crop_name):

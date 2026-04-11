@@ -435,12 +435,14 @@
             if (!hasGreeted) {
                 hasGreeted = true;
                 try {
-                    const response = await fetch('/api/get-greeting/');
+                    const currentLang = localStorage.getItem('agripath_lang') === 'hi' ? 'hi' : 'en';
+                    const response = await fetch(`/api/get-greeting/?lang=${currentLang}`);
                     const data = await response.json();
                     addMessage(data.greeting, 'ai');
                     speak(data.greeting);
                 } catch (error) {
-                    addMessage('नमस्ते! मैं आपकी मदद के लिए तैयार हूँ।', 'ai');
+                    const currentLang = localStorage.getItem('agripath_lang') === 'hi' ? 'hi' : 'en';
+                    addMessage(currentLang === 'hi' ? 'नमस्ते! मैं आपकी मदद के लिए तैयार हूँ।' : 'Hello! I am ready to assist you.', 'ai');
                 }
             }
         });
@@ -463,7 +465,8 @@
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
-            recognition.lang = 'hi-IN';
+            // Default, updated on start
+            recognition.lang = 'en-US';
             recognition.continuous = false;
             recognition.interimResults = false;
 
@@ -471,31 +474,32 @@
                 isListening = true;
                 startButton.style.display = 'none';
                 stopButton.style.display = 'flex';
-                statusDiv.textContent = '🎤 सुन रहा हूँ...';
+                statusDiv.textContent = localStorage.getItem('agripath_lang') === 'hi' ? '🎤 सुन रहा हूँ...' : '🎤 Listening...';
             };
 
             recognition.onresult = async (event) => {
                 const transcript = event.results[0][0].transcript;
                 addMessage(transcript, 'user');
-                statusDiv.textContent = '⏳ जवाब तैयार कर रहा हूँ...';
+                const isHi = localStorage.getItem('agripath_lang') === 'hi';
+                statusDiv.textContent = isHi ? '⏳ जवाब तैयार कर रहा हूँ...' : '⏳ Generating reply...';
 
                 try {
                     const response = await fetch('/process/', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ text: transcript })
+                        body: JSON.stringify({ text: transcript, lang: isHi ? 'hi' : 'en' })
                     });
                     const data = await response.json();
                     addMessage(data.response, 'ai');
                     speak(data.response);
                 } catch (error) {
-                    addMessage('क्षमा करें, कुछ गलत हो गया।', 'ai');
+                    addMessage(isHi ? 'क्षमा करें, कुछ गलत हो गया।' : 'Sorry, something went wrong.', 'ai');
                 }
                 statusDiv.textContent = '';
             };
 
             recognition.onerror = () => {
-                statusDiv.textContent = 'त्रुटि हुई। पुनः प्रयास करें।';
+                statusDiv.textContent = localStorage.getItem('agripath_lang') === 'hi' ? 'त्रुटि हुई। पुनः प्रयास करें।' : 'Error occurred. Please try again.';
                 resetButton();
             };
 
@@ -506,9 +510,10 @@
 
         startButton.addEventListener('click', () => {
             if (recognition) {
+                recognition.lang = localStorage.getItem('agripath_lang') === 'hi' ? 'hi-IN' : 'en-US';
                 recognition.start();
             } else {
-                statusDiv.textContent = 'आपका ब्राउज़र वॉइस को सपोर्ट नहीं करता।';
+                statusDiv.textContent = localStorage.getItem('agripath_lang') === 'hi' ? 'आपका ब्राउज़र वॉइस को सपोर्ट नहीं करता।' : 'Browser does not support voice.';
             }
         });
 
@@ -519,7 +524,7 @@
             if (window.speechSynthesis && window.speechSynthesis.speaking) {
                 window.speechSynthesis.cancel();
             }
-            statusDiv.textContent = 'रुक गया';
+            statusDiv.textContent = localStorage.getItem('agripath_lang') === 'hi' ? 'रुक गया' : 'Stopped';
             resetButton();
             setTimeout(() => { statusDiv.textContent = ''; }, 2000);
         });
@@ -545,10 +550,11 @@
             if ('speechSynthesis' in window) {
                 startButton.style.display = 'none';
                 stopButton.style.display = 'flex';
-                statusDiv.textContent = '🔊 बोल रहा हूँ...';
+                const isHi = localStorage.getItem('agripath_lang') === 'hi';
+                statusDiv.textContent = isHi ? '🔊 बोल रहा हूँ...' : '🔊 Speaking...';
 
                 const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'hi-IN';
+                utterance.lang = isHi ? 'hi-IN' : 'en-US';
                 utterance.rate = 0.9;
 
                 utterance.onend = () => {
