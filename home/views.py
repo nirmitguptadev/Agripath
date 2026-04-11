@@ -324,4 +324,34 @@ def toggle_persona(request):
             messages.success(request, f'Switched to {new_type} mode.')
     return redirect('dashboard')
 
+from django.http import JsonResponse
+
+@login_required
+def api_weather_alerts(request):
+    try:
+        location = request.user.profile.location
+    except:
+        location = None
+        
+    if not location:
+        return JsonResponse({'alerts': []})
+        
+    current_data, error = get_current_weather_data(location)
+    if error or not current_data:
+        return JsonResponse({'alerts': []})
+        
+    lat = current_data.get('lat')
+    lon = current_data.get('lon')
+    weather_data, alert_error = get_alerts_and_forecast(lat, lon)
+    
+    if alert_error:
+        return JsonResponse({'alerts': []})
+        
+    # We map them into single string sentences for easy marquee scroll
+    alerts = weather_data.get('alerts', [])
+    text_alerts = [a['message'] for a in alerts]
+    
+    return JsonResponse({'alerts': text_alerts})
+
+
 
