@@ -6,6 +6,7 @@ from django.contrib.auth.decorators import login_required
 from django.conf import settings
 import os
 import time
+import datetime
 from PIL import Image
 from django.conf import settings
 from django.core.files.storage import default_storage
@@ -18,6 +19,19 @@ def _is_rain(icon): return icon[:2] in ('09', '10')
 def _is_storm(icon): return icon[:2] == '11'
 def _is_snow(icon): return icon[:2] == '13'
 def _is_rain_or_storm(icon): return icon[:2] in ('09', '10', '11')
+
+def get_seasonal_thresholds(dt_timestamp=None):
+    if dt_timestamp:
+        month = datetime.datetime.fromtimestamp(dt_timestamp).month
+    else:
+        month = datetime.datetime.now().month
+
+    if month in (12, 1, 2):  # Winter
+        return (30, 35, 10, 5)
+    elif month in (3, 4, 5, 6):  # Summer / Pre-Monsoon
+        return (38, 42, 18, 10)
+    else:  # Monsoon / Post-Monsoon (7,8,9,10,11)
+        return (35, 38, 15, 8)
 
 def get_weather_style(icon_code):
     """
@@ -94,48 +108,64 @@ def get_alerts_and_forecast(lat, lon):
         response.raise_for_status()
         data = response.json()
         
-        forecast = []
-        # The free API returns data every 3 hours. We will only take the data for 
-        # noon (12:00) each day to simulate a daily forecast for the next 5 days.
-        processed_dates = set()
+        # Aggregate ALL 3-hour slots by day to get true daily max/min temps
+        # (not just noon, which misses peak afternoon heat)
+        daily_data = {}
         for item in data.get('list', []):
-            date_str = item['dt_txt'].split(' ')[0] # 'YYYY-MM-DD'
-            time_str = item['dt_txt'].split(' ')[1] # 'HH:MM:SS'
-            
-            # Check if this is a new day and is close to noon (12:00:00)
-            if date_str not in processed_dates and time_str == '12:00:00':
-                forecast.append({
-                    'date': item.get('dt'),
-                    'max_temp': item['main']['temp_max'],
-                    'min_temp': item['main']['temp_min'],
-                    'description': item['weather'][0]['description'],
-                    'icon': item['weather'][0]['icon'],
-                    'humidity': item['main']['humidity']
-                })
-                processed_dates.add(date_str)
-            
-            # Stop after 5 days
-            if len(forecast) >= 5:
-                break
+            date_str = item['dt_txt'].split(' ')[0]  # 'YYYY-MM-DD'
+            t_max = item['main']['temp_max']
+            t_min = item['main']['temp_min']
+            icon  = item['weather'][0]['icon']
+            desc  = item['weather'][0]['description']
+            hum   = item['main']['humidity']
+            dt    = item.get('dt')
+
+            if date_str not in daily_data:
+                daily_data[date_str] = {
+                    'date': dt,
+                    'max_temp': t_max,
+                    'min_temp': t_min,
+                    'description': desc,
+                    'icon': icon,
+                    'humidity': hum,
+                    # track worst icon priority: storm > rain > rest
+                    'icon_priority': 0,
+                }
+            else:
+                d = daily_data[date_str]
+                if t_max > d['max_temp']: d['max_temp'] = t_max
+                if t_min < d['min_temp']: d['min_temp'] = t_min
+                # Upgrade icon to worst condition of the day
+                prio = 2 if icon[:2] == '11' else 1 if icon[:2] in ('09', '10') else 0
+                if prio > d['icon_priority']:
+                    d['icon_priority'] = prio
+                    d['icon'] = icon
+                    d['description'] = desc
+
+        forecast = [v for _, v in sorted(daily_data.items())][:5]
             
         # Generating actionable alerts from forecast based on REAL weather data
         alerts = []
         for i, item in enumerate(forecast):
             icon = item['icon']
             day_offset = "Today" if i == 0 else f"in {i} day{'s' if i > 1 else ''}"
+            
+            high_heat, severe_heat, cold_warning, frost_danger = get_seasonal_thresholds(item['date'])
 
             if _is_storm(icon):
                 alerts.append({'message': f"⛈️ Thunderstorm expected {day_offset}. Secure equipment and support tall crops.", 'type': 'danger'})
-                break
             elif _is_rain(icon):
                 alerts.append({'message': f"💧 Rain expected {day_offset}. Delay fertilizers/pesticides to prevent runoff.", 'type': 'warning'})
-                break
-            elif item['max_temp'] > 38:
-                alerts.append({'message': f"🔥 High heat ({item['max_temp']}°C) expected {day_offset}. Irrigate early, avoid midday spraying.", 'type': 'danger'})
-                break
-            elif item['min_temp'] < 5:
-                alerts.append({'message': f"❄️ Frost warning ({item['min_temp']}°C) {day_offset}. Protect early vegetative crops.", 'type': 'info'})
-                break
+            
+            if item['max_temp'] >= severe_heat:
+                alerts.append({'message': f"🔥 Severe heat ({item['max_temp']}°C) expected {day_offset}. Extreme danger, halt field work.", 'type': 'danger'})
+            elif item['max_temp'] >= high_heat:
+                alerts.append({'message': f"🔥 High heat ({item['max_temp']}°C) expected {day_offset}. Irrigate early, avoid midday spraying.", 'type': 'warning'})
+            
+            if item['min_temp'] <= frost_danger:
+                alerts.append({'message': f"❄️ Frost warning ({item['min_temp']}°C) expected {day_offset}. Protect early vegetative crops.", 'type': 'danger'})
+            elif item['min_temp'] <= cold_warning:
+                alerts.append({'message': f"🧊 Abnormal cold ({item['min_temp']}°C) expected {day_offset}. Monitor seedling health.", 'type': 'info'})
 
         return {'forecast': forecast, 'alerts': alerts}, None
 

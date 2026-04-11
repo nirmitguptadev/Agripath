@@ -167,15 +167,39 @@
         </div>
     </nav>
 
-    <!-- Global Weather Alert Banner -->
-    <div id="global-weather-banner" style="display: none; background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; padding: 0.6rem 1rem; align-items: center; position: relative; z-index: 1000; box-shadow: 0 4px 6px rgba(0,0,0,0.15);">
+    <!-- Global Weather Alert Banner (dashboard-only toast) -->
+    <style>
+        #global-weather-banner {
+            display: none;
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            color: white;
+            padding: 0.6rem 1rem;
+            align-items: center;
+            position: relative;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+            overflow: hidden;
+            max-height: 60px;
+            transition: max-height 0.5s ease, opacity 0.5s ease, padding 0.5s ease;
+            opacity: 1;
+        }
+        #global-weather-banner.banner-collapsing {
+            max-height: 0 !important;
+            padding-top: 0 !important;
+            padding-bottom: 0 !important;
+            opacity: 0;
+        }
+    </style>
+    <div id="global-weather-banner">
         <div style="flex: 1; overflow: hidden; white-space: nowrap; font-weight: 600; font-size: 0.95rem; display: flex; align-items: center;">
-            <i class="fas fa-exclamation-triangle" style="margin-right: 15px; animation: pulse 2s infinite;"></i>
+            <i class="fas fa-exclamation-triangle" style="margin-right: 15px; animation: pulse 2s infinite; flex-shrink:0;"></i>
             <marquee behavior="scroll" direction="left" scrollamount="6" id="global-weather-marquee" style="vertical-align: middle;">
                 <!-- Alerts injected here -->
             </marquee>
         </div>
-        <button onclick="dismissWeatherBanner()" title="Close Alert" style="background: rgba(255,255,255,0.2); border: none; color: white; font-weight: bold; cursor: pointer; border-radius: 50%; width: 28px; height: 28px; font-size: 1rem; margin-left: 15px; transition: background 0.3s; display: flex; justify-content: center; align-items: center;">✕</button>
+        <!-- Timer progress bar -->
+        <div id="banner-timer-bar" style="position: absolute; bottom: 0; left: 0; height: 3px; background: rgba(255,255,255,0.6); width: 100%; transform-origin: left; transition: width linear;"></div>
+        <button onclick="dismissWeatherBanner()" title="Close Alert" style="background: rgba(255,255,255,0.2); border: none; color: white; font-weight: bold; cursor: pointer; border-radius: 50%; width: 28px; height: 28px; font-size: 1rem; margin-left: 15px; transition: background 0.3s; display: flex; justify-content: center; align-items: center; flex-shrink:0;">✕</button>
     </div>
 
     <!-- Main Content -->
@@ -220,53 +244,76 @@
     <div id="google_translate_element"></div>
     <script type="text/javascript">
         // --- GLOBAL WEATHER ALERT LOGIC ---
+        // Only runs on the dashboard page
+        var BANNER_DISPLAY_MS = 7000; // visible for 7 seconds then auto-slides away
+        var _bannerDismissTimer = null;
+
         function loadWeatherBanner() {
+            // Only show on dashboard (path is '/home/' or '/')
+            var path = window.location.pathname;
+            var isDashboard = (path === '/home/' || path === '/');
+            if (!isDashboard) return;
+
             var banner = document.getElementById('global-weather-banner');
             var marquee = document.getElementById('global-weather-marquee');
-            
-            // Check if user dismissed it today
-            var dateStr = new Date().toDateString();
-            if (localStorage.getItem('weather_banner_dismissed') === dateStr) {
-                return;
+
+            // Check session storage cache (1-hour)
+            var cachedStr = sessionStorage.getItem('v3_weather_alerts_cached');
+            var cachedTime = sessionStorage.getItem('v3_weather_alerts_time');
+            var now = new Date().getTime();
+
+            function showBannerWithTimer(alerts) {
+                if (!alerts || alerts.length === 0) return;
+                marquee.innerHTML = alerts.join('&nbsp;&nbsp;&bull;&nbsp;&nbsp;');
+                banner.style.display = 'flex';
+
+                // Animate the timer drain bar
+                var bar = document.getElementById('banner-timer-bar');
+                if (bar) {
+                    bar.style.transition = 'none';
+                    bar.style.width = '100%';
+                    // Force reflow
+                    bar.offsetHeight;
+                    bar.style.transition = 'width ' + BANNER_DISPLAY_MS + 'ms linear';
+                    bar.style.width = '0%';
+                }
+
+                // Auto-dismiss after timer
+                if (_bannerDismissTimer) clearTimeout(_bannerDismissTimer);
+                _bannerDismissTimer = setTimeout(function() {
+                    collapseBanner();
+                }, BANNER_DISPLAY_MS);
             }
 
-            // Check session storage cache
-            var cachedStr = sessionStorage.getItem('weather_alerts_cached');
-            var cachedTime = sessionStorage.getItem('weather_alerts_time');
-            var now = new Date().getTime();
-            
             if (cachedStr && cachedTime && (now - parseInt(cachedTime)) < 3600000) {
                 var alerts = JSON.parse(cachedStr);
-                displayWeatherBanner(alerts, banner, marquee);
+                showBannerWithTimer(alerts);
             } else {
                 fetch('/api/weather-alerts/')
                     .then(response => response.json())
                     .then(data => {
-                        if(data.alerts && data.alerts.length > 0) {
-                            sessionStorage.setItem('weather_alerts_cached', JSON.stringify(data.alerts));
-                            sessionStorage.setItem('weather_alerts_time', now.toString());
-                            displayWeatherBanner(data.alerts, banner, marquee);
+                        if (data.alerts && data.alerts.length > 0) {
+                            sessionStorage.setItem('v3_weather_alerts_cached', JSON.stringify(data.alerts));
+                            sessionStorage.setItem('v3_weather_alerts_time', now.toString());
+                            showBannerWithTimer(data.alerts);
                         } else {
-                            // Cache emptystate so we don't spam api
-                            sessionStorage.setItem('weather_alerts_cached', JSON.stringify([]));
-                            sessionStorage.setItem('weather_alerts_time', now.toString());
+                            sessionStorage.setItem('v3_weather_alerts_cached', JSON.stringify([]));
+                            sessionStorage.setItem('v3_weather_alerts_time', now.toString());
                         }
                     })
                     .catch(err => console.log('Weather API Error', err));
             }
         }
-        
-        function displayWeatherBanner(alerts, banner, marquee) {
-            if (alerts && alerts.length > 0) {
-                marquee.innerHTML = alerts.join('&nbsp;&nbsp;&bull;&nbsp;&nbsp;');
-                banner.style.display = 'flex';
-            }
+
+        function collapseBanner() {
+            var banner = document.getElementById('global-weather-banner');
+            banner.classList.add('banner-collapsing');
+            setTimeout(function() { banner.style.display = 'none'; banner.classList.remove('banner-collapsing'); }, 520);
         }
 
         function dismissWeatherBanner() {
-            var dateStr = new Date().toDateString();
-            localStorage.setItem('weather_banner_dismissed', dateStr);
-            document.getElementById('global-weather-banner').style.display = 'none';
+            if (_bannerDismissTimer) clearTimeout(_bannerDismissTimer);
+            collapseBanner();
         }
 
         // --- GOOGLE TRANSLATE LOGIC ---
@@ -573,6 +620,13 @@
         }
     </script>
     {% block extra_js %}{% endblock %}
+
+    <script>
+        // Trigger dashboard-only weather alert banner on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadWeatherBanner();
+        });
+    </script>
 
 </body>
 

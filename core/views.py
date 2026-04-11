@@ -8,6 +8,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from core.ai_fallback import generate_ai_response
+from core.mandi_api import get_mandi_prices
 
 # --- API Configuration ---
 OPENWEATHER_API_KEY = getattr(settings, 'OPENWEATHER_API_KEY', None)
@@ -141,6 +142,40 @@ def handle_government_scheme(user_prompt, history, user_type='Farmer', lang='en'
     ]
     return generate_ai_response(final_prompt_list)
 
+def handle_market_price(user_prompt, history, user_type='Farmer', lang='en'):
+    # Extract crop name
+    extract_prompt = f"Extract only the crop or commodity name from this query: '{user_prompt}'. Examples: Wheat, Tomato, Onion. Give only the English name of the crop, nothing else. If it's in Hindi (e.g. 'gehu' or 'गेहूं'), translate to English (e.g. 'Wheat')."
+    
+    crop_name = generate_ai_response(extract_prompt).strip()
+    
+    if not crop_name or len(crop_name.split()) > 3:
+        return "I couldn't understand the crop name." if lang == 'en' else "मैं फसल का नाम समझ नहीं पाया। कृपया फिर से बताएं।"
+        
+    prices = get_mandi_prices([crop_name])
+    
+    persona, ack = get_persona_prompt(user_type, lang)
+    if not prices or len(prices) == 0:
+        err = f"Sorry, I couldn't find current market price data for {crop_name}." if lang == 'en' else f"क्षमा करें, मुझे {crop_name} का मंडी भाव नहीं मिला।"
+        return err
+        
+    price_data = list(prices.values())[0]
+    display_name = list(prices.keys())[0]
+    
+    final_prompt_list = [
+        persona,
+        ack,
+        *history,
+        {'role': 'user', 'parts': [f"""
+        Here is the real Mandi market price data for '{display_name}' (per Quintal):
+        - Minimum Price: ₹{price_data['min']}
+        - Maximum Price: ₹{price_data['max']}
+        - Modal Price: ₹{price_data['modal']}
+        - Market Location: {price_data['market']}, {price_data['state']}
+        Provide a very short and natural summary of this price data.
+        """]}
+    ]
+    return generate_ai_response(final_prompt_list)
+
 def handle_general_conversation(user_prompt, history, user_type='Farmer', lang='en'):
     persona, ack = get_persona_prompt(user_type, lang)
     final_prompt_list = [
@@ -194,7 +229,7 @@ def process_voice(request):
         history = request.session.get('chat_history', [])
         history.append({'role': 'user', 'parts': [user_prompt]})
 
-        classifier_prompt = f"""User query: "{user_prompt}". Classify this into: 'weather', 'crop_recommendation', 'government_scheme', 'general_conversation'. Respond only with the category name."""
+        classifier_prompt = f"""User query: "{user_prompt}". Classify this into: 'weather', 'crop_recommendation', 'government_scheme', 'market_price', 'general_conversation'. Respond only with the category name."""
         category = generate_ai_response(classifier_prompt).strip().lower()
 
         conversation_context = list(history)
@@ -215,6 +250,8 @@ def process_voice(request):
             final_response_text = handle_crop_recommendation(user_prompt, conversation_context, user_type, lang)
         elif 'scheme' in category or 'yojana' in category or 'sarkari' in category:
             final_response_text = handle_government_scheme(user_prompt, conversation_context, user_type, lang)
+        elif 'market' in category or 'price' in category or 'mandi' in category or 'bhav' in category:
+            final_response_text = handle_market_price(user_prompt, conversation_context, user_type, lang)
         else:
             final_response_text = handle_general_conversation(user_prompt, conversation_context, user_type, lang)
 

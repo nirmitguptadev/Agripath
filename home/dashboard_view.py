@@ -1,6 +1,13 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from home.views import get_current_weather_data, get_alerts_and_forecast, _is_rain, _is_storm, _is_rain_or_storm
+from home.views import (
+    get_current_weather_data, 
+    get_alerts_and_forecast,
+    _is_rain,
+    _is_storm,
+    _is_rain_or_storm,
+    get_seasonal_thresholds
+)
 from tracker.models import CropTracker
 from django.db.models import Sum
 from core.mandi_api import get_mandi_prices, DEFAULT_CROPS
@@ -69,20 +76,22 @@ def dashboard(request):
                 fmax = day['max_temp']
                 fmin = day['min_temp']
                 fhum = day['humidity']
+                
+                high_heat, severe_heat, cold_warning, frost_danger = get_seasonal_thresholds(day['date'])
 
                 if _is_storm(icon):
                     weather_alerts.append({'icon': '⛈️', 'msg': storm_msg(day_label), 'level': 'danger'})
                 elif _is_rain(icon):
                     weather_alerts.append({'icon': '🌧️', 'msg': rain_msg(day_label), 'level': 'warning'})
 
-                if fmax >= 42:
+                if fmax >= severe_heat:
                     weather_alerts.append({'icon': '🔥', 'msg': heat_high_msg(day_label, fmax), 'level': 'danger'})
-                elif fmax >= 38:
+                elif fmax >= high_heat:
                     weather_alerts.append({'icon': '☀️', 'msg': heat_mod_msg(day_label, fmax), 'level': 'warning'})
 
-                if fmin <= 3:
+                if fmin <= frost_danger:
                     weather_alerts.append({'icon': '🧊', 'msg': frost_msg(day_label, fmin), 'level': 'danger'})
-                elif fmin <= 8:
+                elif fmin <= cold_warning:
                     weather_alerts.append({'icon': '❄️', 'msg': cold_msg(day_label, fmin), 'level': 'warning'})
 
                 if fhum >= 90 and not _is_rain_or_storm(icon):
