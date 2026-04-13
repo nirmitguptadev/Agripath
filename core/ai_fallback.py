@@ -89,7 +89,7 @@ def _format_treatment(treatment):
     return ''.join(items)
 
 
-def analyze_plant_image(image_path, user_type='Farmer'):
+def analyze_plant_image(image_path):
     """
     Primary: crop.health by Kindwise (ML classifier — no hallucination).
     Fallback: Gemini Vision if crop.health is unconfigured or returns low confidence.
@@ -171,17 +171,12 @@ def analyze_plant_image(image_path, user_type='Farmer'):
     with open(image_path, 'rb') as _f:
         image_b64 = _b64.b64encode(_f.read()).decode('utf-8')
 
-    persona_context = (
-        "Commercial Farmer focused on crop yield and scalability"
-        if user_type == 'Farmer'
-        else "Hobby plant enthusiast focused on plant aesthetics, indoor care, and simple home remedies"
-    )
     prompt = (
         f"You are an expert plant pathologist. Analyze this plant image.\n"
         f"1. Identify the plant and any disease/deficiency visible.\n"
         f"2. If healthy, say 'The plant appears healthy.'\n"
         f"3. If sick, state the disease name, symptoms observed, and 2-3 remedies.\n"
-        f"Context: {persona_context}.\n"
+        f"Context: Commercial Farmer focused on crop yield and field-scale management.\n"
         f"Format response as HTML using <h3>, <p>, <ul>, <li> tags only. No markdown."
     )
 

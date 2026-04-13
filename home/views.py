@@ -342,26 +342,6 @@ def plant_doctor(request):
         'error': error
     })
 
-from django.shortcuts import redirect
-from django.contrib import messages
-
-@login_required
-def toggle_persona(request):
-    if request.method == 'POST':
-        profile = request.user.profile
-        requested_type = request.POST.get('user_type')
-        if requested_type in ['Farmer', 'Hobbyist']:
-            new_type = requested_type
-        else:
-            # Fallback toggle
-            new_type = 'Hobbyist' if profile.user_type == 'Farmer' else 'Farmer'
-        
-        if profile.user_type != new_type:
-            profile.user_type = new_type
-            profile.save()
-            messages.success(request, f'Switched to {new_type} mode.')
-    return redirect('dashboard')
-
 from django.http import JsonResponse
 
 @login_required

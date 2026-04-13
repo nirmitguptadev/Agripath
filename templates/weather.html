@@ -12,10 +12,6 @@
         transition: background 0.5s ease;
     }
     
-    body.hobbyist-theme {
-        background: linear-gradient(135deg, #fdfbfb 0%, #f3ece4 100%);
-    }
-
     .floating-elements {
         position: fixed;
         top: 0;
@@ -245,19 +241,11 @@
 
 {% block content %}
 <div class="floating-elements">
-    {% if user.is_authenticated and user.profile.user_type == 'Hobbyist' %}
-    <i class="fas fa-sun floating-icon" style="top: 10%; left: 10%; animation-delay: 0s; color: #B38B6D;"></i>
-    <i class="fas fa-cloud floating-icon" style="top: 20%; right: 15%; animation-delay: 2s; color: #B38B6D;"></i>
-    <i class="fas fa-snowflake floating-icon" style="bottom: 20%; left: 20%; animation-delay: 4s; color: #8F9779;"></i>
-    <i class="fas fa-bolt floating-icon" style="top: 60%; right: 10%; animation-delay: 6s; color: #B38B6D;"></i>
-    <i class="fas fa-cloud-rain floating-icon" style="bottom: 30%; right: 25%; animation-delay: 8s; color: #8F9779;"></i>
-    {% else %}
     <i class="fas fa-cloud-sun floating-icon" style="top: 10%; left: 10%; animation-delay: 0s; color: #0284c7;"></i>
     <i class="fas fa-cloud floating-icon" style="top: 20%; right: 15%; animation-delay: 2s; color: #0284c7;"></i>
     <i class="fas fa-cloud-showers-heavy floating-icon" style="bottom: 20%; left: 20%; animation-delay: 4s; color: #0284c7;"></i>
     <i class="fas fa-bolt floating-icon" style="top: 60%; right: 10%; animation-delay: 6s; color: #0284c7;"></i>
     <i class="fas fa-wind floating-icon" style="bottom: 30%; right: 25%; animation-delay: 8s; color: #0ea5e9;"></i>
-    {% endif %}
 </div>
 
 <div class="container" style="padding: 2rem; max-width: 1200px; margin: 0 auto; position: relative; z-index: 1;">

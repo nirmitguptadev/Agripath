@@ -30,46 +30,26 @@ def dashboard(request):
             forecast_data, _ = get_alerts_and_forecast(weather_data['lat'], weather_data['lon'])
             forecast = forecast_data.get('forecast', [])
 
-            try:
-                is_hobbyist = request.user.profile.user_type == 'Hobbyist'
-            except:
-                is_hobbyist = False
-
-            # Message variants: (farmer_msg, hobbyist_msg)
             def rain_msg(label):
-                return (f'{label}: Rain Expected — Delay fertilizer/pesticide spraying'
-                        if not is_hobbyist else
-                        f'{label}: Rain Expected — Avoid watering pots and spraying fertilizer')
+                return f'{label}: Rain Expected — Delay fertilizer/pesticide spraying'
 
             def storm_msg(label):
-                return (f'{label}: Thunderstorm — Support crops, secure loose equipment'
-                        if not is_hobbyist else
-                        f'{label}: Thunderstorm — Move pots indoors, cover delicate plants')
+                return f'{label}: Thunderstorm — Support crops, secure loose equipment'
 
             def heat_high_msg(label, t):
-                return (f'{label}: High Heat ({t:.0f}°C) — Irrigate early morning'
-                        if not is_hobbyist else
-                        f'{label}: High Heat ({t:.0f}°C) — Provide shade, water in the morning')
+                return f'{label}: High Heat ({t:.0f}°C) — Irrigate early morning'
 
             def heat_mod_msg(label, t):
-                return (f'{label}: Moderate Heat ({t:.0f}°C) — Irrigate in the evening'
-                        if not is_hobbyist else
-                        f'{label}: Warm Day ({t:.0f}°C) — Water plants in the evening')
+                return f'{label}: Moderate Heat ({t:.0f}°C) — Irrigate in the evening'
 
             def frost_msg(label, t):
-                return (f'{label}: Frost Warning ({t:.0f}°C) — Cover susceptible crops'
-                        if not is_hobbyist else
-                        f'{label}: Frost Risk ({t:.0f}°C) — Move sensitive plants indoors')
+                return f'{label}: Frost Warning ({t:.0f}°C) — Cover susceptible crops'
 
             def cold_msg(label, t):
-                return (f'{label}: Cold Weather ({t:.0f}°C) — Protect nursery seedlings'
-                        if not is_hobbyist else
-                        f'{label}: Cold Weather ({t:.0f}°C) — Keep indoor plants away from cold windows')
+                return f'{label}: Cold Weather ({t:.0f}°C) — Protect nursery seedlings'
 
             def humidity_msg(label, h):
-                return (f'{label}: High Humidity ({h}%) — Monitor for fungal diseases'
-                        if not is_hobbyist else
-                        f'{label}: High Humidity ({h}%) — Check leaves for fungal spots')
+                return f'{label}: High Humidity ({h}%) — Monitor for fungal diseases'
 
             for i, day in enumerate(forecast):
                 day_label = 'Today' if i == 0 else ('Tomorrow' if i == 1 else f'in {i} Days')
@@ -113,14 +93,12 @@ def dashboard(request):
     # only used as a picker UI and should never drive API calls.
     mandi_prices = {}
     try:
-        is_farmer = not hasattr(request.user, 'profile') or request.user.profile.user_type != 'Hobbyist'
-        if is_farmer:
-            user_crops = list(
-                active_crops.values_list('crop_name_custom', flat=True).distinct()
-            )
-            user_crops = [c.strip().title() for c in user_crops if c and c.strip()]
-            combined = list(dict.fromkeys(user_crops + DEFAULT_CROPS))
-            mandi_prices = get_mandi_prices(combined)
+        user_crops = list(
+            active_crops.values_list('crop_name_custom', flat=True).distinct()
+        )
+        user_crops = [c.strip().title() for c in user_crops if c and c.strip()]
+        combined = list(dict.fromkeys(user_crops + DEFAULT_CROPS))
+        mandi_prices = get_mandi_prices(combined)
     except Exception as e:
         print(f"Mandi prices error: {e}")
 

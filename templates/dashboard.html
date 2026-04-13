@@ -14,10 +14,6 @@
         transition: background 0.5s ease;
     }
 
-    body.hobbyist-theme {
-        background: linear-gradient(135deg, #fdfbfb 0%, #f3ece4 100%);
-    }
-
     .dashboard-hero {
         text-align: center;
         padding: 3rem 2rem;
@@ -28,10 +24,6 @@
         position: relative;
         overflow: hidden;
         transition: background 0.5s ease;
-    }
-
-    body.hobbyist-theme .dashboard-hero {
-        background: linear-gradient(135deg, rgba(179, 139, 109, 0.9), rgba(200, 150, 115, 0.9));
     }
 
     .dashboard-hero::before {
@@ -66,10 +58,6 @@
         position: relative;
         z-index: 1;
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-    }
-
-    body.hobbyist-theme .hero-title {
-        text-shadow: 2px 2px 4px rgba(179, 139, 109, 0.4);
     }
 
     .hero-subtitle {
@@ -107,10 +95,6 @@
         background: linear-gradient(90deg, #10b981, #059669);
         transform: scaleX(0);
         transition: transform 0.3s, background 0.5s ease;
-    }
-
-    body.hobbyist-theme .feature-card::before {
-        background: linear-gradient(90deg, #b38b6d, #d4a373);
     }
 
     .feature-card:hover::before {
@@ -633,24 +617,11 @@
 
 {% block content %}
 <div class="floating-elements">
-    {% if user.is_authenticated and user.profile.user_type == 'Hobbyist' %}
-    <i class="fas fa-seedling floating-icon"
-        style="top: 10%; left: 10%; animation-delay: 0s; color: #8F9779; opacity: 0.15;"></i>
-    <i class="fas fa-spa floating-icon"
-        style="top: 20%; right: 15%; animation-delay: 2s; color: #B38B6D; opacity: 0.15;"></i>
-    <i class="fas fa-droplet floating-icon"
-        style="bottom: 20%; left: 20%; animation-delay: 4s; color: #8F9779; opacity: 0.15;"></i>
-    <i class="fab fa-pagelines floating-icon"
-        style="top: 60%; right: 10%; animation-delay: 6s; color: #B38B6D; opacity: 0.15;"></i>
-    <i class="fas fa-leaf floating-icon"
-        style="bottom: 30%; right: 25%; animation-delay: 8s; color: #8F9779; opacity: 0.15;"></i>
-    {% else %}
     <i class="fas fa-seedling floating-icon" style="top: 10%; left: 10%; animation-delay: 0s;"></i>
     <i class="fas fa-cloud-sun floating-icon" style="top: 20%; right: 15%; animation-delay: 2s;"></i>
     <i class="fas fa-tractor floating-icon" style="bottom: 20%; left: 20%; animation-delay: 4s;"></i>
     <i class="fas fa-leaf floating-icon" style="top: 60%; right: 10%; animation-delay: 6s;"></i>
     <i class="fas fa-sun floating-icon" style="bottom: 30%; right: 25%; animation-delay: 8s;"></i>
-    {% endif %}
 </div>
 
 <div class="container" style="padding: 2rem; max-width: 1400px; margin: 0 auto;">
@@ -660,21 +631,6 @@
         </h1>
         <p class="hero-subtitle">Your Smart Farming Companion - Empowering Agriculture with AI</p>
 
-        <form method="POST" action="{% url 'toggle_persona' %}"
-            style="margin-top: 2rem; display: flex; justify-content: center;">
-            {% csrf_token %}
-            <div
-                style="display: inline-flex; align-items: center; background: rgba(255, 255, 255, 0.2); border-radius: 50px; padding: 5px; position: relative; width: 350px;">
-                <button type="submit" name="user_type" value="Farmer"
-                    style="flex: 1; padding: 10px 20px; border: none; border-radius: 50px; background: {% if user.is_authenticated and user.profile.user_type != 'Hobbyist' %}white{% else %}transparent{% endif %}; color: {% if user.is_authenticated and user.profile.user_type != 'Hobbyist' %}#1B5E20{% else %}white{% endif %}; font-weight: bold; cursor: pointer; transition: all 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;">
-                    <i class="fas fa-tractor"></i> Pro Farmer
-                </button>
-                <button type="submit" name="user_type" value="Hobbyist"
-                    style="flex: 1; padding: 10px 20px; border: none; border-radius: 50px; background: {% if user.is_authenticated and user.profile.user_type == 'Hobbyist' %}white{% else %}transparent{% endif %}; color: {% if user.is_authenticated and user.profile.user_type == 'Hobbyist' %}#1B5E20{% else %}white{% endif %}; font-weight: bold; cursor: pointer; transition: all 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;">
-                    <i class="fas fa-seedling"></i> Hobby Garden
-                </button>
-            </div>
-        </form>
     </div>
 
     {% if not location %}
@@ -687,7 +643,7 @@
     </div>
     {% endif %}
 
-    {% if user.is_authenticated and user.profile.user_type != 'Hobbyist' and mandi_prices %}
+    {% if user.is_authenticated and mandi_prices %}
     <!-- ── Stock-Market Style Mandi Board ─────────────────────────── -->
     <div class="mandi-board">
         <div class="mandi-board-header">
@@ -882,7 +838,7 @@
             </a>
         </div>
 
-        {% if user.is_authenticated and user.profile.user_type != 'Hobbyist' %}
+        {% if user.is_authenticated %}
         <!-- Crop Tracker Widget -->
         <div class="feature-card tracker-widget">
             <div class="feature-icon">
@@ -924,7 +880,7 @@
         </div>
         {% endif %}
 
-        {% if user.is_authenticated and user.profile.user_type != 'Hobbyist' %}
+        {% if user.is_authenticated %}
         <!-- Government Policies Widget -->
         <div class="feature-card">
             <div class="feature-icon" style="color: #f59e0b;">

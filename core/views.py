@@ -32,23 +32,15 @@ def get_weather_data(city_name):
 # ==============================================================================
 
 
-def get_persona_prompt(user_type='Farmer', lang='en'):
+def get_persona_prompt(lang='en'):
     if lang == 'hi':
-        if user_type == 'Farmer':
-            role_desc = "आप 'AgriPath' नाम के एक मित्रवत और जानकार AI कृषि मित्र हैं। आपकी बोली सरल हिंदी में है।"
-            objective = "**आपका उद्देश्य:** किसानों को खेती, मौसम, और वेबसाइट के बारे में मदद करना।"
-        else:
-            role_desc = "आप 'AgriPath' नाम के एक मित्रवत AI गार्डनिंग विशेषज्ञ हैं। आपकी बोली सरल हिंदी में है।"
-            objective = "**आपका उद्देश्य:** हॉबी गार्डनर्स को पौधों की देखभाल और वेबसाइट के बारे में मदद करना।"
+        role_desc = "आप 'AgriPath' नाम के एक मित्रवत और जानकार AI कृषि मित्र हैं। आपकी बोली सरल हिंदी में है।"
+        objective = "**आपका उद्देश्य:** किसानों को खेती, मौसम, और वेबसाइट के बारे में मदद करना।"
         reply_lang = "हमेशा हिंदी में बात करें (Always reply in Hindi)."
         ack = "जी, मैं समझ गया।"
     else:
-        if user_type == 'Farmer':
-            role_desc = "You are a friendly mapping AI agricultural assistant named 'AgriPath'. Speak simply like a farmer's companion."
-            objective = "**Your Objective:** Assist farmers with farming, weather, and website features."
-        else:
-            role_desc = "You are a friendly AI gardening expert named 'AgriPath'."
-            objective = "**Your Objective:** Assist hobby gardeners with plant care and website features."
+        role_desc = "You are a friendly AI agricultural assistant named 'AgriPath'. Speak simply like a farmer's companion."
+        objective = "**Your Objective:** Assist farmers with farming, weather, and website features."
         reply_lang = "Always reply in English."
         ack = "Yes, I understand."
 
@@ -77,7 +69,7 @@ def get_persona_prompt(user_type='Farmer', lang='en'):
     }, {'role': 'model', 'parts': [ack]}
 
 
-def handle_weather_query(user_prompt, history, user_location=None, user_type='Farmer', lang='en'):
+def handle_weather_query(user_prompt, history, user_location=None, lang='en'):
     # Simple check: if query doesn't contain common city indicators, use default location
     common_cities = ['दिल्ली', 'मुंबई', 'कोलकाता', 'चेन्नई', 'बेंगलुरु', 'हैदराबाद', 'अहमदाबाद', 'पुणे', 'जयपुर', 'लखनउ', 'कानपुर', 'delhi', 'mumbai', 'kolkata', 'chennai', 'bangalore', 'hyderabad']
     
@@ -105,7 +97,7 @@ def handle_weather_query(user_prompt, history, user_location=None, user_type='Fa
     if error:
         return f"I couldn't find weather data for '{city_name}'." if lang == 'en' else f"मुझे '{city_name}' का मौसम डेटा नहीं मिला।"
 
-    persona, ack = get_persona_prompt(user_type, lang)
+    persona, ack = get_persona_prompt(lang)
     final_prompt_list = [
         persona,
         ack,
@@ -120,8 +112,8 @@ def handle_weather_query(user_prompt, history, user_location=None, user_type='Fa
     ]
     return generate_ai_response(final_prompt_list)
 
-def handle_crop_recommendation(user_prompt, history, user_type='Farmer', lang='en'):
-    persona, ack = get_persona_prompt(user_type, lang)
+def handle_crop_recommendation(user_prompt, history, lang='en'):
+    persona, ack = get_persona_prompt(lang)
     instruction = 'When suggesting crops, put each one on a new line without any bullets or numbers.' if lang == 'en' else 'जब आप फसलों की सूची सुझाते हैं, तो हर फसल का नाम एक नई लाइन पर दें। किसी भी बुलेट पॉइंट का प्रयोग न करें।'
     instruction_ack = 'Okay, I will list them on new lines without bullets.' if lang == 'en' else 'जी, मैं हर पौधे/फसल का नाम एक नई लाइन पर दूंगा।'
     final_prompt_list = [
@@ -133,8 +125,8 @@ def handle_crop_recommendation(user_prompt, history, user_type='Farmer', lang='e
     ]
     return generate_ai_response(final_prompt_list)
 
-def handle_government_scheme(user_prompt, history, user_type='Farmer', lang='en'):
-    persona, ack = get_persona_prompt(user_type, lang)
+def handle_government_scheme(user_prompt, history, lang='en'):
+    persona, ack = get_persona_prompt(lang)
     final_prompt_list = [
         persona,
         ack,
@@ -142,7 +134,7 @@ def handle_government_scheme(user_prompt, history, user_type='Farmer', lang='en'
     ]
     return generate_ai_response(final_prompt_list)
 
-def handle_market_price(user_prompt, history, user_type='Farmer', lang='en'):
+def handle_market_price(user_prompt, history, lang='en'):
     # Extract crop name
     extract_prompt = f"Extract only the crop or commodity name from this query: '{user_prompt}'. Examples: Wheat, Tomato, Onion. Give only the English name of the crop, nothing else. If it's in Hindi (e.g. 'gehu' or 'गेहूं'), translate to English (e.g. 'Wheat')."
     
@@ -153,7 +145,7 @@ def handle_market_price(user_prompt, history, user_type='Farmer', lang='en'):
         
     prices = get_mandi_prices([crop_name])
     
-    persona, ack = get_persona_prompt(user_type, lang)
+    persona, ack = get_persona_prompt(lang)
     if not prices or len(prices) == 0:
         err = f"Sorry, I couldn't find current market price data for {crop_name}." if lang == 'en' else f"क्षमा करें, मुझे {crop_name} का मंडी भाव नहीं मिला।"
         return err
@@ -176,8 +168,8 @@ def handle_market_price(user_prompt, history, user_type='Farmer', lang='en'):
     ]
     return generate_ai_response(final_prompt_list)
 
-def handle_general_conversation(user_prompt, history, user_type='Farmer', lang='en'):
-    persona, ack = get_persona_prompt(user_type, lang)
+def handle_general_conversation(user_prompt, history, lang='en'):
+    persona, ack = get_persona_prompt(lang)
     final_prompt_list = [
         persona,
         ack,
@@ -197,17 +189,8 @@ def get_greeting(request):
     lang = request.GET.get('lang', 'en')
     fallback_greeting = "नमस्ते! मैं आपकी मदद के लिए तैयार हूँ।" if lang == 'hi' else "Hello! How can I assist you today?"
     
-    user_type = 'Farmer'
-    if request.user.is_authenticated:
-        try:
-            user_type = request.user.profile.user_type
-        except Exception:
-            pass
-
-    target_audience = "एक किसान (Farmer)" if user_type == "Farmer" else "एक गार्डनिंग के शौकीन (Hobbiyst)"
     prompt_lang_instruction = "हिंदी में" if lang == 'hi' else "in English"
-    
-    greeting_prompt = f"You are an AI assistant named AgriPath. Generate a very short, natural and friendly greeting {prompt_lang_instruction} for a {user_type}. Only one sentence."
+    greeting_prompt = f"You are an AI assistant named AgriPath. Generate a very short, natural and friendly greeting {prompt_lang_instruction} for a farmer. Only one sentence."
     
     greeting_text = generate_ai_response(greeting_prompt)
     if "क्षमा करें" in greeting_text or "Sorry" in greeting_text:
@@ -233,27 +216,25 @@ def process_voice(request):
         category = generate_ai_response(classifier_prompt).strip().lower()
 
         conversation_context = list(history)
-        
-        user_type = 'Farmer'
+
         user_location = None
         if request.user.is_authenticated:
             try:
-                user_type = request.user.profile.user_type
                 user_location = request.user.profile.location
             except Exception:
                 pass
 
         final_response_text = ""
         if 'weather' in category:
-            final_response_text = handle_weather_query(user_prompt, conversation_context, user_location, user_type, lang)
+            final_response_text = handle_weather_query(user_prompt, conversation_context, user_location, lang)
         elif 'crop' in category:
-            final_response_text = handle_crop_recommendation(user_prompt, conversation_context, user_type, lang)
+            final_response_text = handle_crop_recommendation(user_prompt, conversation_context, lang)
         elif 'scheme' in category or 'yojana' in category or 'sarkari' in category:
-            final_response_text = handle_government_scheme(user_prompt, conversation_context, user_type, lang)
+            final_response_text = handle_government_scheme(user_prompt, conversation_context, lang)
         elif 'market' in category or 'price' in category or 'mandi' in category or 'bhav' in category:
-            final_response_text = handle_market_price(user_prompt, conversation_context, user_type, lang)
+            final_response_text = handle_market_price(user_prompt, conversation_context, lang)
         else:
-            final_response_text = handle_general_conversation(user_prompt, conversation_context, user_type, lang)
+            final_response_text = handle_general_conversation(user_prompt, conversation_context, lang)
 
         history.append({'role': 'model', 'parts': [final_response_text]})
         request.session['chat_history'] = history

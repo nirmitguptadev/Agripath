@@ -49,16 +49,8 @@
             margin-left: 10px;
             overflow: hidden;
         }
-        body.hobbyist-theme .lang-toggle-btn {
-            background: rgba(179, 139, 109, 0.3);
-            border-color: rgba(179, 139, 109, 0.6);
-        }
-        
         .lang-toggle-btn:hover { 
             box-shadow: 0 0 10px rgba(16, 185, 129, 0.4); 
-        }
-        body.hobbyist-theme .lang-toggle-btn:hover {
-            box-shadow: 0 0 10px rgba(179, 139, 109, 0.4);
         }
 
         .lang-toggle-text {
@@ -71,10 +63,6 @@
             pointer-events: none;
             user-select: none;
         }
-        body.hobbyist-theme .lang-toggle-text {
-            color: #b38b6d;
-        }
-        
         .lang-toggle-text.white-text {
             color: white !important;
         }
@@ -90,29 +78,15 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
             z-index: 0;
         }
-        body.hobbyist-theme .lang-toggle-thumb {
-            background: #b38b6d;
-        }
-
         /* When Hindi is active */
         .lang-toggle-btn.hindi-active .lang-toggle-thumb {
             transform: translateX(40px);
         }
     </style>
     
-    <style>
-        /* Force theme application bypassing cache */
-        body.hobbyist-theme .navbar {
-            background-color: #8F9779 !important;
-            border-bottom: 2px solid #A3A380;
-        }
-        body.hobbyist-theme .footer {
-            background-color: #3B3C36 !important;
-        }
-    </style>
 </head>
 
-<body class="{% if request.user.is_authenticated and request.user.profile.user_type == 'Hobbyist' %}hobbyist-theme{% endif %}" style="position: relative; min-height: 100vh;">
+<body style="position: relative; min-height: 100vh;">
 
     <!-- Header / Navbar -->
     <nav class="navbar">
@@ -130,9 +104,8 @@
                 <a href="{% url 'Weather' %}" class="nav-link">Weather</a>
 
                 <!-- Farmer Features -->
-                {% if request.user.is_authenticated and request.user.profile.user_type != 'Hobbyist' %}
+                {% if request.user.is_authenticated %}
                 <a href="{% url 'Policies' %}" class="nav-link">Policies</a>
-
                 <a href="{% url 'tracker_dashboard' %}" class="nav-link">Tracker</a>
                 {% endif %}
 
