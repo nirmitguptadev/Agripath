@@ -12,6 +12,7 @@ from django.conf import settings
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from core.ai_fallback import generate_ai_response, analyze_plant_image
+from core.news_api import get_agri_news
 
 OPENWEATHER_API_KEY = getattr(settings, 'OPENWEATHER_API_KEY', None)
 
@@ -383,4 +384,7 @@ def api_weather_alerts(request):
     return JsonResponse({'alerts': text_alerts})
 
 
-
+@login_required
+def news_page(request):
+    news_items = get_agri_news()
+    return render(request, 'news.html', {'news_items': news_items})

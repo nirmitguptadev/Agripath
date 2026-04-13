@@ -159,6 +159,7 @@ TWILIO_AUTH_TOKEN = env('TWILIO_AUTH_TOKEN')
 TWILIO_PHONE_NUMBER = env('TWILIO_PHONE_NUMBER')
 GROQ_API_KEY = env('GROQ_API_KEY')
 MANDI_API_KEY = env('Mandi_API_KEY', default='')
+NEWSDATA_API_KEY = env('NEWSDATA_API_KEY', default='')
 
 LOGIN_URL = '/accounts/login/'
 

@@ -13,7 +13,7 @@
         font-family: 'Poppins', sans-serif;
         transition: background 0.5s ease;
     }
-    
+
     body.hobbyist-theme {
         background: linear-gradient(135deg, #fdfbfb 0%, #f3ece4 100%);
     }
@@ -29,7 +29,7 @@
         overflow: hidden;
         transition: background 0.5s ease;
     }
-    
+
     body.hobbyist-theme .dashboard-hero {
         background: linear-gradient(135deg, rgba(179, 139, 109, 0.9), rgba(200, 150, 115, 0.9));
     }
@@ -67,7 +67,7 @@
         z-index: 1;
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
     }
-    
+
     body.hobbyist-theme .hero-title {
         text-shadow: 2px 2px 4px rgba(179, 139, 109, 0.4);
     }
@@ -108,7 +108,7 @@
         transform: scaleX(0);
         transition: transform 0.3s, background 0.5s ease;
     }
-    
+
     body.hobbyist-theme .feature-card::before {
         background: linear-gradient(90deg, #b38b6d, #d4a373);
     }
@@ -322,8 +322,9 @@
         margin-bottom: 2.5rem;
         overflow: hidden;
         border: 1px solid #30363d;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
     }
+
     .mandi-board-header {
         display: flex;
         align-items: center;
@@ -332,6 +333,7 @@
         background: #161b22;
         border-bottom: 1px solid #30363d;
     }
+
     .mandi-board-header h3 {
         margin: 0;
         color: #f0f6fc;
@@ -343,6 +345,7 @@
         letter-spacing: 0.05em;
         text-transform: uppercase;
     }
+
     .live-dot {
         width: 8px;
         height: 8px;
@@ -351,26 +354,48 @@
         display: inline-block;
         animation: pulse-dot 1.5s infinite;
     }
+
     @keyframes pulse-dot {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.4; transform: scale(0.7); }
+
+        0%,
+        100% {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        50% {
+            opacity: 0.4;
+            transform: scale(0.7);
+        }
     }
+
     .mandi-ticker-wrap {
         overflow: hidden;
         position: relative;
         padding: 1.2rem 0;
     }
+
     .mandi-ticker-track {
         display: flex;
         gap: 1.2rem;
         animation: ticker-scroll 35s linear infinite;
         width: max-content;
     }
-    .mandi-ticker-track:hover { animation-play-state: paused; }
-    @keyframes ticker-scroll {
-        0%   { transform: translateX(0); }
-        100% { transform: translateX(-50%); }
+
+    .mandi-ticker-track:hover {
+        animation-play-state: paused;
     }
+
+    @keyframes ticker-scroll {
+        0% {
+            transform: translateX(0);
+        }
+
+        100% {
+            transform: translateX(-50%);
+        }
+    }
+
     .mandi-chip {
         background: #161b22;
         border: 1px solid #30363d;
@@ -380,7 +405,11 @@
         flex-shrink: 0;
         transition: border-color 0.2s;
     }
-    .mandi-chip:hover { border-color: #3fb950; }
+
+    .mandi-chip:hover {
+        border-color: #3fb950;
+    }
+
     .mandi-chip-name {
         font-size: 0.75rem;
         font-weight: 700;
@@ -389,12 +418,14 @@
         letter-spacing: 0.08em;
         margin-bottom: 0.3rem;
     }
+
     .mandi-chip-price {
         font-size: 1.45rem;
         font-weight: 900;
         color: #3fb950;
         letter-spacing: -0.02em;
     }
+
     .mandi-chip-sub {
         font-size: 0.7rem;
         color: #6e7681;
@@ -403,9 +434,19 @@
         gap: 0.5rem;
         align-items: center;
     }
-    .mandi-chip-sub .lo  { color: #3fb950; }
-    .mandi-chip-sub .hi  { color: #f85149; }
-    .mandi-chip-sub .sep { color: #30363d; }
+
+    .mandi-chip-sub .lo {
+        color: #3fb950;
+    }
+
+    .mandi-chip-sub .hi {
+        color: #f85149;
+    }
+
+    .mandi-chip-sub .sep {
+        color: #30363d;
+    }
+
     .mandi-board-footer {
         padding: 0.5rem 1.5rem;
         background: #161b22;
@@ -415,17 +456,194 @@
         display: flex;
         justify-content: space-between;
     }
+
+    /* ── News Carousel ───────────────────────────────────────────── */
+    .news-carousel-section {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-bottom: 2.5rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+        position: relative;
+    }
+
+    .news-carousel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .news-carousel-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #1B5E20;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .news-carousel-view-all {
+        background: #e0f2fe;
+        color: #0284c7;
+        padding: 0.4rem 1rem;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+    }
+
+    .news-carousel-view-all:hover {
+        background: #bae6fd;
+        transform: scale(1.05);
+    }
+
+    .news-track-wrapper {
+        overflow: hidden;
+        position: relative;
+        padding: 0.5rem 0;
+    }
+
+    .news-track {
+        display: flex;
+        gap: 0;
+        transition: transform 0.5s ease-in-out;
+    }
+
+    .news-card {
+        flex: 0 0 100%;
+        min-width: 100%;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        transition: transform 0.2s, box-shadow 0.2s;
+        text-decoration: none;
+    }
+
+    .news-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .news-img {
+        height: 140px;
+        background: #cbd5e1;
+        background-size: cover;
+        background-position: center;
+        position: relative;
+    }
+
+    .news-source-badge {
+        position: absolute;
+        bottom: 10px;
+        left: 10px;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 4px;
+        font-size: 0.65rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .news-body {
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
+
+    .news-pub-date {
+        font-size: 0.7rem;
+        color: #64748b;
+        margin-bottom: 0.3rem;
+    }
+
+    .news-headline {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0 0 0.5rem 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .news-desc {
+        font-size: 0.8rem;
+        color: #475569;
+        margin: 0 0 1rem 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .news-carousel-controls {
+        display: none;
+    }
+
+    .nc-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255, 255, 255, 0.25);
+        backdrop-filter: blur(6px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        color: #1B5E20;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s, color 0.2s;
+        z-index: 10;
+    }
+
+    #ncPrev {
+        left: 10px;
+    }
+
+    #ncNext {
+        right: 10px;
+    }
+
+    .nc-btn:hover {
+        background: rgba(16, 185, 129, 0.8);
+        color: white;
+    }
+
+    .nc-btn:disabled {
+        opacity: 0.3;
+        cursor: default;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="floating-elements">
     {% if user.is_authenticated and user.profile.user_type == 'Hobbyist' %}
-    <i class="fas fa-seedling floating-icon" style="top: 10%; left: 10%; animation-delay: 0s; color: #8F9779; opacity: 0.15;"></i>
-    <i class="fas fa-spa floating-icon" style="top: 20%; right: 15%; animation-delay: 2s; color: #B38B6D; opacity: 0.15;"></i>
-    <i class="fas fa-droplet floating-icon" style="bottom: 20%; left: 20%; animation-delay: 4s; color: #8F9779; opacity: 0.15;"></i>
-    <i class="fab fa-pagelines floating-icon" style="top: 60%; right: 10%; animation-delay: 6s; color: #B38B6D; opacity: 0.15;"></i>
-    <i class="fas fa-leaf floating-icon" style="bottom: 30%; right: 25%; animation-delay: 8s; color: #8F9779; opacity: 0.15;"></i>
+    <i class="fas fa-seedling floating-icon"
+        style="top: 10%; left: 10%; animation-delay: 0s; color: #8F9779; opacity: 0.15;"></i>
+    <i class="fas fa-spa floating-icon"
+        style="top: 20%; right: 15%; animation-delay: 2s; color: #B38B6D; opacity: 0.15;"></i>
+    <i class="fas fa-droplet floating-icon"
+        style="bottom: 20%; left: 20%; animation-delay: 4s; color: #8F9779; opacity: 0.15;"></i>
+    <i class="fab fa-pagelines floating-icon"
+        style="top: 60%; right: 10%; animation-delay: 6s; color: #B38B6D; opacity: 0.15;"></i>
+    <i class="fas fa-leaf floating-icon"
+        style="bottom: 30%; right: 25%; animation-delay: 8s; color: #8F9779; opacity: 0.15;"></i>
     {% else %}
     <i class="fas fa-seedling floating-icon" style="top: 10%; left: 10%; animation-delay: 0s;"></i>
     <i class="fas fa-cloud-sun floating-icon" style="top: 20%; right: 15%; animation-delay: 2s;"></i>
@@ -442,13 +660,17 @@
         </h1>
         <p class="hero-subtitle">Your Smart Farming Companion - Empowering Agriculture with AI</p>
 
-        <form method="POST" action="{% url 'toggle_persona' %}" style="margin-top: 2rem; display: flex; justify-content: center;">
+        <form method="POST" action="{% url 'toggle_persona' %}"
+            style="margin-top: 2rem; display: flex; justify-content: center;">
             {% csrf_token %}
-            <div style="display: inline-flex; align-items: center; background: rgba(255, 255, 255, 0.2); border-radius: 50px; padding: 5px; position: relative; width: 350px;">
-                <button type="submit" name="user_type" value="Farmer" style="flex: 1; padding: 10px 20px; border: none; border-radius: 50px; background: {% if user.is_authenticated and user.profile.user_type != 'Hobbyist' %}white{% else %}transparent{% endif %}; color: {% if user.is_authenticated and user.profile.user_type != 'Hobbyist' %}#1B5E20{% else %}white{% endif %}; font-weight: bold; cursor: pointer; transition: all 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;">
+            <div
+                style="display: inline-flex; align-items: center; background: rgba(255, 255, 255, 0.2); border-radius: 50px; padding: 5px; position: relative; width: 350px;">
+                <button type="submit" name="user_type" value="Farmer"
+                    style="flex: 1; padding: 10px 20px; border: none; border-radius: 50px; background: {% if user.is_authenticated and user.profile.user_type != 'Hobbyist' %}white{% else %}transparent{% endif %}; color: {% if user.is_authenticated and user.profile.user_type != 'Hobbyist' %}#1B5E20{% else %}white{% endif %}; font-weight: bold; cursor: pointer; transition: all 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;">
                     <i class="fas fa-tractor"></i> Pro Farmer
                 </button>
-                <button type="submit" name="user_type" value="Hobbyist" style="flex: 1; padding: 10px 20px; border: none; border-radius: 50px; background: {% if user.is_authenticated and user.profile.user_type == 'Hobbyist' %}white{% else %}transparent{% endif %}; color: {% if user.is_authenticated and user.profile.user_type == 'Hobbyist' %}#1B5E20{% else %}white{% endif %}; font-weight: bold; cursor: pointer; transition: all 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;">
+                <button type="submit" name="user_type" value="Hobbyist"
+                    style="flex: 1; padding: 10px 20px; border: none; border-radius: 50px; background: {% if user.is_authenticated and user.profile.user_type == 'Hobbyist' %}white{% else %}transparent{% endif %}; color: {% if user.is_authenticated and user.profile.user_type == 'Hobbyist' %}#1B5E20{% else %}white{% endif %}; font-weight: bold; cursor: pointer; transition: all 0.3s; display: flex; justify-content: center; align-items: center; gap: 8px;">
                     <i class="fas fa-seedling"></i> Hobby Garden
                 </button>
             </div>
@@ -469,7 +691,7 @@
     <!-- ── Stock-Market Style Mandi Board ─────────────────────────── -->
     <div class="mandi-board">
         <div class="mandi-board-header">
-            <h3><span class="live-dot"></span> Agri Market Prices</h3>
+            <h3><span class="live-dot"></span> Market Prices</h3>
             <span style="color: #8b949e; font-size: 0.75rem;">Agmarknet &bull; ₹ / Quintal &bull; Updated Today</span>
         </div>
 
@@ -510,6 +732,118 @@
     </div>
     {% endif %}
 
+    {% if news_items %}
+    <!-- ── News Carousel ───────────────────────────────────────────── -->
+    <div class="news-carousel-section">
+        <div class="news-carousel-header">
+            <h3 class="news-carousel-title"><i class="far fa-newspaper"></i> News</h3>
+            <a href="{% url 'news' %}" class="news-carousel-view-all">View All <i class="fas fa-arrow-right"
+                    style="margin-left: 5px;"></i></a>
+        </div>
+        <div class="news-track-wrapper" id="newsWrapper">
+            <div class="news-track" id="newsTrack">
+                {% for item in news_items %}
+                <a href="{{ item.link }}" target="_blank" class="news-card">
+                    <div class="news-img" {% if item.image_url %}style="background-image: url('{{ item.image_url }}');"{% endif %}>>
+                        {% if not item.image_url %}
+                        <div
+                            style="width:100%; height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; background: linear-gradient(135deg, #1e293b, #0f172a); color:white; padding: 1rem; text-align: center; overflow: hidden; position: relative;">
+                            <i class="fas fa-newspaper"
+                                style="font-size: 3rem; color: rgba(255,255,255,0.05); position: absolute; transform: scale(3.5) rotate(-15deg); right: -10px; bottom: -10px;"></i>
+                            <i class="fas fa-rss"
+                                style="font-size: 1.5rem; color: #10b981; margin-bottom: 0.5rem; z-index: 1;"></i>
+                            <span style="font-size: 0.85rem; font-weight: 600; line-height: 1.3; z-index: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; color: #e2e8f0;">{{ item.title }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="news-source-badge">{{ item.source_id|default:"News"|slice:":2"|upper }}</div>
+                    </div>
+                    <div class="news-body">
+                        <div class="news-pub-date"><i class="far fa-clock"></i> {{ item.pubDate }}</div>
+                        <h4 class="news-headline">{{ item.title }}</h4>
+                        <div class="news-desc">{{ item.description|default:"Click to read more..." }}</div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            <button class="nc-btn" id="ncPrev"><i class="fas fa-chevron-left"></i></button>
+            <button class="nc-btn" id="ncNext"><i class="fas fa-chevron-right"></i></button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const track = document.getElementById('newsTrack');
+            const btnPrev = document.getElementById('ncPrev');
+            const btnNext = document.getElementById('ncNext');
+
+            if (!track || !btnPrev || !btnNext) return;
+
+            let currentIndex = 0;
+
+            function updateCarousel() {
+                const card = track.querySelector('.news-card');
+                if (!card) return;
+
+                const itemWidth = card.offsetWidth;
+
+                track.style.transform = `translateX(-${currentIndex * itemWidth}px)`;
+
+                // Update button states
+                btnPrev.disabled = currentIndex === 0;
+
+                // Max visible at a time
+                let visibleItems = 1;
+
+                const maxIndex = Math.max(0, track.children.length - visibleItems);
+                btnNext.disabled = currentIndex >= maxIndex && maxIndex > 0;
+            }
+
+            btnNext.addEventListener('click', () => {
+                let visibleItems = 1;
+                const maxIndex = Math.max(0, track.children.length - visibleItems);
+                if (currentIndex < maxIndex) {
+                    currentIndex++;
+                    updateCarousel();
+                }
+            });
+
+            btnPrev.addEventListener('click', () => {
+                if (currentIndex > 0) {
+                    currentIndex--;
+                    updateCarousel();
+                }
+            });
+
+            // Auto scroll feature
+            let autoScrollInterval;
+
+            function startAutoScroll() {
+                autoScrollInterval = setInterval(() => {
+                    let visibleItems = 1;
+                    const maxIndex = Math.max(0, track.children.length - visibleItems);
+                    if (currentIndex < maxIndex) {
+                        currentIndex++;
+                    } else {
+                        currentIndex = 0; // loop back to first
+                    }
+                    updateCarousel();
+                }, 5000);
+            }
+
+            function stopAutoScroll() {
+                clearInterval(autoScrollInterval);
+            }
+
+            track.parentElement.addEventListener('mouseenter', stopAutoScroll);
+            track.parentElement.addEventListener('mouseleave', startAutoScroll);
+
+            startAutoScroll();
+
+            window.addEventListener('resize', updateCarousel);
+        });
+    </script>
+    {% endif %}
+
     <div class="feature-grid">
         <!-- Weather Widget -->
         <div class="feature-card weather-widget">
@@ -543,7 +877,7 @@
                 {% endfor %}
             </div>
             {% endif %}
-    <a href="{% url 'Weather' %}" class="feature-btn">
+            <a href="{% url 'Weather' %}" class="feature-btn">
                 <i class="fas fa-arrow-right"></i> View Details
             </a>
         </div>
@@ -561,12 +895,10 @@
                     <span class="stat-value">{{ active_crops_count }}</span>
                     <span class="stat-label">Active Crops</span>
                 </div>
-                <div class="stat-item">
                     <span class="stat-value">
                         {% if total_profit < 0 %}-₹{{ total_profit|floatformat:0|slice:"1:" }}{% else %}₹{{ total_profit|floatformat:0 }}{% endif %}
                     </span>
                     <span class="stat-label">Total Profit</span>
-                </div>
             </div>
             <a href="{% url 'tracker_dashboard' %}" class="feature-btn">
                 <i class="fas fa-arrow-right"></i> View Dashboard
@@ -645,9 +977,9 @@
 {% block extra_js %}
 {% if weather_alerts %}
 <script>
-(function() {
-    const alerts = [
-        {% for alert in weather_alerts %}{% if alert.level == 'danger' or alert.level == 'warning' %}'{{ alert.icon }} {{ alert.msg|escapejs }}',{% endif %}{% endfor %}
+    (function () {
+        const alerts = [
+            {% for alert in weather_alerts %}{% if alert.level == 'danger' or alert.level == 'warning' %} '{{ alert.icon }} {{ alert.msg|escapejs }}', {% endif %}{% endfor %}
     ];
     if (!alerts.length) return;
 
@@ -665,7 +997,7 @@
                 tag: 'agripath-weather-' + i,
                 requireInteraction: false
             })
-        , i * 2000));
+            , i * 2000));
         localStorage.setItem(STORE_KEY, TODAY);
     }
 
@@ -688,7 +1020,7 @@
         // Auto-remove after 15 seconds
         setTimeout(() => btn.remove(), 15000);
     }
-})();
+}) ();
 </script>
 {% endif %}
 {% endblock %}

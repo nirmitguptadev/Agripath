@@ -11,6 +11,7 @@ from home.views import (
 from tracker.models import CropTracker
 from django.db.models import Sum
 from core.mandi_api import get_mandi_prices, DEFAULT_CROPS
+from core.news_api import get_agri_news
 
 
 @login_required
@@ -123,6 +124,8 @@ def dashboard(request):
     except Exception as e:
         print(f"Mandi prices error: {e}")
 
+    news_items = get_agri_news()
+
     context = {
         'location': location,
         'weather_data': weather_data,
@@ -130,6 +133,7 @@ def dashboard(request):
         'active_crops_count': active_crops_count,
         'total_profit': total_profit,
         'mandi_prices': mandi_prices,
+        'news_items': news_items,
     }
 
     return render(request, 'dashboard.html', context)
