@@ -307,27 +307,35 @@ def plant_doctor(request):
         temp_path = os.path.join(temp_dir, temp_filename)
         
         try:
-            # Save the uploaded file
-            with open(temp_path, 'wb+') as destination:
-                for chunk in image_file.chunks():
-                    destination.write(chunk)
-            
-            # Resize image to max 800x800 to save bandwidth/compute
-            with Image.open(temp_path) as img:
+            # Read upload into memory, resize, save to temp file (closed before API call)
+            import io
+            raw = image_file.read()
+            with Image.open(io.BytesIO(raw)) as img:
                 img.thumbnail((800, 800))
-                img.save(temp_path)
-            
-            # 2. Analyze with Gemini
+                buf = io.BytesIO()
+                fmt = img.format or 'JPEG'
+                img.save(buf, format=fmt)
+            resized_bytes = buf.getvalue()
+
+            # Write resized bytes to temp file and immediately close
+            with open(temp_path, 'wb') as f:
+                f.write(resized_bytes)
+
+            # Analyze — file handle is fully closed before this call
             diagnosis = analyze_plant_image(temp_path)
-            
+
         except Exception as e:
-            print(f"Error processing image: {e}")
-            error = "An error occurred while processing the image. Please try again."
-        
+            import traceback
+            traceback.print_exc()
+            error = "An error occurred while analyzing the image. Please try again later."
+
         finally:
-            # 3. Cleanup: Delete the file
-            if os.path.exists(temp_path):
-                os.remove(temp_path)
+            # Cleanup temp file
+            try:
+                if os.path.exists(temp_path):
+                    os.remove(temp_path)
+            except OSError:
+                pass
     
     return render(request, 'plant_doctor.html', {
         'diagnosis': diagnosis, 

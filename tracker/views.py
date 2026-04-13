@@ -113,6 +113,7 @@ def tracker_dashboard(request):
     
     # Later: delta > 1
     upcoming_tasks = [t for t in all_pending_tasks if (t.due_date - today).days > 1 and not t.is_completed]
+    total_pending_tasks = len(today_tomorrow_tasks) + len(upcoming_tasks)
 
     completed_today_tasks = Task.objects.filter(
         crop_tracker__user=request.user, 
@@ -140,33 +141,33 @@ def tracker_dashboard(request):
 
                 # --- Today's conditions ---
                 if _is_storm(current_icon):
-                    weather_tasks.append({'icon': '⛈️', 'title': 'आज तूफान — फसल को सहारा दें, उपकरण सुरक्षित करें', 'when': 'आज', 'priority': 'high'})
+                    weather_tasks.append({'icon': '⛈️', 'title': 'Storm today — Support crops, secure equipment', 'when': 'Today', 'priority': 'high'})
                 elif _is_rain(current_icon):
-                    weather_tasks.append({'icon': '🌧️', 'title': 'आज बारिश — सिंचाई न करें', 'when': 'आज', 'priority': 'high'})
-                    weather_tasks.append({'icon': '🚫', 'title': 'कीटनाशक/खाद छिड़काव टालें (बारिश में बह जाएगा)', 'when': 'आज', 'priority': 'high'})
-                    weather_tasks.append({'icon': '🌊', 'title': 'खेत में जल निकासी की जांच करें', 'when': 'आज', 'priority': 'medium'})
+                    weather_tasks.append({'icon': '🌧️', 'title': 'Rain today — Do not irrigate', 'when': 'Today', 'priority': 'high'})
+                    weather_tasks.append({'icon': '🚫', 'title': 'Avoid pesticide/fertilizer spray (will wash away)', 'when': 'Today', 'priority': 'high'})
+                    weather_tasks.append({'icon': '🌊', 'title': 'Check field drainage', 'when': 'Today', 'priority': 'medium'})
 
                 if current_temp >= 40:
-                    weather_tasks.append({'icon': '🔥', 'title': f'अत्यधिक गर्मी ({current_temp:.0f}°C) — सुबह जल्दी सिंचाई करें', 'when': 'आज', 'priority': 'high'})
-                    weather_tasks.append({'icon': '🌿', 'title': 'दोपहर में छिड़काव न करें — पत्तियां जल सकती हैं', 'when': 'आज', 'priority': 'medium'})
+                    weather_tasks.append({'icon': '🔥', 'title': f'Extreme heat ({current_temp:.0f}°C) — Irrigate early morning', 'when': 'Today', 'priority': 'high'})
+                    weather_tasks.append({'icon': '🌿', 'title': 'Do not spray in afternoon — leaves may burn', 'when': 'Today', 'priority': 'medium'})
                 elif current_temp >= 35:
-                    weather_tasks.append({'icon': '☀️', 'title': f'गर्म दिन ({current_temp:.0f}°C) — शाम को सिंचाई करें', 'when': 'आज', 'priority': 'medium'})
+                    weather_tasks.append({'icon': '☀️', 'title': f'Hot day ({current_temp:.0f}°C) — Irrigate in evening', 'when': 'Today', 'priority': 'medium'})
 
                 if current_temp <= 5:
-                    weather_tasks.append({'icon': '❄️', 'title': f'पाला पड़ने की संभावना ({current_temp:.0f}°C) — फसल ढकें', 'when': 'आज', 'priority': 'high'})
+                    weather_tasks.append({'icon': '❄️', 'title': f'Frost possible ({current_temp:.0f}°C) — Cover crops', 'when': 'Today', 'priority': 'high'})
                 elif current_temp <= 10:
-                    weather_tasks.append({'icon': '🥶', 'title': f'ठंड अधिक है ({current_temp:.0f}°C) — नर्सरी पौधों की रक्षा करें', 'when': 'आज', 'priority': 'medium'})
+                    weather_tasks.append({'icon': '🥶', 'title': f'Very cold ({current_temp:.0f}°C) — Protect nursery plants', 'when': 'Today', 'priority': 'medium'})
 
                 if current_humidity >= 85 and not _is_rain_or_storm(current_icon):
-                    weather_tasks.append({'icon': '🍄', 'title': 'अधिक नमी — फंगस रोग की जांच करें', 'when': 'आज', 'priority': 'medium'})
+                    weather_tasks.append({'icon': '🍄', 'title': 'High humidity — Check for fungal diseases', 'when': 'Today', 'priority': 'medium'})
 
                 if current_wind >= 10:
-                    weather_tasks.append({'icon': '💨', 'title': f'तेज हवा ({current_wind:.0f} m/s) — लंबी फसलों को सहारा दें', 'when': 'आज', 'priority': 'medium'})
+                    weather_tasks.append({'icon': '💨', 'title': f'Strong wind ({current_wind:.0f} m/s) — Support tall crops', 'when': 'Today', 'priority': 'medium'})
 
                 # --- Forecast-based suggestions (next 1–4 days) ---
                 seen_conditions = set()
                 for i, day in enumerate(forecast[:4], start=1):
-                    day_label = f'{i} दिन बाद' if i > 1 else 'कल'
+                    day_label = f'In {i} days' if i > 1 else 'Tomorrow'
                     ficon = day['icon']
                     fmax = day['max_temp']
                     fmin = day['min_temp']
@@ -174,28 +175,30 @@ def tracker_dashboard(request):
 
                     if _is_rain_or_storm(ficon) and 'rain' not in seen_conditions:
                         seen_conditions.add('rain')
-                        weather_tasks.append({'icon': '🌦️', 'title': f'{day_label} बारिश संभव — आज ही खाद/कीटनाशक डालें', 'when': day_label, 'priority': 'high'})
-                        weather_tasks.append({'icon': '🌊', 'title': f'{day_label} बारिश से पहले जल निकासी नाली साफ करें', 'when': day_label, 'priority': 'medium'})
+                        weather_tasks.append({'icon': '🌦️', 'title': f'{day_label} — Rain possible, apply fertilizer/pesticide today', 'when': day_label, 'priority': 'high'})
+                        weather_tasks.append({'icon': '🌊', 'title': f'{day_label} — Clean drainage before rain', 'when': day_label, 'priority': 'medium'})
 
                     if fmax >= 42 and 'heat' not in seen_conditions:
                         seen_conditions.add('heat')
-                        weather_tasks.append({'icon': '🌡️', 'title': f'{day_label} भीषण गर्मी ({fmax:.0f}°C) — सिंचाई की व्यवस्था करें', 'when': day_label, 'priority': 'high'})
+                        weather_tasks.append({'icon': '🌡️', 'title': f'{day_label} — Extreme heat ({fmax:.0f}°C), arrange irrigation', 'when': day_label, 'priority': 'high'})
 
                     if fmin <= 3 and 'frost' not in seen_conditions:
                         seen_conditions.add('frost')
-                        weather_tasks.append({'icon': '🧊', 'title': f'{day_label} पाले की चेतावनी ({fmin:.0f}°C) — फसल सुरक्षा की तैयारी करें', 'when': day_label, 'priority': 'high'})
+                        weather_tasks.append({'icon': '🧊', 'title': f'{day_label} — Frost warning ({fmin:.0f}°C), prepare crop protection', 'when': day_label, 'priority': 'high'})
 
                     if fhum >= 90 and not _is_rain_or_storm(ficon) and 'humidity' not in seen_conditions:
                         seen_conditions.add('humidity')
-                        weather_tasks.append({'icon': '💧', 'title': f'{day_label} अत्यधिक नमी — फफूंदनाशक का छिड़काव करें', 'when': day_label, 'priority': 'medium'})
+                        weather_tasks.append({'icon': '💧', 'title': f'{day_label} — High humidity, spray fungicide', 'when': day_label, 'priority': 'medium'})
 
     except Exception:
         pass  # Weather is best-effort; never break the dashboard
 
     recommendations = []
-    ai_tips_cache = request.session.get('ai_tips', {})
+    ai_tips_cache = request.session.get('ai_tips_v2', {})
     # Keep only current-format dict entries; drop old string entries and old 2-part keys
     ai_tips_cache = {k: v for k, v in ai_tips_cache.items() if isinstance(v, dict) and k.count('_') >= 2}
+    # Clear legacy Hindi cache
+    request.session.pop('ai_tips', None)
 
     for crop in active_crops:
         days_idle = crop.days_since_last_log
@@ -216,44 +219,44 @@ def tracker_dashboard(request):
         # Determine suggestions — skip any whose title already exists as a task
         suggestions = []
         if crop.health == 'At Risk':
-            t = f'{crop.display_name} को तुरंत पानी दें'
+            t = f'Water {crop.display_name} immediately'
             if t not in existing_titles:
                 suggestions.append({'icon': '💧', 'title': t, 'priority': 'high'})
-            t = f'{crop.display_name} की स्वास्थ्य जांच करें'
+            t = f'Check health of {crop.display_name}'
             if t not in existing_titles:
                 suggestions.append({'icon': '🔍', 'title': t, 'priority': 'high'})
         elif crop.health == 'Attention':
-            t = f'{crop.display_name} को पानी दें'
+            t = f'Water {crop.display_name}'
             if t not in existing_titles:
                 suggestions.append({'icon': '💧', 'title': t, 'priority': 'medium'})
-            t = f'{crop.display_name} की जांच करें'
+            t = f'Check {crop.display_name}'
             if t not in existing_titles:
                 suggestions.append({'icon': '🔍', 'title': t, 'priority': 'medium'})
 
         if crop.growth_phase in ('Vegetative', 'Flowering'):
-            t = f'{crop.display_name} में खाद डालें'
+            t = f'Add fertilizer to {crop.display_name}'
             if t not in existing_titles:
                 suggestions.append({'icon': '🧪', 'title': t, 'priority': 'medium'})
         if crop.growth_phase in ('Vegetative', 'Fruiting', 'Flowering'):
-            t = f'{crop.display_name} पर कीटनाशक छिड़कें'
+            t = f'Spray pesticide on {crop.display_name}'
             if t not in existing_titles:
                 suggestions.append({'icon': '🐛', 'title': t, 'priority': 'low'})
         if days_idle >= 2 and not suggestions:
-            t = f'{crop.display_name} का निरीक्षण करें'
+            t = f'Inspect {crop.display_name}'
             if t not in existing_titles:
                 suggestions.append({'icon': '👁️', 'title': t, 'priority': 'low'})
 
         # Fetch AI tip — cache key includes pending task count so adding a task forces a fresh suggestion
         cache_key = f"{crop_id_str}_{crop.health}_{pending_task_count}"
         if cache_key not in ai_tips_cache:
-            existing_str = '、'.join(existing_titles) if existing_titles else 'कोई नहीं'
+            existing_str = ', '.join(existing_titles) if existing_titles else 'None'
             try:
                 prompt = (
-                    f"फसल: {crop.display_name}, अवस्था: {crop.growth_phase}, स्वास्थ्य: {crop.health}. "
-                    f"पहले से जोड़े गए काम: {existing_str}. "
-                    f"JSON में जवाब दो (कोई markdown नहीं): "
-                    f'{{"tip": "2 वाक्य में व्यावहारिक सलाह हिंदी में - किन संकेतों पर ध्यान दें और क्या करें", '
-                    f'"task": "एक नया काम जो ऊपर दी गई सूची में नहीं है (15 शब्द से कम, हिंदी में, इमोजी से शुरू)"}}')
+                    f"Crop: {crop.display_name}, Stage: {crop.growth_phase}, Health: {crop.health}. "
+                    f"Previously added tasks: {existing_str}. "
+                    f"Answer in JSON (no markdown): "
+                    f'{{"tip": "Practical advice in 2 sentences in English - what signs to look for and what to do", '
+                    f'"task": "A new task not in the list above (less than 15 words, in English, starting with emoji)"}}')
                 import json as _json, re as _re
                 raw = generate_ai_response(prompt)
                 match = _re.search(r'\{.*?\}', raw, _re.DOTALL)
@@ -261,8 +264,8 @@ def tracker_dashboard(request):
                 tip = _re.sub(r'<[^>]+>', '', parsed.get('tip', '')).strip()
                 ai_task = _re.sub(r'<[^>]+>', '', parsed.get('task', '')).strip()
             except Exception:
-                tip = f"{crop.display_name} की नियमित देखभाल करें और पत्तियों पर पीलापन या धब्बे दिखें तो तुरंत उपाय करें।"
-                ai_task = f"🔍 {crop.display_name} की पत्तियों की जांच करें"
+                tip = f"Care for {crop.display_name} regularly. Take immediate action if you see yellowing or spots on leaves."
+                ai_task = f"🔍 Check leaves of {crop.display_name}"
             ai_tips_cache[cache_key] = {'tip': tip, 'task': ai_task}
 
         cached = ai_tips_cache[cache_key]
@@ -277,7 +280,7 @@ def tracker_dashboard(request):
                 'ai_tip': cached.get('tip', ''),
             })
 
-    request.session['ai_tips'] = ai_tips_cache
+    request.session['ai_tips_v2'] = ai_tips_cache
 
     # --- 3. MONEY TAB ---
     completed_crops = CropTracker.objects.filter(user=request.user, status='Completed')
@@ -406,6 +409,7 @@ def tracker_dashboard(request):
         'overdue_tasks': overdue_tasks,
         'today_tomorrow_tasks': today_tomorrow_tasks,
         'upcoming_tasks': upcoming_tasks,
+        'total_pending_tasks': total_pending_tasks,
         'completed_today_tasks': completed_today_tasks,
         'recommendations': recommendations,
         'weather_tasks': weather_tasks,
@@ -466,8 +470,12 @@ def update_crop_details(request, tracker_id):
         if location is not None: crop_tracker.location = location
         if quantity: crop_tracker.quantity = quantity
         if unit: crop_tracker.unit = unit
-        if growth_phase: crop_tracker.growth_phase = growth_phase
         
+        if growth_phase and growth_phase != crop_tracker.growth_phase:
+            crop_tracker.growth_phase = growth_phase
+            from django.utils import timezone
+            crop_tracker.phase_updated_date = timezone.now().date()
+
         crop_tracker.save()
     return redirect('tracker_dashboard')
 

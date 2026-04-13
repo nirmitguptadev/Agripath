@@ -66,6 +66,7 @@ class CropTracker(models.Model):
     harvest_date = models.DateField(null=True, blank=True)
 
     growth_phase = models.CharField(max_length=50, choices=GROWTH_PHASES, default='Sowing')
+    phase_updated_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Active')
 
     health = models.CharField(
@@ -106,9 +107,10 @@ class CropTracker(models.Model):
 
     @property
     def days_elapsed(self):
+        from django.utils import timezone
         if self.status == 'Completed' and self.harvest_date:
             return max(0, (self.harvest_date - self.planting_date).days)
-        return max(0, (date.today() - self.planting_date).days)
+        return max(0, (timezone.now().date() - self.planting_date).days)
 
     @property
     def total_days(self):
@@ -118,26 +120,35 @@ class CropTracker(models.Model):
                 return int(self.crop.growth_duration.split()[0])
             except:
                 pass
-        # 2. Static lookup by custom name
-        name = self.crop_name_custom.strip().title()
+        # 2. Static lookup by display name
+        name = self.display_name.strip().title()
         return CROP_GROW_DAYS.get(name, 120)
 
     @property
     def progress_percent(self):
         if self.total_days > 0:
-            time_pct = min(100, max(0, (self.days_elapsed / self.total_days) * 100))
+            time_pct = (self.days_elapsed / self.total_days) * 100.0
         else:
-            time_pct = 0
-        # Phase acts as a floor — manual override can only push progress forward
+            time_pct = 0.0
+
+        # Phase acts as a floor, but we also let time elapse *since* the phase was set manually
         phase_floor = PHASE_FLOOR.get(self.growth_phase, 0)
-        return max(time_pct, phase_floor)
+        
+        if self.phase_updated_date:
+            from django.utils import timezone
+            # How many days since they manually jumped to this phase?
+            days_since_phase = max(0, (timezone.now().date() - self.phase_updated_date).days)
+            phase_time_pct = phase_floor + (days_since_phase / self.total_days) * 100.0 if self.total_days > 0 else phase_floor
+            return min(100.0, max(time_pct, phase_time_pct))
+            
+        return min(100.0, max(time_pct, phase_floor))
 
     @property
     def days_remaining(self):
-        phase_floor = PHASE_FLOOR.get(self.growth_phase, 0)
-        time_pct = min(100, max(0, (self.days_elapsed / self.total_days) * 100)) if self.total_days > 0 else 0
-        effective_pct = max(time_pct, phase_floor)
-        return max(0, int(self.total_days * (1 - effective_pct / 100)))
+        if self.total_days > 0:
+            effective_pct = self.progress_percent
+            return max(0, int(self.total_days * (1 - effective_pct / 100.0)))
+        return 0
 
     @property
     def days_since_last_log(self):

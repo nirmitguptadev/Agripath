@@ -33,6 +33,15 @@ class CropUpdateForm(forms.ModelForm):
             'revenue': forms.NumberInput(attrs={'class': 'form-control'}),
             'strategy': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
+        
+     def save(self, commit=True):
+         instance = super().save(commit=False)
+         if 'growth_phase' in self.changed_data:
+             from django.utils import timezone
+             instance.phase_updated_date = timezone.now().date()
+         if commit:
+             instance.save()
+         return instance
 
 class FinancialEntryForm(forms.ModelForm):
     class Meta:

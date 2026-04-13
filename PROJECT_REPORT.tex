@@ -1,0 +1,921 @@
+\documentclass[12pt,a4paper]{article}
+
+% --- Packages ---
+\usepackage[utf8]{inputenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\setstretch{1.5}
+\usepackage{graphicx}
+\usepackage{titlesec}
+\usepackage{caption}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{hyperref}
+\usepackage{tabularx}
+\usepackage{fancyvrb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{multirow}
+
+% Caption styling: 10pt, numbered, centered
+\captionsetup{font={small,rm}, labelfont=bf, justification=centering}
+
+% Listings style for code/directory trees
+\lstset{
+    basicstyle=\ttfamily\small,
+    breaklines=true,
+    frame=single,
+    backgroundcolor=\color{gray!10},
+    xleftmargin=0.5em,
+    xrightmargin=0.5em
+}
+
+% --- Document Information ---
+\title{AgriPath: AI-Powered Smart Farming Platform}
+\author{Nirmit Gupta}
+\date{April 2026}
+
+\begin{document}
+
+% ======================================================
+% 1. COVER PAGE
+% ======================================================
+\begin{titlepage}
+    \centering
+    \setstretch{1.0}
+    {\large \textbf{A REPORT}} \\
+    \vspace{0.2in}
+    {\large \textbf{on}} \\
+    \vspace{0.3in}
+    {\Large \textbf{AGRIPATH: AI-POWERED SMART FARMING PLATFORM}} \\
+    \vspace{0.3in}
+    {\large carried out as part of the course \\ \textbf{Project Based Learning-4}} \\
+    \vspace{0.4in}
+    {\large \textit{Submitted by}} \\
+    \vspace{0.2in}
+    {\large \textbf{Nirmit Gupta}} \\
+    {\large \textbf{Roll No: 23FE10CSE00802}} \\
+    {\large \textbf{VI Semester}} \\
+    \vspace{0.4in}
+    {\large in partial fulfilment for the award of the degree} \\
+    {\large of} \\
+    {\large \textbf{BACHELOR OF TECHNOLOGY}} \\
+    {\large In} \\
+    {\large \textbf{Computer Science \& Engineering}} \\
+
+    \vspace{0.5in}
+    \includegraphics[width=0.6\textwidth]{university_logo_placeholder.png} \\
+    \vspace{0.4in}
+
+    {\large \textbf{Department of Computer Science \& Engineering,}} \\
+    {\large \textbf{School of Computer Science and Engineering,}} \\
+    {\large \textbf{Manipal University Jaipur,}} \\
+    {\large \textbf{Jan-May 2026}}
+\end{titlepage}
+
+% ======================================================
+% 2. CERTIFICATE
+% ======================================================
+\newpage
+\pagenumbering{gobble}
+\begin{center}
+    {\Large \textbf{CERTIFICATE}}
+\end{center}
+\vspace{0.3in}
+This is to certify that the project entitled \textbf{``AgriPath: AI-Powered Smart Farming Platform''} is a bonafide work carried out as \textbf{PBL-4 End Term Assessment} in partial fulfillment for the award of the degree of \textbf{Bachelor of Technology in Computer Science and Engineering}, by \textbf{Nirmit Gupta} bearing registration number \textbf{23FE10CSE00802}, during the academic semester \textbf{VI} of year \textbf{2025-2026}.
+
+\vspace{0.8in}
+\noindent \textbf{Place:} Manipal University Jaipur, Jaipur \hfill \textbf{Name of Guide:} \rule{3cm}{0.4pt} \\
+\noindent \textbf{Date:} \rule{3cm}{0.4pt} \hfill \textbf{Signature of Guide:} \rule{3cm}{0.4pt}
+
+% ======================================================
+% 3. ACKNOWLEDGEMENT
+% ======================================================
+\newpage
+\begin{center}
+    {\Large \textbf{Acknowledgement}}
+\end{center}
+\vspace{0.2in}
+This project would not have been completed without the help, support, and guidance of various people. I express my deepest sense of gratitude to my internal supervisor for their constant support. I owe my profound gratitude to \textbf{Dr. Neha Chaudhary}, Head, Department of CSE, for facilitating this work. Finally, I extend my heartfelt appreciation to my classmates for their encouragement.
+
+\vspace{0.5in}
+\noindent \textbf{Nirmit Gupta} \\
+\textbf{Registration No: 23FE10CSE00802}
+
+% ======================================================
+% 4. ABSTRACT
+% ======================================================
+\newpage
+\begin{center}
+    {\Large \textbf{Abstract}}
+\end{center}
+\vspace{0.2in}
+AgriPath is a full-stack web application designed to empower Indian farmers and hobby gardeners through artificial intelligence, real-time data, and multi-modal inputs. The platform integrates a conversational AI advisor, an image-based plant disease detection engine, live wholesale market price feeds, hyper-local weather intelligence, and a crop growth tracker into a single bilingual interface. The system leverages Google Gemini, Groq Llama, and the Kindwise crop.health ML classifier to deliver accurate, hallucination-resistant agricultural guidance. Deployed on Render with a PostgreSQL backend in production, AgriPath targets the gap between complex agricultural data and accessible, actionable advice at the farm level. The platform supports two user personas --- Pro Farmer for commercial agricultural use and Hobby Gardener for urban home garden enthusiasts --- dynamically adapting its interface and AI responses accordingly. Passwordless mobile OTP authentication via Twilio ensures accessible onboarding for users who may not have an email address.
+
+% ======================================================
+% 5. TABLE OF CONTENTS
+% ======================================================
+\newpage
+\tableofcontents
+
+% ======================================================
+% PAGE NUMBERING STARTS HERE
+% ======================================================
+\newpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+% ======================================================
+% 6. INTRODUCTION
+% ======================================================
+\section{Introduction}
+
+\subsection{Objective of the Project}
+
+The primary objective of AgriPath is to build an intelligent, accessible digital assistant for Indian farmers that:
+
+\begin{itemize}
+    \item Provides \textbf{real-time crop market prices} (mandi rates) sourced directly from the Government of India's Agmarknet API, enabling farmers to make informed selling decisions.
+    \item Delivers \textbf{AI-powered plant disease diagnosis} through image analysis using a purpose-built machine learning classifier, minimising the risk of incorrect AI-generated diagnoses (hallucinations).
+    \item Generates \textbf{personalised crop management tasks and advisories} based on live weather data, current growth phase, and crop type.
+    \item Aggregates \textbf{government agricultural schemes and subsidies} relevant to the user's state and crop portfolio.
+    \item Supports \textbf{bilingual interaction} (English and Hindi) via both text and voice interfaces, making the platform accessible to farmers who are not fluent in English.
+    \item Tracks \textbf{crop growth, financial inputs, and projected profitability} across an entire growing season through a dedicated Crop Tracker module.
+\end{itemize}
+
+\subsection{Brief Description of the Project}
+
+AgriPath is a Django-based web platform that serves two distinct user personas: \textbf{Pro Farmer} (commercial agricultural users) and \textbf{Hobby Gardener} (urban/peri-urban home garden enthusiasts). The platform dynamically adapts its UI, AI responses, and available features based on the active persona.
+
+Key modules include:
+
+\begin{itemize}
+    \item \textbf{Dashboard:} Central hub displaying live weather, a scrolling mandi price ticker, weather alert banners, and quick-access widgets for all major features.
+    \item \textbf{AI Plant Doctor:} A multimodal image analysis tool. Users upload a photograph of a diseased plant. The system first queries the Kindwise crop.health ML API (trained on 23 crop families and 288 disease/pest categories) for a structured, high-confidence diagnosis. If crop.health is unavailable, the system falls back to Google Gemini Vision and then to Groq's Llama-4-Scout vision model.
+    \item \textbf{Crop Tracker:} A lifecycle management tool for tracking active crops. Users record planting dates, growth phases, area under cultivation, yield estimates, revenue, and expenses. The system calculates real-time progress percentage, days to harvest, and profit/loss.
+    \item \textbf{AI Advisor (Chatbot):} A floating, site-wide conversational AI assistant backed by Google Gemini, with Groq Llama as a fallback. Supports both English and Hindi. Intent classification routes queries to specialised handlers for weather, crop recommendations, market prices, and government schemes.
+    \item \textbf{Weather Forecast:} 5-day season-aware weather forecast using OpenWeatherMap, with alerts calibrated to Indian agricultural seasons (Kharif, Rabi, Zaid).
+    \item \textbf{Crop Dictionary:} An encyclopedia of 100+ crops with agronomic details, growth duration, soil requirements, and disease profiles.
+    \item \textbf{Government Policies:} AI-curated listings of central and state government agricultural schemes, organised by category (crop insurance, financial aid, technology subsidies, welfare).
+    \item \textbf{Authentication:} Passwordless mobile OTP login via Twilio --- no passwords required.
+\end{itemize}
+
+\subsection{Technology Used}
+
+\subsubsection{Hardware Requirements}
+
+\begin{table}[h]
+\caption{Hardware Requirements}
+\centering
+\begin{tabular}{|l|p{8cm}|}
+\hline
+\textbf{Component} & \textbf{Minimum Specification} \\ \hline
+Processor & Intel Core i3 (8th Generation) or equivalent \\ \hline
+RAM & 4 GB DDR4 \\ \hline
+Storage & 20 GB available disk space \\ \hline
+Network & Broadband internet (required for all API integrations) \\ \hline
+Display & 1280 $\times$ 720 resolution or higher \\ \hline
+Mobile Device & Any smartphone with camera and modern browser (for OTP login and plant photo uploads) \\ \hline
+\end{tabular}
+\end{table}
+
+\noindent \textit{Note: AgriPath is a cloud-hosted web application. End-users access it via browser and require no local installation. The above specifications apply to the development and server environment.}
+
+\subsubsection{Software Requirements}
+
+\begin{table}[h]
+\caption{Development Environment}
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Category} & \textbf{Technology} & \textbf{Version} \\ \hline
+Operating System & Windows 10/11 & --- \\ \hline
+Programming Language & Python & 3.12.3 \\ \hline
+Web Framework & Django & 5.2.2 \\ \hline
+Virtual Environment & venv & --- \\ \hline
+Package Manager & pip & 24.x \\ \hline
+Version Control & Git & 2.x \\ \hline
+IDE & Visual Studio Code & Latest \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\caption{Backend Libraries}
+\centering
+\begin{tabular}{|l|p{5.5cm}|l|}
+\hline
+\textbf{Library} & \textbf{Purpose} & \textbf{Version} \\ \hline
+django-environ & Environment variable management & 0.12.0 \\ \hline
+gunicorn & WSGI HTTP server for production & 23.0.0 \\ \hline
+whitenoise & Static file serving & 6.11.0 \\ \hline
+dj-database-url & Database URL parsing & 3.0.1 \\ \hline
+psycopg2-binary & PostgreSQL adapter & 2.9.11 \\ \hline
+pillow & Image processing (plant photo resize) & 11.3.0 \\ \hline
+django-phonenumber-field & Phone number field validation & 8.3.0 \\ \hline
+twilio & SMS OTP authentication & 9.8.3 \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\caption{AI and External API Libraries}
+\centering
+\begin{tabular}{|l|p{5.5cm}|l|}
+\hline
+\textbf{Library} & \textbf{Purpose} & \textbf{Version} \\ \hline
+google-generativeai & Google Gemini API client & 0.8.5 \\ \hline
+groq & Groq LLM API client (Llama models) & 1.0.0 \\ \hline
+kindwise-api-client & crop.health plant disease detection & 0.8.1 \\ \hline
+requests & HTTP API calls (weather, mandi, news) & 2.32.3 \\ \hline
+aiohttp & Async HTTP for news aggregation & 3.13.0 \\ \hline
+cloudinary & Media file cloud storage & 1.41.0 \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\caption{External APIs Integrated}
+\centering
+\begin{tabular}{|l|l|p{5cm}|}
+\hline
+\textbf{API} & \textbf{Provider} & \textbf{Purpose} \\ \hline
+Gemini Flash / Pro & Google AI & Conversational AI, image analysis, scheme generation \\ \hline
+Llama 3.1-8B Instant & Groq & Text AI fallback \\ \hline
+Llama 4 Scout 17B & Groq & Vision AI fallback for Plant Doctor \\ \hline
+crop.health & Kindwise & ML-based plant disease identification \\ \hline
+OpenWeatherMap & OpenWeather & Current weather and 5-day forecast \\ \hline
+Agmarknet & data.gov.in (GoI) & Live wholesale crop mandi prices \\ \hline
+NewsData.io & NewsData & Agricultural news feed \\ \hline
+Twilio & Twilio & Mobile OTP for passwordless login \\ \hline
+Cloudinary & Cloudinary & Cloud media storage \\ \hline
+Google Translate & Google & Client-side EN $\leftrightarrow$ HI translation \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\caption{Testing Libraries}
+\centering
+\begin{tabular}{|l|p{5.5cm}|l|}
+\hline
+\textbf{Library} & \textbf{Purpose} & \textbf{Version} \\ \hline
+pytest & Test runner & 7.4.3 \\ \hline
+pytest-django & Django-aware test utilities & 4.7.0 \\ \hline
+pytest-cov & Code coverage measurement & 4.1.0 \\ \hline
+pytest-mock & Mocking external API calls & 3.12.0 \\ \hline
+factory-boy & Test data factories & 3.3.0 \\ \hline
+responses & HTTP request mocking & 0.24.1 \\ \hline
+coverage & Coverage report generation & 7.11.0 \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{Organization Profile}
+
+\textbf{Project:} AgriPath --- AI-Powered Smart Farming Platform \\
+\textbf{Repository:} \url{https://github.com/nirmitguptadev/Agripath} \\
+\textbf{License:} MIT \\
+\textbf{Type:} Independent academic/portfolio project \\
+\textbf{Domain:} AgriTech / Artificial Intelligence / Web Development \\
+\textbf{Target Geography:} India (primary), with multilingual extensibility
+
+AgriPath is an independent academic project developed within the Department of Computer Science \& Engineering at Manipal University Jaipur. It addresses the digital divide in Indian agriculture --- India has approximately 146 million farm holdings, the majority operated by smallholder farmers with limited access to timely, accurate market and agronomic information. AgriPath's mission is to consolidate this information into a single, mobile-friendly, AI-enhanced interface.
+
+% ======================================================
+% 7. DESIGN DESCRIPTION
+% ======================================================
+\section{Design Description}
+
+\subsection{Flow Chart}
+
+\subsubsection*{User Authentication Flow}
+
+\begin{Verbatim}[fontsize=\small, frame=single]
+Start
+  |
+  v
+User visits AgriPath
+  |
+  +--- Not Logged In ---> Login Page ---> Enter Mobile Number
+  |                                               |
+  |                                               v
+  |                                      OTP sent via Twilio
+  |                                               |
+  |                                               v
+  |                                      User enters OTP
+  |                                               |
+  |                                 +-------------|-------------+
+  |                                 | Valid?                    |
+  |                             Yes |                           | No
+  |                                 v                           v
+  |                        Profile Complete?          Re-enter OTP
+  |                        +-------|---------+
+  |                     No |                 | Yes
+  |                        v                 v
+  |                  Force Profile      Dashboard
+  |                  Completion
+  |
+  +--- Logged In -----------------------> Dashboard
+\end{Verbatim}
+\begin{center}
+\textit{Figure 1: User Authentication Flow}
+\end{center}
+
+\subsubsection*{AI Plant Doctor Flow}
+
+\begin{Verbatim}[fontsize=\small, frame=single]
+User uploads plant image
+  |
+  v
+Image read into memory buffer (BytesIO)
+  |
+  v
+Image resized to max 800 x 800 px (Pillow)
+  |
+  v
+Temp file written to disk and file handle closed
+  |
+  v
+Is CROP_HEALTH_API_KEY configured?
+  +--- YES ---> Call Kindwise crop.health API (base64 image)
+  |                      |
+  |           +----------|----------+
+  |           | Confidence >= 35%?  |
+  |        YES|                     |NO
+  |           v                     |
+  |    Return structured            |
+  |    HTML diagnosis               |
+  |    (disease + treatment)        |
+  |                                 |
+  +--- NO <-------------------------+
+  |
+  v
+Try Google Gemini Vision
+  +--- SUCCESS ---> Return Gemini HTML response
+  |
+  +--- QUOTA/ERROR ---> Try Groq Llama-4-Scout Vision
+                               |
+                    +----------|----------+
+                    | SUCCESS             | ERROR
+                    v                     v
+            Return Groq          "Service unavailable"
+            HTML response         error message
+  |
+  v
+Temp file deleted (finally block)
+  |
+  v
+Diagnosis rendered on plant_doctor.html
+\end{Verbatim}
+\begin{center}
+\textit{Figure 2: AI Plant Doctor Flow}
+\end{center}
+
+\subsubsection*{Crop Tracker Progress Flow}
+
+\begin{Verbatim}[fontsize=\small, frame=single]
+User adds new crop (planting_date, crop_type, area, phase)
+  |
+  v
+System calculates total_days from crop.growth_duration
+  |
+  v
+Each day (on dashboard load):
+  |
+  +--- days_elapsed  = today - planting_date
+  +--- time_pct      = (days_elapsed / total_days) * 100
+  +--- phase_floor   = PHASE_FLOOR[growth_phase]
+  +--- progress%     = max(time_pct, phase_floor)
+  |
+  v
+days_remaining = total_days * (1 - progress% / 100)
+  |
+  v
+AI generates weather-aware + phase-aware tasks
+  |
+  v
+Tasks displayed on tracker dashboard
+\end{Verbatim}
+\begin{center}
+\textit{Figure 3: Crop Tracker Progress Calculation Flow}
+\end{center}
+
+\subsection{Data Flow Diagrams (DFDs)}
+
+\subsubsection*{Level 0 DFD --- Context Diagram}
+
+\begin{Verbatim}[fontsize=\small, frame=single]
+                    +----------------------+
+Farmer/Gardener --> |                      | --> Dashboard, Diagnosis,
+                    |    AgriPath          |     Tracker, Advisories
+Mobile OTP -------> |    Platform          |
+                    |                      | <-- Weather API
+Crop Images ------> |                      | <-- Mandi API
+                    +----------------------+     AI APIs
+\end{Verbatim}
+\begin{center}
+\textit{Figure 4: Level 0 DFD (Context Diagram)}
+\end{center}
+
+\subsubsection*{Level 1 DFD}
+
+\begin{Verbatim}[fontsize=\small, frame=single]
++----------------------------------------------------------------------+
+|                           AgriPath                                   |
+|                                                                      |
+| User --(login)---> [1.0 Auth Module]     --> Session/Profile DB      |
+|                                                                      |
+| User --(image)---> [2.0 Plant Doctor]    --> crop.health API         |
+|                                          --> Gemini/Groq API         |
+|                                          <-- Diagnosis Result        |
+|                                                                      |
+| User --(query)---> [3.0 AI Advisor]      --> Gemini/Groq API         |
+|                                          --> Weather API             |
+|                                          --> Mandi API               |
+|                                          <-- AI Response             |
+|                                                                      |
+| User --(crop)----> [4.0 Crop Tracker]    --> CropTracker DB          |
+|                                          --> FinancialEntry DB       |
+|                                          <-- Progress / Tasks        |
+|                                                                      |
+| [5.0 Dashboard]                          --> OpenWeatherMap API      |
+|                                          --> Mandi API               |
+|                                          --> News API                |
+|                                          <-- Aggregated View         |
++----------------------------------------------------------------------+
+\end{Verbatim}
+\begin{center}
+\textit{Figure 5: Level 1 DFD}
+\end{center}
+
+\subsection{Entity Relationship Diagram (E-R Diagram)}
+
+\begin{Verbatim}[fontsize=\small, frame=single]
++-----------------+         +---------------------+
+|      User       |  1   1  |       Profile        |
+|-----------------|-------->|---------------------|
+| id (PK)         |         | id (PK)              |
+| username        |         | user (FK -> User)    |
+| email           |         | user_type            |
+| password        |         | name                 |
++-----------------+         | age                  |
+         |                  | location             |
+         |                  | phone_number         |
+         | 1                | language             |
+         |                  | profile_picture      |
+         v N                +---------------------+
++-------------------------+
+|      CropTracker        |        +-----------------+
+|-------------------------|  N  1  |      Crop        |
+| id (PK)                 |------->|-----------------|
+| user (FK -> User)       |        | id (PK)          |
+| crop (FK -> Crop, null) |        | name             |
+| crop_name_custom        |        | display_name     |
+| planting_date           |        | growth_duration  |
+| growth_phase            |        | description      |
+| status                  |        | soil_type        |
+| area_acres              |        | season           |
+| yield_per_acre          |        +-----------------+
+| harvest_date            |
+| phase_updated_date      |
+|-------------------------|
+| [Computed Properties]   |
+| days_elapsed            |
+| total_days              |
+| progress_percent        |
+| days_remaining          |
++------------+------------+
+             |  1
+             v  N
++----------------------------+
+|      FinancialEntry         |
+|----------------------------|
+| id (PK)                    |
+| crop_tracker (FK)          |
+| entry_type (Rev / Exp)     |
+| amount                     |
+| description                |
+| date                       |
++----------------------------+
+\end{Verbatim}
+\begin{center}
+\textit{Figure 6: Entity Relationship Diagram}
+\end{center}
+
+% ======================================================
+% 8. PROJECT DESCRIPTION
+% ======================================================
+\section{Project Description}
+
+\subsection{Database}
+
+AgriPath uses \textbf{SQLite} for local development and \textbf{PostgreSQL} for production deployment on Render. The database connection is managed via \texttt{dj-database-url}, which parses the \texttt{DATABASE\_URL} environment variable. Django's ORM (Object Relational Mapper) is used exclusively --- no raw SQL queries are written, ensuring portability across both database backends.
+
+Django's built-in session framework stores per-user state including:
+\begin{itemize}
+    \item Conversation history for the AI chatbot (persistent within session)
+    \item AI tips cache (keyed by crop name and version prefix to invalidate stale responses)
+    \item Weather alert cache with a 1-hour TTL stored in \texttt{sessionStorage} client-side
+\end{itemize}
+
+\subsection{Table Description}
+
+\begin{table}[h]
+\caption{Table: auth\_user (Django Built-in)}
+\centering
+\begin{tabular}{|l|l|p{6cm}|}
+\hline
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\ \hline
+id & INTEGER (PK) & Auto-incremented primary key \\ \hline
+username & VARCHAR(150) & Unique username \\ \hline
+email & VARCHAR(254) & Email address \\ \hline
+password & VARCHAR(128) & Hashed password (unused --- OTP auth) \\ \hline
+is\_active & BOOLEAN & Account active status \\ \hline
+date\_joined & DATETIME & Registration timestamp \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\caption{Table: accounts\_profile}
+\centering
+\begin{tabular}{|l|l|p{6cm}|}
+\hline
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\ \hline
+id & INTEGER (PK) & Auto-incremented primary key \\ \hline
+user\_id & INTEGER (FK) & Foreign key to auth\_user \\ \hline
+user\_type & VARCHAR(20) & `Farmer' or `Hobbyist' \\ \hline
+name & VARCHAR(100) & Full display name \\ \hline
+age & SMALLINT & User age (optional) \\ \hline
+location & VARCHAR(100) & City/district for weather lookups \\ \hline
+phone\_number & VARCHAR(20) & Mobile number (unique, for OTP) \\ \hline
+language & VARCHAR(10) & `en-us' or `hi' \\ \hline
+profile\_picture & VARCHAR(255) & Cloudinary image path \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\caption{Table: tracker\_croptracker}
+\centering
+\begin{tabular}{|l|l|p{5.5cm}|}
+\hline
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\ \hline
+id & INTEGER (PK) & Auto-incremented primary key \\ \hline
+user\_id & INTEGER (FK) & Foreign key to auth\_user \\ \hline
+crop\_id & INTEGER (FK, null) & Foreign key to dictionary\_crop \\ \hline
+crop\_name\_custom & VARCHAR(100) & User-entered crop name \\ \hline
+planting\_date & DATE & Date crop was sown \\ \hline
+growth\_phase & VARCHAR(50) & Sowing / Vegetative / Flowering / Maturity / Harvest \\ \hline
+status & VARCHAR(20) & `Active' or `Completed' \\ \hline
+area\_acres & DECIMAL(6,2) & Cultivated area in acres \\ \hline
+yield\_per\_acre & DECIMAL(8,2) & Expected yield per acre (kg) \\ \hline
+harvest\_date & DATE (null) & Actual harvest date (if completed) \\ \hline
+phase\_updated\_date & DATE (null) & Date of last manual phase change \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\caption{Table: tracker\_financialentry}
+\centering
+\begin{tabular}{|l|l|p{6cm}|}
+\hline
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\ \hline
+id & INTEGER (PK) & Auto-incremented primary key \\ \hline
+crop\_tracker\_id & INTEGER (FK) & Foreign key to tracker\_croptracker \\ \hline
+entry\_type & VARCHAR(20) & `Revenue' or `Expense' \\ \hline
+amount & DECIMAL(12,2) & Transaction amount in INR \\ \hline
+description & VARCHAR(255) & Entry description \\ \hline
+date & DATE & Transaction date \\ \hline
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\caption{Table: dictionary\_crop}
+\centering
+\begin{tabular}{|l|l|p{6cm}|}
+\hline
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\ \hline
+id & INTEGER (PK) & Auto-incremented primary key \\ \hline
+name & VARCHAR(100) & Internal crop identifier \\ \hline
+display\_name & VARCHAR(100) & Human-readable crop name \\ \hline
+growth\_duration & VARCHAR(50) & Duration string (e.g., ``120 days'') \\ \hline
+description & TEXT & Agronomic description \\ \hline
+soil\_type & VARCHAR(100) & Preferred soil conditions \\ \hline
+season & VARCHAR(50) & Kharif / Rabi / Zaid \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection{File/Database Design}
+
+The project follows the standard Django multi-app architecture. Each app encapsulates a distinct domain of the application.
+
+\begin{lstlisting}[caption={Project Directory Structure}, label={lst:dirstructure}]
+mypage/                       <- Django project root
+|-- mypage/                   <- Project settings package
+|   |-- settings.py           <- Configuration, API keys via environ
+|   |-- urls.py               <- Root URL routing
+|   `-- wsgi.py               <- WSGI entry point
+|-- core/                     <- Shared utilities app
+|   |-- ai_fallback.py        <- AI chain: Gemini -> Groq, Plant Doctor
+|   |-- mandi_api.py          <- Agmarknet API integration
+|   |-- news_api.py           <- NewsData.io integration
+|   `-- views.py              <- AI chatbot, persona prompts
+|-- home/                     <- Main dashboard app
+|   |-- dashboard_view.py     <- Dashboard data aggregation view
+|   |-- views.py              <- Plant Doctor, Weather, Policies
+|   `-- urls.py               <- /home/ URL patterns
+|-- accounts/                 <- Authentication app
+|   |-- models.py             <- Profile model
+|   |-- views.py              <- OTP login/logout
+|   `-- middleware.py         <- Profile completion enforcement
+|-- tracker/                  <- Crop tracker app
+|   |-- models.py             <- CropTracker, FinancialEntry models
+|   |-- views.py              <- Tracker dashboard, tasks, AI tips
+|   `-- forms.py              <- Crop add/update forms
+|-- dictionary/               <- Crop encyclopedia app
+|   |-- models.py             <- Crop model
+|   `-- views.py              <- Crop list, detail views
+|-- templates/                <- All HTML templates
+|   |-- base.html             <- Base layout (navbar, footer, chatbot)
+|   |-- dashboard.html        <- Main dashboard
+|   |-- plant_doctor.html     <- AI Plant Doctor page
+|   `-- tracker/
+|       |-- dashboard.html    <- Tracker dashboard
+|       |-- add_crop.html     <- Add crop form
+|       `-- update_crop.html  <- Edit crop form
+|-- static/                   <- CSS, JS, images
+|-- requirements.txt          <- Python dependencies
+|-- Procfile                  <- Render/Heroku process definition
+|-- build.sh                  <- Production build script
+`-- .env                      <- Environment variables (not committed)
+\end{lstlisting}
+
+% ======================================================
+% 9. INPUT/OUTPUT FORM DESIGN
+% ======================================================
+\section{Input/Output Form Design}
+
+\textbf{Form 1: OTP Login}
+
+\begin{itemize}
+    \item \textbf{Input:} Mobile Number (validated against E.164 international format via \texttt{django-phonenumber-field}).
+    \item \textbf{Process:} Twilio sends a 6-digit OTP via SMS to the provided number.
+    \item \textbf{Output:} On valid OTP, the user is redirected to the Dashboard (or forced to the Profile Setup page if it is their first login).
+\end{itemize}
+
+\textbf{Form 2: Profile Setup / Edit}
+
+\begin{table}[h]
+\caption{Profile Form Fields}
+\centering
+\begin{tabular}{|l|l|p{6cm}|}
+\hline
+\textbf{Field} & \textbf{Type} & \textbf{Validation} \\ \hline
+Name & Text & Required, max 100 characters \\ \hline
+Age & Number & Optional, positive integer \\ \hline
+Location & Text & Required for weather features \\ \hline
+User Type & Select & Farmer / Hobbyist \\ \hline
+Profile Picture & Image Upload & Optional, stored on Cloudinary \\ \hline
+Phone Number & PhoneNumber & Unique, E.164 format \\ \hline
+\end{tabular}
+\end{table}
+
+\textbf{Form 3: Add Crop (Tracker)}
+
+\begin{table}[h]
+\caption{Add Crop Form Fields}
+\centering
+\begin{tabular}{|l|l|p{6cm}|}
+\hline
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\ \hline
+Crop & Select/Text & Picker from supported list or custom name \\ \hline
+Planting Date & Date & Date crop was sown \\ \hline
+Growth Phase & Select & Sowing / Vegetative / Flowering / Maturity / Harvest \\ \hline
+Area (acres) & Decimal & Land area under cultivation \\ \hline
+Yield per Acre & Decimal & Expected harvest in kg/acre \\ \hline
+\end{tabular}
+\end{table}
+
+\textbf{Form 4: AI Plant Doctor}
+
+\begin{itemize}
+    \item \textbf{Input:} Plant image (JPEG/PNG, any resolution --- auto-resized to 800$\times$800 px server-side in memory using Pillow).
+    \item \textbf{Process:} Image is read into a \texttt{BytesIO} buffer, resized, written to a temporary file (file handle closed immediately), then passed through the AI pipeline (crop.health $\rightarrow$ Gemini $\rightarrow$ Groq Llama-4-Scout). The temporary file is deleted in a \texttt{finally} block after analysis.
+    \item \textbf{Output (Disease Detected):} Structured HTML card displaying: disease name, confidence percentage, description, cause, treatment (biological / chemical / prevention methods), and a list of alternative diagnoses with lower confidence scores.
+    \item \textbf{Output (Healthy Plant):} Confirmation card stating ``The plant appears healthy'' with the crop identity and confidence score.
+\end{itemize}
+
+\textbf{Form 5: Add Financial Entry}
+
+\begin{table}[h]
+\caption{Financial Entry Form Fields}
+\centering
+\begin{tabular}{|l|l|p{6cm}|}
+\hline
+\textbf{Field} & \textbf{Type} & \textbf{Description} \\ \hline
+Entry Type & Select & Revenue / Expense \\ \hline
+Amount & Decimal & Amount in INR (Rs.) \\ \hline
+Description & Text & Notes (e.g., ``Fertilizer purchase'') \\ \hline
+Date & Date & Transaction date \\ \hline
+\end{tabular}
+\end{table}
+
+\noindent \textbf{Output:} Updated profit/loss summary is shown on the Crop Tracker dashboard, aggregating all Revenue minus all Expense entries across all active crops.
+
+% ======================================================
+% 10. TESTING & TOOLS USED
+% ======================================================
+\section{Testing and Tools Used}
+
+\subsection*{Testing Approach}
+
+AgriPath uses a structured testing framework built on \textbf{pytest} with the \textbf{pytest-django} plugin, enabling fast, isolated unit and integration tests without running a full Django development server. External API calls are mocked using \texttt{pytest-mock} and \texttt{responses} to ensure tests are deterministic and do not consume API credits.
+
+\subsection*{Test Modules}
+
+\begin{table}[h]
+\caption{Test Module Overview}
+\centering
+\begin{tabular}{|l|l|p{5.5cm}|}
+\hline
+\textbf{Module} & \textbf{File} & \textbf{Coverage Area} \\ \hline
+Crop Tracker & \texttt{tests/test\_tracker.py} & CropTracker model, progress calculation, financial entries \\ \hline
+Mandi API & \texttt{tests/test\_mandi\_api.py} & Price fetching, caching, error handling \\ \hline
+Authentication & \texttt{tests/test\_auth.py} & OTP login, profile middleware, redirects \\ \hline
+AI Fallback & \texttt{tests/test\_ai.py} & Gemini mock, Groq fallback, Plant Doctor pipeline \\ \hline
+Views & \texttt{tests/test\_views.py} & HTTP responses, form validation, redirects \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection*{Key Test Scenarios}
+
+\begin{enumerate}
+    \item \textbf{Progress Calculation:} Verify \texttt{progress\_percent} returns correct values for both time-based and manual phase-change scenarios, including edge cases at 0\% and 100\%.
+    \item \textbf{AI Fallback Chain:} Mock a Gemini quota error (HTTP 429) and confirm the Groq client is invoked. Mock both Gemini and Groq failures and confirm the user-facing error message is returned without raising an unhandled exception.
+    \item \textbf{Plant Doctor File Handling:} Confirm the temporary image file is created, used, and deleted without a \texttt{PermissionError} on Windows (i.e., no open file handles remain when \texttt{os.remove} is called).
+    \item \textbf{OTP Authentication:} Test that a valid OTP grants dashboard access; an invalid OTP returns an error response; and profile completion middleware redirects new users correctly.
+    \item \textbf{Mandi Price Caching:} Confirm a second API call within the cache window does not make a new HTTP request to data.gov.in, verifying the caching mechanism works correctly.
+    \item \textbf{Crop.health API Integration:} Verify that a confidence score below 35\% triggers the Gemini fallback, and a score above the threshold returns a correctly formatted HTML diagnosis card.
+\end{enumerate}
+
+\subsection*{Running Tests}
+
+\begin{lstlisting}[language=bash, caption={Test Commands}]
+# Activate virtual environment
+.agripath\Scripts\activate
+
+# Run all tests with coverage report
+pytest --cov=. --cov-report=term-missing
+
+# Run a specific test module
+pytest tests/test_tracker.py -v
+
+# Generate HTML coverage report
+pytest --cov=. --cov-report=html
+\end{lstlisting}
+
+% ======================================================
+% 11. IMPLEMENTATION & MAINTENANCE
+% ======================================================
+\section{Implementation and Maintenance}
+
+\subsection*{Deployment Architecture}
+
+AgriPath is deployed on \textbf{Render} (cloud PaaS) using the following production stack:
+
+\begin{Verbatim}[fontsize=\small, frame=single]
+Internet
+    |
+    v
+Render Load Balancer (HTTPS / TLS termination)
+    |
+    v
+Gunicorn WSGI Server (4 workers)
+    |
+    v
+Django Application
+    |
+    +-----> PostgreSQL (Render Managed Database)
+    +-----> Cloudinary (Media file storage)
+    `-----> WhiteNoise (Compressed static files)
+\end{Verbatim}
+\begin{center}
+\textit{Figure 7: Production Deployment Architecture}
+\end{center}
+
+\subsection*{Environment Configuration}
+
+All sensitive credentials are stored as \textbf{environment variables} managed by \texttt{django-environ} --- no secrets are hardcoded in the codebase.
+
+\begin{table}[h]
+\caption{Environment Variables}
+\centering
+\begin{tabular}{|l|p{8.5cm}|}
+\hline
+\textbf{Variable} & \textbf{Purpose} \\ \hline
+\texttt{SECRET\_KEY} & Django cryptographic signing key \\ \hline
+\texttt{DEBUG} & Set to \texttt{False} in production \\ \hline
+\texttt{DATABASE\_URL} & PostgreSQL connection string \\ \hline
+\texttt{GEMINI\_API\_KEY} & Google Gemini API authentication \\ \hline
+\texttt{GROQ\_API\_KEY} & Groq LLM API authentication \\ \hline
+\texttt{CROP\_HEALTH\_API\_KEY} & Kindwise crop.health API authentication \\ \hline
+\texttt{OPENWEATHER\_API\_KEY} & OpenWeatherMap API authentication \\ \hline
+\texttt{MANDI\_API\_KEY} & data.gov.in Agmarknet authentication \\ \hline
+\texttt{NEWSDATA\_API\_KEY} & NewsData.io authentication \\ \hline
+\texttt{TWILIO\_ACCOUNT\_SID} & Twilio account credentials \\ \hline
+\texttt{TWILIO\_AUTH\_TOKEN} & Twilio authentication token \\ \hline
+\texttt{TWILIO\_PHONE\_NUMBER} & Twilio sending phone number \\ \hline
+\texttt{CLOUDINARY\_CLOUD\_NAME} & Cloudinary account identifier \\ \hline
+\texttt{CLOUDINARY\_API\_KEY} & Cloudinary API key \\ \hline
+\texttt{CLOUDINARY\_API\_SECRET} & Cloudinary API secret \\ \hline
+\texttt{ALLOWED\_HOSTS} & Comma-separated list of valid hostnames \\ \hline
+\texttt{CSRF\_TRUSTED\_ORIGINS} & Trusted origins for CSRF protection \\ \hline
+\end{tabular}
+\end{table}
+
+\subsection*{Security Measures}
+
+The following Django security settings are enforced in production:
+
+\begin{itemize}
+    \item \texttt{SESSION\_COOKIE\_SECURE = True} --- session cookies transmitted over HTTPS only
+    \item \texttt{CSRF\_COOKIE\_SECURE = True} --- CSRF token cookies over HTTPS only
+    \item \texttt{SECURE\_SSL\_REDIRECT = True} --- all HTTP requests redirected to HTTPS
+    \item \texttt{SECURE\_HSTS\_SECONDS = 31536000} --- 1-year HTTP Strict Transport Security
+    \item \texttt{SECURE\_HSTS\_INCLUDE\_SUBDOMAINS = True}
+    \item \texttt{SECURE\_PROXY\_SSL\_HEADER} configured for Render's reverse proxy
+\end{itemize}
+
+\subsection*{Maintenance}
+
+\begin{itemize}
+    \item \textbf{Static Files:} Collected via \texttt{python manage.py collectstatic} during \texttt{build.sh} and served by WhiteNoise with Brotli/GZip compression.
+    \item \textbf{Database Migrations:} Applied automatically during \texttt{build.sh} via \texttt{python manage.py migrate}.
+    \item \textbf{API Key Rotation:} All keys are environment variables; rotation requires no code changes --- only the hosting dashboard variable needs updating.
+    \item \textbf{Dependency Management:} \texttt{requirements.txt} is pinned to exact versions for reproducibility across environments.
+\end{itemize}
+
+% ======================================================
+% 12. CONCLUSION & FUTURE WORK
+% ======================================================
+\section{Conclusion and Future Work}
+
+\subsection*{Conclusion}
+
+AgriPath successfully demonstrates the integration of multiple AI services, real-time data APIs, and full-stack web development into a coherent agricultural advisory platform. The three-tier AI fallback architecture (crop.health ML $\rightarrow$ Gemini Vision $\rightarrow$ Groq Vision) for plant disease detection significantly reduces the risk of hallucinations compared to relying solely on a general-purpose Large Language Model. The bilingual interface (English/Hindi) and dual-persona mode (Pro Farmer / Hobby Gardener) make the platform accessible to a diverse Indian user base. The crop tracker's time-based progress model, combined with manual phase override support, provides farmers with a realistic, continuously updating view of their crop lifecycle without requiring daily manual input.
+
+\subsection*{Future Work}
+
+\begin{enumerate}
+    \item \textbf{Offline Support (PWA):} Progressive Web App capabilities for use in low-connectivity rural areas. Cache weather forecasts and crop management tasks locally using Service Workers.
+    \item \textbf{Soil Health Integration:} API integration with ICAR's Soil Health Card portal to enrich crop recommendations with user-specific soil nutrient data (NPK, pH, micronutrients).
+    \item \textbf{Voice-First Interface:} Expand the existing Web Speech API integration to support full voice navigation, enabling use by farmers with limited digital literacy.
+    \item \textbf{Multi-language Expansion:} Extend the translation framework to support Marathi, Punjabi, Telugu, and Tamil --- the four largest farming languages beyond Hindi.
+    \item \textbf{Satellite Imagery:} Integrate ISRO's Bhuvan satellite API or NASA MODIS data for field-level crop health monitoring using NDVI (Normalised Difference Vegetation Index).
+    \item \textbf{Predictive Yield Modelling:} Apply the scikit-learn ML library (already present in the project's dependencies) to build yield prediction models trained on historical yield, weather, and soil data.
+    \item \textbf{SMS / WhatsApp Alerts:} Use Twilio's WhatsApp Business API to push critical weather and pest outbreak alerts directly to farmers who may not visit the web application daily.
+    \item \textbf{Marketplace Module:} Allow farmers to list produce directly with verified buyers on the platform, closing the loop between real-time price information and actual sales transactions.
+\end{enumerate}
+
+% ======================================================
+% 13. OUTCOME
+% ======================================================
+\section{Outcome}
+
+\textbf{Deployment:} AgriPath is deployed as a live web application at \url{https://agripath.onrender.com} on the Render cloud platform. The application is publicly accessible with full feature availability including AI-powered diagnostics, live mandi prices, 5-day weather forecasting, crop lifecycle tracking, and bilingual (EN/HI) support.
+
+\textbf{Open Source:} The project is released under the MIT License. The codebase is publicly hosted at \url{https://github.com/nirmitguptadev/Agripath}, enabling peer review, academic citation, and open-source contribution.
+
+\textbf{Research Contribution:} The plant disease detection pipeline implements a novel multi-tier fallback architecture that combines a specialised ML classifier (Kindwise crop.health --- 23 crops, 288 disease/pest categories) with general-purpose vision LLMs (Google Gemini Vision and Groq Llama-4-Scout), providing a replicable framework for reducing AI hallucinations in high-stakes agricultural diagnosis applications. This architecture can be adapted for other domain-specific AI applications where accuracy is critical.
+
+% ======================================================
+% 14. BIBLIOGRAPHY
+% ======================================================
+\newpage
+\begin{center}
+    {\Large \textbf{Bibliography}}
+\end{center}
+\setstretch{1.0}
+\small
+
+\noindent [1] Django Software Foundation. (2024). \textit{Django Documentation --- Version 5.2}. Retrieved from \url{https://docs.djangoproject.com/en/5.2/}
+
+\noindent [2] Google AI. (2024). \textit{Gemini API Documentation}. Retrieved from \url{https://ai.google.dev/gemini-api/docs}
+
+\noindent [3] Groq Inc. (2025). \textit{Groq API Documentation and Rate Limits}. Retrieved from \url{https://console.groq.com/docs}
+
+\noindent [4] Kindwise. (2024). \textit{crop.health API --- AI Crop Disease Identification}. Retrieved from \url{https://crop.kindwise.com}
+
+\noindent [5] OpenWeather. (2024). \textit{OpenWeatherMap API Documentation}. Retrieved from \url{https://openweathermap.org/api}
+
+\noindent [6] Government of India, Ministry of Agriculture. \textit{Agmarknet --- Agricultural Marketing Information Network}. Retrieved from \url{https://agmarknet.gov.in}
+
+\noindent [7] Twilio Inc. (2024). \textit{Twilio Verify API Documentation}. Retrieved from \url{https://www.twilio.com/docs/verify}
+
+\noindent [8] Cloudinary Ltd. (2024). \textit{Django SDK Integration Documentation}. Retrieved from \url{https://cloudinary.com/documentation/django_integration}
+
+\noindent [9] Meta AI. (2025). \textit{Llama 4 Scout Model Card}. Retrieved from \url{https://ai.meta.com/blog/llama-4/}
+
+\noindent [10] ICAR --- Indian Council of Agricultural Research. \textit{Crop Production Statistics --- India}. Retrieved from \url{https://icar.org.in}
+
+\noindent [11] Whitenoise. (2024). \textit{Radically Simplified Static File Serving for Python Web Apps}. Retrieved from \url{http://whitenoise.evans.io/en/stable/}
+
+\noindent [12] pytest-django. (2024). \textit{pytest-django Documentation}. Retrieved from \url{https://pytest-django.readthedocs.io/en/latest/}
+
+\end{document}

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}My Farm / मेरा खेत{% endblock %}
+{% block title %}My Farm {% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -501,7 +501,7 @@
 <!-- Header -->
 <div class="app-header">
     <a href="{% url 'dashboard' %}" class="back-btn"><i class="fas fa-arrow-left"></i></a>
-    <h1 class="header-title">My Farm / मेरा खेत</h1>
+    <h1 class="header-title">My Farm</h1>
     <!-- Universal Add Button triggering sheet based on active tab -->
     <button class="app-add-btn" onclick="openUniversalAdd()"><i class="fas fa-plus"></i></button>
 </div>
@@ -643,7 +643,7 @@
         <div style="background:white; border-radius:16px; padding:1rem; margin-bottom:0.8rem; box-shadow:0 2px 10px rgba(0,0,0,0.04); border-left:4px solid #3b82f6;">
             <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.6rem;">
                 <span style="font-size:1.4rem;">🌤️</span>
-                <strong style="color:#0f172a;">मौसम के अनुसार सुझाव</strong>
+                <strong style="color:#0f172a;">Weather-Based Suggestions</strong>
                 <span style="margin-left:auto; font-size:0.7rem; font-weight:700; padding:2px 8px; border-radius:99px; background:#dbeafe; color:#1d4ed8;">Weather</span>
             </div>
             {% for wt in weather_tasks %}
@@ -661,7 +661,7 @@
 
         {% if recommendations %}
         <div style="margin-bottom:1.5rem;">
-            <div class="expanded-label" style="margin-bottom:0.8rem;">🧠 आपके लिए सुझाव / Suggested for You</div>
+            <div class="expanded-label" style="margin-bottom:0.8rem;">🧠 Suggested for You</div>
             {% for rec in recommendations %}
             <div style="background:white; border-radius:16px; padding:1rem; margin-bottom:0.8rem; box-shadow:0 2px 10px rgba(0,0,0,0.04); border-left: 4px solid {% if rec.crop.health == 'At Risk' %}#ef4444{% elif rec.crop.health == 'Attention' %}#f59e0b{% else %}#10b981{% endif %};">
                 <div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.6rem;">
@@ -715,12 +715,12 @@
 
         {% if today_tomorrow_tasks or upcoming_tasks %}
             <div class="task-status-line">
-                {{ today_tomorrow_tasks|length|add:upcoming_tasks|length }} things to do / काम बाकी हैं
+                {{ total_pending_tasks }} things to do
             </div>
         {% else %}
             {% if not overdue_tasks %}
             <div class="task-status-line" style="color:#10b981;">
-                ✅ All done for today! / सब काम हो गया!
+                ✅ All done for today!
             </div>
             {% endif %}
         {% endif %}

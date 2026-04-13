@@ -136,8 +136,8 @@
                 <a href="{% url 'tracker_dashboard' %}" class="nav-link">Tracker</a>
                 {% endif %}
 
-                <!-- Hobbyist Features -->
-                {% if request.user.is_authenticated and request.user.profile.user_type == 'Hobbyist' %}
+                <!-- Plant Doctor (all users) -->
+                {% if request.user.is_authenticated %}
                 <a href="{% url 'plant_doctor' %}" class="nav-link">Plant Doctor</a>
                 {% endif %}
 

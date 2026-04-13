@@ -73,51 +73,155 @@ def generate_ai_response(prompt_content):
     
     return "Sorry, my AI connection is not working properly."
 
+def _format_treatment(treatment):
+    """Convert crop.health treatment dict into an HTML list."""
+    if not treatment:
+        return ''
+    items = []
+    for key in ('biological', 'chemical', 'prevention'):
+        entries = treatment.get(key) or []
+        if isinstance(entries, str):
+            entries = [entries]
+        for entry in entries:
+            if entry:
+                label = key.capitalize()
+                items.append(f'<li><strong>{label}:</strong> {entry}</li>')
+    return ''.join(items)
+
+
 def analyze_plant_image(image_path, user_type='Farmer'):
     """
-    Analyzes a plant image using Gemini Vision to detect diseases and suggest remedies.
+    Primary: crop.health by Kindwise (ML classifier — no hallucination).
+    Fallback: Gemini Vision if crop.health is unconfigured or returns low confidence.
     """
-    if not GEMINI_MODEL:
-        return "AI model is not configured."
+    crop_health_key = getattr(settings, 'CROP_HEALTH_API_KEY', None)
 
-    try:
-        import PIL.Image
-        img = PIL.Image.open(image_path)
-        
-        persona_context = "Commercial Farmer focused on crop yield and scalability" if user_type == 'Farmer' else "Hobby plant enthusiast focused on plant aesthetics, indoor care, and simple home remedies"
-        
-        prompt = f"""
-        You are an expert plant pathologist. Analyze this image of a plant.
-        1. Identify the plant and any disease/deficiency visible.
-        2. If healthy, say "The plant appears healthy."
-        3. If sick, list the name of the disease, symptoms observed, and 2-3 organic/chemical remedies.
-        
-        Context: The user asking is a {persona_context}. Tailor your advice to them.
-        
-        Provide the response formatted as HTML (no markdown blocks, just tags).
-        Use <h3> for headings, <p> for text, and <ul>/<li> for lists.
-        The structure should be:
-        <div class="diagnosis-result">
-            <h3>Diagnosis</h3>
-            <p>...details...</p>
-            <h3>Symptoms</h3>
-            <ul>...</ul>
-            <h3>Treatment</h3>
-            <ul>...</ul>
-        </div>
-        """
-        
-        response = GEMINI_MODEL.generate_content([prompt, img])
-        
-        # Clean up markdown code blocks if present
-        text = response.text
-        text = re.sub(r'```html', '', text)
-        text = re.sub(r'```', '', text)
-        return text.strip()
-        
-    except Exception as e:
-        print(f"Plant Doctor Error: {e}")
-        return "Sorry, an error occurred while analyzing the image. Please try again later."
+    if crop_health_key:
+        try:
+            import base64 as _b64
+            from kindwise import CropHealthApi
+            with open(image_path, 'rb') as _f:
+                image_b64 = _b64.b64encode(_f.read())
+            api = CropHealthApi(api_key=crop_health_key)
+            identification = api.identify(
+                image_b64,
+                details=['treatment', 'description', 'cause', 'local_name'],
+                language=['en'],
+            )
+
+            result = getattr(identification, 'result', None)
+            # disease suggestions are under result.disease; crop identity under result.crop
+            disease_obj = getattr(result, 'disease', None)
+            suggestions = getattr(disease_obj, 'suggestions', []) or []
+
+            if suggestions:
+                top = suggestions[0]
+                confidence = getattr(top, 'probability', 0) or 0
+                name = getattr(top, 'name', 'Unknown')
+                details = getattr(top, 'details', None) or {}
+
+                if isinstance(details, dict):
+                    local_name = details.get('local_name') or ''
+                    description = details.get('description') or ''
+                    cause = details.get('cause') or ''
+                    treatment = details.get('treatment') or {}
+                else:
+                    local_name = getattr(details, 'local_name', '') or ''
+                    description = getattr(details, 'description', '') or ''
+                    cause = getattr(details, 'cause', '') or ''
+                    treatment = getattr(details, 'treatment', {}) or {}
+
+                confidence_pct = int(confidence * 100)
+
+                if confidence >= 0.35:
+                    is_healthy = 'healthy' in name.lower()
+                    badge_color = '#16a34a' if is_healthy else '#dc2626'
+                    badge_text = 'Healthy' if is_healthy else 'Disease Detected'
+
+                    treatment_html = _format_treatment(treatment) if not is_healthy else ''
+
+                    other_html = ''
+                    if len(suggestions) > 1 and not is_healthy:
+                        others = [f"{getattr(s,'name','?')} ({int((getattr(s,'probability',0) or 0)*100)}%)" for s in suggestions[1:3]]
+                        other_html = f'<p style="color:#64748b;font-size:0.9em;">Other possibilities: {", ".join(others)}</p>'
+
+                    html = f'''
+<div class="diagnosis-result">
+  <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">
+    <span style="background:{badge_color};color:white;padding:3px 12px;border-radius:99px;font-size:0.8rem;font-weight:700;">{badge_text}</span>
+    <span style="color:#64748b;font-size:0.85rem;">Confidence: {confidence_pct}%</span>
+  </div>
+  <h3>Diagnosis</h3>
+  <p><strong>{name}</strong>{" ("+local_name+")" if local_name else ""}</p>
+  {"<h3>Description</h3><p>"+description+"</p>" if description else ""}
+  {"<h3>Cause</h3><p>"+cause+"</p>" if cause else ""}
+  {"<h3>Treatment</h3><ul>"+treatment_html+"</ul>" if treatment_html else ""}
+  {other_html}
+  <p style="color:#94a3b8;font-size:0.75rem;margin-top:1rem;">Identified by crop.health ML classifier &mdash; 23 crops, 288 diseases &amp; pests.</p>
+</div>'''
+                    return html.strip()
+
+        except ImportError:
+            print("kindwise package not installed. Run: pip install kindwise-api-client")
+        except Exception as e:
+            print(f"Crop Health API error: {e}")
+
+    # Fallback: Vision AI (Gemini → Groq)
+    import base64 as _b64
+    with open(image_path, 'rb') as _f:
+        image_b64 = _b64.b64encode(_f.read()).decode('utf-8')
+
+    persona_context = (
+        "Commercial Farmer focused on crop yield and scalability"
+        if user_type == 'Farmer'
+        else "Hobby plant enthusiast focused on plant aesthetics, indoor care, and simple home remedies"
+    )
+    prompt = (
+        f"You are an expert plant pathologist. Analyze this plant image.\n"
+        f"1. Identify the plant and any disease/deficiency visible.\n"
+        f"2. If healthy, say 'The plant appears healthy.'\n"
+        f"3. If sick, state the disease name, symptoms observed, and 2-3 remedies.\n"
+        f"Context: {persona_context}.\n"
+        f"Format response as HTML using <h3>, <p>, <ul>, <li> tags only. No markdown."
+    )
+
+    # Try Gemini Vision
+    if GEMINI_MODEL:
+        try:
+            import PIL.Image, io as _io
+            img = PIL.Image.open(_io.BytesIO(_b64.b64decode(image_b64)))
+            response = GEMINI_MODEL.generate_content([prompt, img])
+            text = re.sub(r'```(?:html)?', '', response.text).strip()
+            return text
+        except Exception as e:
+            err = str(e).lower()
+            if 'quota' in err or 'limit' in err or 'resource_exhausted' in err or '429' in err:
+                print("Gemini vision quota exceeded, falling back to Groq vision")
+            else:
+                print(f"Gemini vision error: {e}")
+                return "Sorry, an error occurred while analyzing the image. Please try again later."
+
+    # Try Groq Vision (llama-4-scout supports image input)
+    if GROQ_CLIENT:
+        try:
+            response = GROQ_CLIENT.chat.completions.create(
+                model="meta-llama/llama-4-scout-17b-16e-instruct",
+                messages=[{
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"}},
+                    ],
+                }],
+                max_tokens=1500,
+            )
+            text = response.choices[0].message.content
+            text = re.sub(r'```(?:html)?', '', text).strip()
+            return text
+        except Exception as e:
+            print(f"Groq vision error: {e}")
+
+    return "Sorry, all AI vision services are currently unavailable. Please try again later."
 
 
 def get_agronomic_info(crop_name):
