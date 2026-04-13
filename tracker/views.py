@@ -625,3 +625,54 @@ def add_financial_entry(request):
             crop_tracker.save()
             
     return redirect('tracker_dashboard')
+
+
+@login_required
+def delete_financial_entry(request, entry_id):
+    entry = get_object_or_404(FinancialEntry, id=entry_id, crop_tracker__user=request.user)
+    crop_tracker = entry.crop_tracker
+    if entry.entry_type == 'Expense':
+        crop_tracker.cost = max(Decimal(0), crop_tracker.cost - entry.amount)
+    else:
+        crop_tracker.revenue = max(Decimal(0), crop_tracker.revenue - entry.amount)
+    crop_tracker.save()
+    entry.delete()
+    return redirect(request.META.get('HTTP_REFERER', 'tracker_dashboard'))
+
+
+@login_required
+def edit_financial_entry(request, entry_id):
+    entry = get_object_or_404(FinancialEntry, id=entry_id, crop_tracker__user=request.user)
+    if request.method == 'POST':
+        new_type = request.POST.get('entry_type', entry.entry_type)
+        new_category = request.POST.get('category', entry.category)
+        new_description = request.POST.get('description', '')
+        try:
+            new_amount = Decimal(str(request.POST.get('amount', entry.amount)))
+            if new_amount <= 0:
+                raise ValueError
+        except Exception:
+            new_amount = entry.amount
+
+        crop_tracker = entry.crop_tracker
+        # Reverse old effect on crop totals
+        if entry.entry_type == 'Expense':
+            crop_tracker.cost = max(Decimal(0), crop_tracker.cost - entry.amount)
+        else:
+            crop_tracker.revenue = max(Decimal(0), crop_tracker.revenue - entry.amount)
+
+        # Save updated entry
+        entry.entry_type = new_type
+        entry.category = new_category
+        entry.amount = new_amount
+        entry.description = new_description
+        entry.save()
+
+        # Apply new effect on crop totals
+        if new_type == 'Expense':
+            crop_tracker.cost += new_amount
+        else:
+            crop_tracker.revenue += new_amount
+        crop_tracker.save()
+
+    return redirect(request.META.get('HTTP_REFERER', 'tracker_dashboard'))

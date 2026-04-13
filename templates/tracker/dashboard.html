@@ -361,7 +361,11 @@
     .profit .money-stat-val.negative { color: #f87171; }
 
     .transaction-list { background: white; border-radius: 20px; padding: 1rem; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
-    .txn-row { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px solid #f1f5f9; }
+    .txn-row { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px solid #f1f5f9; gap: 0.5rem; }
+    .txn-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+    .txn-action-btn { border: none; background: none; cursor: pointer; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; transition: background 0.2s; }
+    .txn-action-btn.edit { color: #3b82f6; } .txn-action-btn.edit:hover { background: #eff6ff; }
+    .txn-action-btn.del  { color: #ef4444; } .txn-action-btn.del:hover  { background: #fef2f2; }
     .txn-row:last-child { border-bottom: none; }
     .txn-left { display: flex; align-items: center; gap: 1rem; }
     .txn-icon { width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
@@ -860,11 +864,20 @@
                     </div>
                     <div>
                         <div class="txn-title">{{ entry.category }} {{ entry.crop_tracker.emoji }}</div>
-                        <div class="txn-date">{{ entry.date }}</div>
+                        <div class="txn-date">{{ entry.date }}{% if entry.description %} &bull; {{ entry.description }}{% endif %}</div>
                     </div>
                 </div>
                 <div class="txn-amt {% if entry.entry_type == 'Revenue' %}inc{% else %}exp{% endif %}">
                     ₹{{ entry.amount|floatformat:0 }}
+                </div>
+                <div class="txn-actions">
+                    <button class="txn-action-btn edit" title="Edit"
+                        onclick="openEditTxn({{ entry.id }}, '{{ entry.entry_type }}', '{{ entry.category }}', {{ entry.amount }}, '{{ entry.description|escapejs }}')"
+                    ><i class="fas fa-pencil-alt"></i></button>
+                    <form method="POST" action="{% url 'delete_financial_entry' entry.id %}" style="margin:0;" onsubmit="return confirm('Delete this transaction?')">
+                        {% csrf_token %}
+                        <button type="submit" class="txn-action-btn del" title="Delete"><i class="fas fa-trash"></i></button>
+                    </form>
                 </div>
             </div>
             {% empty %}
@@ -1130,6 +1143,48 @@
     </form>
 </div>
 
+<!-- Edit Transaction Sheet -->
+<div class="sheet" id="sheet-edit-txn">
+    <div class="sheet-handle"></div>
+    <button class="sheet-close-btn" onclick="closeAllSheets()"><i class="fas fa-times"></i></button>
+    <h3 class="sheet-title">Edit Transaction</h3>
+
+    <div style="display:flex; background:#f1f5f9; border-radius:12px; padding:0.3rem; margin-bottom:1.5rem;">
+        <button id="btn-edit-inc" style="flex:1; padding:0.8rem; border:none; background:#10b981; color:white; border-radius:10px; font-weight:700; cursor:pointer;" onclick="setEditTxnType('Revenue')">Income</button>
+        <button id="btn-edit-exp" style="flex:1; padding:0.8rem; border:none; background:transparent; color:#64748b; border-radius:10px; font-weight:700; cursor:pointer;" onclick="setEditTxnType('Expense')">Expense</button>
+    </div>
+
+    <form method="POST" id="form-edit-txn" action="">
+        {% csrf_token %}
+        <input type="hidden" name="entry_type" id="edit-txn-type-input" value="Revenue">
+
+        <div class="form-group">
+            <label class="form-label">Category</label>
+            <select name="category" id="edit-txn-category" class="form-control">
+                <option value="Harvest/Sale">Harvest / Crop Sale</option>
+                <option value="Seed">Seeds</option>
+                <option value="Fertilizer">Fertilizer</option>
+                <option value="Pesticide">Pesticides</option>
+                <option value="Labor">Labor</option>
+                <option value="Equipment">Equipment</option>
+                <option value="Other">Other</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Amount (₹)</label>
+            <input type="number" step="0.01" name="amount" id="edit-txn-amount" class="form-control" required placeholder="0.00" style="font-size:1.5rem; color:#10b981; font-weight:800;">
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Note (Optional)</label>
+            <input type="text" name="description" id="edit-txn-desc" class="form-control" placeholder="Short description">
+        </div>
+
+        <button type="submit" class="submit-btn">Update Transaction</button>
+    </form>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -1327,6 +1382,40 @@
         const btnInc = document.getElementById('btn-txn-inc');
         const btnExp = document.getElementById('btn-txn-exp');
         const inputAmount = document.getElementById('txn-amount');
+        if(type === 'Revenue') {
+            btnInc.style.background = '#10b981'; btnInc.style.color = 'white';
+            btnExp.style.background = 'transparent'; btnExp.style.color = '#64748b';
+            inputAmount.style.color = '#10b981';
+        } else {
+            btnExp.style.background = '#ef4444'; btnExp.style.color = 'white';
+            btnInc.style.background = 'transparent'; btnInc.style.color = '#64748b';
+            inputAmount.style.color = '#ef4444';
+        }
+    }
+
+    // --- Edit Transaction Functions ---
+    function openEditTxn(entryId, entryType, category, amount, description) {
+        // Set form action
+        document.getElementById('form-edit-txn').action = `/tracker/edit-financial/${entryId}/`;
+        
+        // Set values
+        document.getElementById('edit-txn-type-input').value = entryType;
+        document.getElementById('edit-txn-category').value = category;
+        document.getElementById('edit-txn-amount').value = amount;
+        document.getElementById('edit-txn-desc').value = description;
+        
+        // Set UI toggle
+        setEditTxnType(entryType);
+        
+        // Open sheet
+        openSheet('sheet-edit-txn');
+    }
+    
+    function setEditTxnType(type) {
+        document.getElementById('edit-txn-type-input').value = type;
+        const btnInc = document.getElementById('btn-edit-inc');
+        const btnExp = document.getElementById('btn-edit-exp');
+        const inputAmount = document.getElementById('edit-txn-amount');
         if(type === 'Revenue') {
             btnInc.style.background = '#10b981'; btnInc.style.color = 'white';
             btnExp.style.background = 'transparent'; btnExp.style.color = '#64748b';

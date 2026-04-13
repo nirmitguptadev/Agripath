@@ -16,5 +16,7 @@ urlpatterns = [
     path('add-suggested-task/', views.add_suggested_task, name='add_suggested_task'),
     path('toggle-task/<int:task_id>/', views.toggle_task, name='toggle_task'),
     path('add-financial/', views.add_financial_entry, name='add_financial_entry'),
+    path('edit-financial/<int:entry_id>/', views.edit_financial_entry, name='edit_financial_entry'),
+    path('delete-financial/<int:entry_id>/', views.delete_financial_entry, name='delete_financial_entry'),
     path('check-custom-crop/', views.check_custom_crop, name='check_custom_crop'),
 ]
