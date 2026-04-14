@@ -18,6 +18,13 @@ db.sqlite3
 /staticfiles/
 
 # Media uploads (user content — stored on Cloudinary in production)
+/media/
+
+# Session files (track directory but ignore individual session files)
+/sessions/*
+!/sessions/.gitkeep
+
+# Media uploads (user content — stored on Cloudinary in production)
 media/profile_pics/
 media/temp_uploads/
 

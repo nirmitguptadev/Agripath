@@ -223,6 +223,22 @@
         if (talkingMessage) talkingMessage.classList.remove('talking');
     }
 
+    // --- Language Change Detection ---
+    let lastKnownLanguage = localStorage.getItem('agripath_lang') || 'en';
+
+    function checkLanguageChange() {
+        const currentLang = localStorage.getItem('agripath_lang') || 'en';
+        if (lastKnownLanguage !== currentLang) {
+            // Language changed, clear chat and start fresh
+            console.log('Language changed from', lastKnownLanguage, 'to', currentLang);
+            lastKnownLanguage = currentLang;
+            startNewChat(); // This will clear history and show new greeting
+        }
+    }
+
+    // Check for language change periodically
+    setInterval(checkLanguageChange, 1000);
+
     // --- Event Listeners  ---
     startButton.addEventListener('click', () => {
         if (synth.speaking) { synth.cancel(); }
@@ -239,6 +255,8 @@
 
     document.addEventListener('DOMContentLoaded', () => {
         loadInitialHistory();
+        // Initialize language tracking
+        lastKnownLanguage = localStorage.getItem('agripath_lang') || 'en';
     });
 </script>
 {% endblock %}

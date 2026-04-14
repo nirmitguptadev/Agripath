@@ -52,18 +52,66 @@ def get_persona_prompt(lang='en'):
 
             {objective}
 
-            **AgriPath Website Features:**
-            1. **Dashboard:** Main page with weather and active crops.
-            2. **Crop Tracker:** Track ongoing field crops.
-            3. **AI Plant Doctor:** Upload plant photos to diagnose disease.
-            4. **AI Crop Advisory:** Best crop recommendations.
-            5. **Weather:** Local forecasts and alerts.
-            6. **Policies:** Gov subsidies and schemes.
-            7. **Dictionary:** 100+ crop encyclopedia guides.
+            **AgriPath Website Features & Usage Guide:**
+
+            1. **My Farm (Crop Tracker):** 
+               - Navigate: Click "My Farm" from dashboard or use tracker link
+               - Add crops: Click + button (top-right) then select from supported crops or add custom crops
+               - Track progress: View growth phases (Sowing, Germination, Vegetative, Flowering, Fruiting, Maturation) with progress bars
+               - Update health: Click health badges (Healthy/Attention/At Risk) to update crop condition
+               - Log activities: Click "Log" button on each crop for quick activity logging (watering, fertilizing, pest control, weeding)
+               - View details: Click on crop cards to expand and see recent logs, linked tasks, and edit options
+               - Mark harvest: Click "Mark as Harvested" in crop details when ready
+
+            2. **Today Tab:** 
+               - View weather-based suggestions and AI recommendations
+               - Add suggested tasks: Click + button next to each suggestion
+               - See pending tasks with checkboxes to mark complete
+               - View recently completed tasks
+
+            3. **Money Tab:**
+               - View financial overview: Income, Expenses, and Profit totals
+               - See charts: Expense breakdown by category, crop investments vs market value, daily spending trends
+               - Add transactions: Click + button to record income (sales) and expenses
+               - Edit/delete transactions: Use pencil (edit) or trash (delete) icons on any transaction
+               - Categories: Organize by Seed, Fertilizer, Pesticide, Labor, Equipment, Other
+
+            4. **Universal Add Button (+):** 
+               - In Crops tab: Opens "Add Crop" sheet
+               - In Today tab: Opens "Add Task" sheet  
+               - In Money tab: Opens "Record Transaction" sheet
+
+            5. **AI Plant Doctor:** Upload plant photos for disease diagnosis. Take clear photos of affected areas.
+
+            6. **AI Crop Advisory:** Get personalized crop recommendations based on your location and soil conditions.
+
+            7. **Weather:** Local forecasts with agricultural insights and alerts for extreme weather.
+
+            8. **Market Prices:** Live mandi prices shown in ticker at top of tracker for major crops.
+
+            9. **Policies:** Government agricultural schemes, subsidies, and support programs.
+
+            10. **Dictionary:** 100+ crop guides with planting tips, care instructions, and market information.
+
+            **Common User Issues & Solutions:**
+            - Can't find your crop? Use "Custom Crop" option in add crop sheet - still track expenses and growth
+            - Market prices not showing? Ensure location is updated in profile for accurate local prices
+            - Need to edit a transaction? Click pencil icon next to any transaction in Money tab
+            - Want to delete a mistake? Click trash icon - confirms before deletion
+            - Tasks overwhelming? Focus on AI-suggested tasks in Today tab based on crop health
+            - Can't find features? Use the three tabs: Crops (for crop management), Today (for tasks), Money (for finances)
+
+            **Navigation Tips:**
+            - Use three main tabs: Crops (crop management), Today (tasks & suggestions), Money (financial tracking)
+            - Click crop cards to expand and see detailed information
+            - Use + button (top-right) - it changes function based on active tab
+            - Health badges are clickable to update crop status
+            - Log buttons on crops provide quick activity entry
 
             **Instructions:**
-            - Keep answers concise (1-3 sentences).
-            - {reply_lang}
+            - Keep answers concise but helpful (1-3 sentences)
+            - Guide users to specific features when they ask how to do something
+            - Provide step-by-step instructions for common tasks
             """
         ]
     }, {'role': 'model', 'parts': [ack]}
@@ -98,9 +146,17 @@ def handle_weather_query(user_prompt, history, user_location=None, lang='en'):
         return f"I couldn't find weather data for '{city_name}'." if lang == 'en' else f"मुझे '{city_name}' का मौसम डेटा नहीं मिला।"
 
     persona, ack = get_persona_prompt(lang)
+    
+    # Add explicit language instruction to prevent mixed language responses
+    language_enforcement = {
+        'role': 'user', 
+        'parts': [f"IMPORTANT: Always respond in {'Hindi' if lang == 'hi' else 'English'} only. Do not mix languages. Your response must be in {'Hindi' if lang == 'hi' else 'English'}."]
+    }
+    
     final_prompt_list = [
         persona,
         ack,
+        language_enforcement,
         *history,
         {'role': 'user', 'parts': [f"""
         Here is the real weather data for '{city_name}':
@@ -114,11 +170,19 @@ def handle_weather_query(user_prompt, history, user_location=None, lang='en'):
 
 def handle_crop_recommendation(user_prompt, history, lang='en'):
     persona, ack = get_persona_prompt(lang)
+    
+    # Add explicit language instruction to prevent mixed language responses
+    language_enforcement = {
+        'role': 'user', 
+        'parts': [f"IMPORTANT: Always respond in {'Hindi' if lang == 'hi' else 'English'} only. Do not mix languages. Your response must be in {'Hindi' if lang == 'hi' else 'English'}."]
+    }
+    
     instruction = 'When suggesting crops, put each one on a new line without any bullets or numbers.' if lang == 'en' else 'जब आप फसलों की सूची सुझाते हैं, तो हर फसल का नाम एक नई लाइन पर दें। किसी भी बुलेट पॉइंट का प्रयोग न करें।'
     instruction_ack = 'Okay, I will list them on new lines without bullets.' if lang == 'en' else 'जी, मैं हर पौधे/फसल का नाम एक नई लाइन पर दूंगा।'
     final_prompt_list = [
         persona,
         ack,
+        language_enforcement,
         {'role': 'user', 'parts': [instruction]},
         {'role': 'model', 'parts': [instruction_ack]},
         *history
@@ -127,9 +191,17 @@ def handle_crop_recommendation(user_prompt, history, lang='en'):
 
 def handle_government_scheme(user_prompt, history, lang='en'):
     persona, ack = get_persona_prompt(lang)
+    
+    # Add explicit language instruction to prevent mixed language responses
+    language_enforcement = {
+        'role': 'user', 
+        'parts': [f"IMPORTANT: Always respond in {'Hindi' if lang == 'hi' else 'English'} only. Do not mix languages. Your response must be in {'Hindi' if lang == 'hi' else 'English'}."]
+    }
+    
     final_prompt_list = [
         persona,
         ack,
+        language_enforcement,
         *history
     ]
     return generate_ai_response(final_prompt_list)
@@ -153,9 +225,16 @@ def handle_market_price(user_prompt, history, lang='en'):
     price_data = list(prices.values())[0]
     display_name = list(prices.keys())[0]
     
+    # Add explicit language instruction to prevent mixed language responses
+    language_enforcement = {
+        'role': 'user', 
+        'parts': [f"IMPORTANT: Always respond in {'Hindi' if lang == 'hi' else 'English'} only. Do not mix languages. Your response must be in {'Hindi' if lang == 'hi' else 'English'}."]
+    }
+    
     final_prompt_list = [
         persona,
         ack,
+        language_enforcement,
         *history,
         {'role': 'user', 'parts': [f"""
         Here is the real Mandi market price data for '{display_name}' (per Quintal):
@@ -170,9 +249,17 @@ def handle_market_price(user_prompt, history, lang='en'):
 
 def handle_general_conversation(user_prompt, history, lang='en'):
     persona, ack = get_persona_prompt(lang)
+    
+    # Add explicit language instruction to prevent mixed language responses
+    language_enforcement = {
+        'role': 'user', 
+        'parts': [f"IMPORTANT: Always respond in {'Hindi' if lang == 'hi' else 'English'} only. Do not mix languages. Your response must be in {'Hindi' if lang == 'hi' else 'English'}."]
+    }
+    
     final_prompt_list = [
         persona,
         ack,
+        language_enforcement,
         *history
     ]
     return generate_ai_response(final_prompt_list)
@@ -253,3 +340,9 @@ def clear_chat(request):
     if 'chat_history' in request.session:
         del request.session['chat_history']
     return JsonResponse({'status': 'success', 'message': 'Chat history cleared.'})
+
+@login_required
+def get_chat_history(request):
+    """API endpoint to retrieve chat history for sidebar"""
+    history = request.session.get('chat_history', [])
+    return JsonResponse({'history': history})

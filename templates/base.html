@@ -452,25 +452,61 @@
             aiSidebar.classList.add('open');
             openAiBtn.style.display = 'none';
 
-            if (!hasGreeted) {
-                hasGreeted = true;
-                try {
+            // Load chat history from session
+            await loadChatHistoryFromSession();
+        });
+
+        // Function to load chat history from session
+        async function loadChatHistoryFromSession() {
+            try {
+                const response = await fetch('/api/get-chat-history/');
+                const data = await response.json();
+                
+                if (data.history && data.history.length > 0) {
+                    // Clear existing messages first
+                    const chatArea = document.getElementById('chatArea');
+                    chatArea.innerHTML = '';
+                    
+                    // Load messages from session
+                    data.history.forEach(message => {
+                        if (message.parts && message.parts[0] && message.role) {
+                            const sender = message.role === 'user' ? 'user' : 'ai';
+                            addMessage(message.parts[0], sender);
+                        }
+                    });
+                    hasGreeted = true;
+                } else {
+                    // If no history, add greeting
+                    if (!hasGreeted) {
+                        hasGreeted = true;
+                        try {
+                            const currentLang = localStorage.getItem('agripath_lang') === 'hi' ? 'hi' : 'en';
+                            const response = await fetch(`/api/get-greeting/?lang=${currentLang}`);
+                            const data = await response.json();
+                            addMessage(data.greeting, 'ai');
+                            speak(data.greeting);
+                        } catch (error) {
+                            const currentLang = localStorage.getItem('agripath_lang') === 'hi' ? 'hi' : 'en';
+                            addMessage(currentLang === 'hi' ? 'Namaste! Main aapki madad ke liye taiyaar hoon.' : 'Hello! I am ready to assist you.', 'ai');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading chat history:', error);
+                // Fallback to greeting if history loading fails
+                if (!hasGreeted) {
+                    hasGreeted = true;
                     const currentLang = localStorage.getItem('agripath_lang') === 'hi' ? 'hi' : 'en';
-                    const response = await fetch(`/api/get-greeting/?lang=${currentLang}`);
-                    const data = await response.json();
-                    addMessage(data.greeting, 'ai');
-                    speak(data.greeting);
-                } catch (error) {
-                    const currentLang = localStorage.getItem('agripath_lang') === 'hi' ? 'hi' : 'en';
-                    addMessage(currentLang === 'hi' ? 'नमस्ते! मैं आपकी मदद के लिए तैयार हूँ।' : 'Hello! I am ready to assist you.', 'ai');
+                    addMessage(currentLang === 'hi' ? 'Namaste! Main aapki madad ke liye taiyaar hoon.' : 'Hello! I am ready to assist you.', 'ai');
                 }
             }
-        });
+        }
 
         closeSidebar.addEventListener('click', () => {
             aiSidebar.style.right = '-400px';
             aiSidebar.classList.remove('open');
             openAiBtn.style.display = 'flex';
+            // Don't clear chat area - preserve messages
         });
 
         // AI Assistant Logic

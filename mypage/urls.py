@@ -31,6 +31,7 @@ urlpatterns = [
     path('process/', core_views.process_voice, name='process_voice'), 
     path('api/get-greeting/', core_views.get_greeting, name='get_greeting'),
     path('api/clear-chat/', core_views.clear_chat, name='clear_chat'),
+    path('api/get-chat-history/', core_views.get_chat_history, name='get_chat_history'),
 ]
 
 # Serve media files in both development and production
