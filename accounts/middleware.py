@@ -8,9 +8,12 @@ class ProfileCompletionMiddleware:
 
     def __call__(self, request):
         if request.user.is_authenticated and not request.user.is_superuser:
-            # Check if the profile is incomplete (location is missing)
-            if not request.user.profile.location:
-                # Allow access to the setup page and logout page
+            try:
+                profile = request.user.profile
+            except Exception:
+                from accounts.models import Profile
+                profile = Profile.objects.create(user=request.user)
+            if not profile.location:
                 allowed_paths = [reverse('setup_profile'), reverse('logout')]
                 if request.path not in allowed_paths and not request.path.startswith('/admin/'):
                     return redirect('setup_profile')

@@ -76,9 +76,8 @@ def verify_otp(request):
                 # Use the phone number as the username.
                 user, created = User.objects.get_or_create(username=phone_number)
 
-                if created:
-                    # If new user, link profile to the user
-                    profile = user.profile
+                profile, _ = Profile.objects.get_or_create(user=user)
+                if not profile.phone_number:
                     profile.phone_number = phone_number
                     profile.save()
 
