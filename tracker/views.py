@@ -33,10 +33,9 @@ def tracker_dashboard(request):
         from concurrent.futures import ThreadPoolExecutor
         with ThreadPoolExecutor(max_workers=1) as executor:
             future = executor.submit(get_mandi_prices, combined_mandi_crops)
-            mandi_prices = future.result(timeout=5)
+            mandi_prices, mandi_is_fallback = future.result(timeout=5)
     except Exception:
-        mandi_prices = {}
-    from core.mandi_api import prices_are_fallback as mandi_is_fallback
+        mandi_prices, mandi_is_fallback = {}, False
     
     # Average yield in Quintals per Acre (used when unit is area-based)
     YIELD_PER_ACRE = {

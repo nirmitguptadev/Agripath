@@ -138,8 +138,7 @@ def _fetch_bulk(lookup_names):
 
 def get_mandi_prices(crop_names):
     """
-    Returns: { display_name: {'min':X, 'max':Y, 'modal':Z, 'market':'...', 'state':'...'} }
-    Also sets module-level `prices_are_fallback` flag.
+    Returns: (prices_dict, is_fallback)
     """
     lookup_names = []
     for raw in crop_names:
@@ -158,10 +157,7 @@ def get_mandi_prices(crop_names):
         if lookup_name in bulk:
             result[lookup_name] = bulk[lookup_name]
 
-    # If API returned nothing, use hardcoded fallback prices
-    global prices_are_fallback
     if not result:
-        prices_are_fallback = True
         for raw in crop_names:
             user_name = raw.strip().title()
             if not user_name:
@@ -169,13 +165,12 @@ def get_mandi_prices(crop_names):
             lookup_name = COMMODITY_ALIASES.get(user_name, user_name)
             if lookup_name in FALLBACK_PRICES:
                 result[lookup_name] = FALLBACK_PRICES[lookup_name]
-    else:
-        prices_are_fallback = False
+        return result, True
 
-    return result
+    return result, False
 
 
-prices_are_fallback = False
+prices_are_fallback = False  # kept for any legacy imports
 
 # Last-known approximate wholesale prices (₹/quintal) — used when API is unreachable.
 FALLBACK_PRICES = {

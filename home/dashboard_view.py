@@ -102,13 +102,12 @@ def dashboard(request):
         with ThreadPoolExecutor(max_workers=1) as executor:
             future = executor.submit(get_mandi_prices, combined)
             try:
-                mandi_prices = future.result(timeout=5)
+                mandi_prices, mandi_is_fallback = future.result(timeout=5)
             except (FuturesTimeout, Exception):
-                mandi_prices = {}
+                mandi_prices, mandi_is_fallback = {}, False
     except Exception as e:
         print(f"Mandi prices error: {e}")
-
-    from core.mandi_api import prices_are_fallback as mandi_is_fallback
+        mandi_is_fallback = False
     news_items = get_agri_news()
 
     context = {
