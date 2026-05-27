@@ -33,7 +33,7 @@ def tracker_dashboard(request):
         from concurrent.futures import ThreadPoolExecutor
         with ThreadPoolExecutor(max_workers=1) as executor:
             future = executor.submit(get_mandi_prices, combined_mandi_crops)
-            mandi_prices, mandi_is_fallback = future.result(timeout=5)
+            mandi_prices, mandi_is_fallback = future.result(timeout=12)
     except Exception:
         mandi_prices, mandi_is_fallback = {}, False
     

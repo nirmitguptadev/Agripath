@@ -99,7 +99,7 @@ def _fetch_bulk(lookup_names):
             'format': 'json',
             'limit': 500,
         }
-        resp = requests.get(BASE_URL, params=params, timeout=10)
+        resp = requests.get(BASE_URL, params=params, timeout=8)
         if resp.status_code != 200:
             print(f"Mandi API returned {resp.status_code}")
             return _bulk_cache or {}

@@ -530,7 +530,13 @@
     <!-- Global Mandi Ticker -->
     {% if mandi_prices %}
     <div class="mandi-ticker">
-        <div class="ticker-icon"><i class="fas fa-chart-line"></i> Market</div>
+        <div class="ticker-icon">
+            {% if mandi_is_fallback %}
+            <i class="fas fa-chart-line" style="color:#92400e;"></i> <span style="font-size:0.7rem;">Est.</span>
+            {% else %}
+            <i class="fas fa-chart-line"></i> Live
+            {% endif %}
+        </div>
         <div style="overflow: hidden; flex: 1;">
             <div class="ticker-track">
                 {% for crop_name, price in mandi_prices.items %}

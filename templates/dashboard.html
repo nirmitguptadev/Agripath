@@ -647,8 +647,14 @@
     <!-- ── Stock-Market Style Mandi Board ─────────────────────────── -->
     <div class="mandi-board">
         <div class="mandi-board-header">
-            <h3><span class="live-dot"></span> Market Prices</h3>
-            <span style="color: #8b949e; font-size: 0.75rem;">Agmarknet &bull; ₹ / Quintal &bull; Updated Today</span>
+            <h3>
+                {% if mandi_is_fallback %}
+                <span style="width:8px;height:8px;background:#f59e0b;border-radius:50%;display:inline-block;"></span> Market Prices
+                {% else %}
+                <span class="live-dot"></span> Market Prices
+                {% endif %}
+            </h3>
+            <span style="color: #8b949e; font-size: 0.75rem;">Agmarknet &bull; ₹ / Quintal</span>
         </div>
 
         <div class="mandi-ticker-wrap">
@@ -682,10 +688,25 @@
         </div>
 
         <div class="mandi-board-footer">
+            {% if mandi_is_fallback %}
+            <span style="color:#f59e0b;">⚠️ Live API unreachable — showing indicative prices</span>
+            <span>Prices are approximate &bull; Hover to pause</span>
+            {% else %}
             <span>Source: data.gov.in (Agmarknet)</span>
             <span>Prices refresh every hour &bull; Hover to pause</span>
+            {% endif %}
         </div>
     </div>
+    {% endif %}
+
+    {% if mandi_is_fallback and mandi_prices %}
+    <div id="mandi-fallback-banner" style="background:#fef3c7;border:1px solid #f59e0b;border-radius:12px;padding:0.8rem 1rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:0.6rem;font-size:0.85rem;font-weight:600;color:#92400e;animation:fadeInDown 0.4s ease;">
+        <span style="font-size:1.2rem;flex-shrink:0">⚠️</span>
+        <span>Live mandi API is currently unreachable. Prices shown are indicative estimates and may not reflect today's market.</span>
+        <button onclick="this.parentElement.remove()" style="margin-left:auto;background:none;border:none;cursor:pointer;font-size:1.1rem;color:#92400e;flex-shrink:0;">✕</button>
+    </div>
+    <style>@keyframes fadeInDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}</style>
+    <script>setTimeout(()=>{const b=document.getElementById('mandi-fallback-banner');if(b){b.style.transition='opacity 0.5s';b.style.opacity='0';setTimeout(()=>b&&b.remove(),500);}},5000);</script>
     {% endif %}
 
     {% if news_items %}
