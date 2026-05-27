@@ -3,39 +3,41 @@ import google.generativeai as genai
 from groq import Groq
 from django.conf import settings
 
-# Configure APIs
+# Configure APIs — lazy init to avoid blocking at worker startup
 GEMINI_API_KEY = getattr(settings, 'GEMINI_API_KEY', None)
 GROQ_API_KEY = getattr(settings, 'GROQ_API_KEY', None)
 
-GEMINI_MODEL = None
-GROQ_CLIENT = None
+_GEMINI_MODEL = None
+_GROQ_CLIENT = None
 
-if GEMINI_API_KEY:
-    try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        GEMINI_MODEL = genai.GenerativeModel('gemini-2.5-flash')
-    except Exception as e:
-        print(f"Gemini config error: {e}")
+def _get_gemini():
+    global _GEMINI_MODEL
+    if _GEMINI_MODEL is None and GEMINI_API_KEY:
+        try:
+            genai.configure(api_key=GEMINI_API_KEY)
+            _GEMINI_MODEL = genai.GenerativeModel('gemini-1.5-flash')
+        except Exception as e:
+            print(f"Gemini config error: {e}")
+    return _GEMINI_MODEL
 
-if GROQ_API_KEY:
-    try:
-        GROQ_CLIENT = Groq(api_key=GROQ_API_KEY)
-    except Exception as e:
-        print(f"Groq config error: {e}")
+def _get_groq():
+    global _GROQ_CLIENT
+    if _GROQ_CLIENT is None and GROQ_API_KEY:
+        try:
+            _GROQ_CLIENT = Groq(api_key=GROQ_API_KEY)
+        except Exception as e:
+            print(f"Groq config error: {e}")
+    return _GROQ_CLIENT
 
 def generate_ai_response(prompt_content):
     """Try Gemini first, fallback to Groq if quota exceeded"""
-    
-    # Try Gemini
-    if GEMINI_MODEL:
+    gemini = _get_gemini()
+    groq = _get_groq()
+
+    if gemini:
         try:
-            if isinstance(prompt_content, list):
-                response = GEMINI_MODEL.generate_content(prompt_content)
-            else:
-                response = GEMINI_MODEL.generate_content(prompt_content)
-            raw_text = response.text
-            cleaned_text = re.sub(r'[!@#$*_-]', '', raw_text)
-            return cleaned_text.strip()
+            response = gemini.generate_content(prompt_content)
+            return re.sub(r'[!@#$*_-]', '', response.text).strip()
         except Exception as e:
             error_str = str(e).lower()
             if 'quota' in error_str or 'limit' in error_str or 'resource_exhausted' in error_str:
@@ -43,34 +45,24 @@ def generate_ai_response(prompt_content):
             else:
                 print(f"Gemini error: {e}")
                 return "Sorry, an error occurred while connecting to AI."
-    
-    # Fallback to Groq
-    if GROQ_CLIENT:
+
+    if groq:
         try:
             if isinstance(prompt_content, list):
                 messages = []
                 for item in prompt_content:
-                    role = item.get('role', 'user')
-                    if role == 'model':
-                        role = 'assistant'
-                    content = ' '.join(item.get('parts', []))
-                    messages.append({"role": role, "content": content})
+                    role = 'assistant' if item.get('role') == 'model' else item.get('role', 'user')
+                    messages.append({"role": role, "content": ' '.join(item.get('parts', []))})
             else:
                 messages = [{"role": "user", "content": str(prompt_content)}]
-            
-            response = GROQ_CLIENT.chat.completions.create(
-                model="llama-3.1-8b-instant",
-                messages=messages,
-                temperature=0.7,
-                max_tokens=2000
+            response = groq.chat.completions.create(
+                model="llama-3.1-8b-instant", messages=messages, temperature=0.7, max_tokens=2000
             )
-            raw_text = response.choices[0].message.content
-            cleaned_text = re.sub(r'[!@#$*_-]', '', raw_text)
-            return cleaned_text.strip()
+            return re.sub(r'[!@#$*_-]', '', response.choices[0].message.content).strip()
         except Exception as e:
             print(f"Groq error: {e}")
             return "Sorry, an error occurred while connecting to AI."
-    
+
     return "Sorry, my AI connection is not working properly."
 
 def _format_treatment(treatment):
@@ -172,22 +164,23 @@ def analyze_plant_image(image_path):
         image_b64 = _b64.b64encode(_f.read()).decode('utf-8')
 
     prompt = (
-        f"You are an expert plant pathologist. Analyze this plant image.\n"
-        f"1. Identify the plant and any disease/deficiency visible.\n"
-        f"2. If healthy, say 'The plant appears healthy.'\n"
-        f"3. If sick, state the disease name, symptoms observed, and 2-3 remedies.\n"
-        f"Context: Commercial Farmer focused on crop yield and field-scale management.\n"
-        f"Format response as HTML using <h3>, <p>, <ul>, <li> tags only. No markdown."
+        "You are an expert plant pathologist. Analyze this plant image.\n"
+        "1. Identify the plant and any disease/deficiency visible.\n"
+        "2. If healthy, say 'The plant appears healthy.'\n"
+        "3. If sick, state the disease name, symptoms observed, and 2-3 remedies.\n"
+        "Context: Commercial Farmer focused on crop yield and field-scale management.\n"
+        "Format response as HTML using <h3>, <p>, <ul>, <li> tags only. No markdown."
     )
 
-    # Try Gemini Vision
-    if GEMINI_MODEL:
+    gemini = _get_gemini()
+    groq = _get_groq()
+
+    if gemini:
         try:
             import PIL.Image, io as _io
             img = PIL.Image.open(_io.BytesIO(_b64.b64decode(image_b64)))
-            response = GEMINI_MODEL.generate_content([prompt, img])
-            text = re.sub(r'```(?:html)?', '', response.text).strip()
-            return text
+            response = gemini.generate_content([prompt, img])
+            return re.sub(r'```(?:html)?', '', response.text).strip()
         except Exception as e:
             err = str(e).lower()
             if 'quota' in err or 'limit' in err or 'resource_exhausted' in err or '429' in err:
@@ -196,23 +189,17 @@ def analyze_plant_image(image_path):
                 print(f"Gemini vision error: {e}")
                 return "Sorry, an error occurred while analyzing the image. Please try again later."
 
-    # Try Groq Vision (llama-4-scout supports image input)
-    if GROQ_CLIENT:
+    if groq:
         try:
-            response = GROQ_CLIENT.chat.completions.create(
+            response = groq.chat.completions.create(
                 model="meta-llama/llama-4-scout-17b-16e-instruct",
-                messages=[{
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"}},
-                    ],
-                }],
+                messages=[{"role": "user", "content": [
+                    {"type": "text", "text": prompt},
+                    {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{image_b64}"}},
+                ]}],
                 max_tokens=1500,
             )
-            text = response.choices[0].message.content
-            text = re.sub(r'```(?:html)?', '', text).strip()
-            return text
+            return re.sub(r'```(?:html)?', '', response.choices[0].message.content).strip()
         except Exception as e:
             print(f"Groq vision error: {e}")
 
@@ -245,17 +232,21 @@ def get_agronomic_info(crop_name):
     """
     
     try:
-        if GEMINI_MODEL:
-            response = GEMINI_MODEL.generate_content(prompt)
+        gemini = _get_gemini()
+        groq = _get_groq()
+        if gemini:
+            response = gemini.generate_content(prompt)
             text = response.text
-        else:
-            response = GROQ_CLIENT.chat.completions.create(
+        elif groq:
+            response = groq.chat.completions.create(
                 model="llama-3.1-8b-instant",
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.3,
                 max_tokens=1000
             )
             text = response.choices[0].message.content
+        else:
+            return "<p>Agronomic data unavailable at the moment.</p>"
             
         text = re.sub(r'```html\n?', '', text)
         text = re.sub(r'```\n?', '', text)
