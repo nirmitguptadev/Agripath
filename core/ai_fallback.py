@@ -210,7 +210,7 @@ def get_agronomic_info(crop_name):
     """
     Fetches structured agronomic info (sowing, fertilizers, diseases) for a crop using AI.
     """
-    if not GEMINI_MODEL and not GROQ_CLIENT:
+    if not GEMINI_API_KEY and not GROQ_API_KEY:
         return "AI models not configured."
         
     prompt = f"""
