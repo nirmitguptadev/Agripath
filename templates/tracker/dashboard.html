@@ -551,6 +551,20 @@
     </div>
     {% endif %}
 
+    {% if mandi_is_fallback and mandi_prices %}
+    <div id="mandi-fallback-banner" style="margin: 0 1rem 1rem 1rem; background: #fef3c7; border: 1px solid #f59e0b; border-radius: 12px; padding: 0.7rem 1rem; display: flex; align-items: center; gap: 0.6rem; font-size: 0.82rem; font-weight: 600; color: #92400e; animation: fadeInDown 0.4s ease;">
+        <span style="font-size: 1.2rem;">⚠️</span>
+        <span>Live mandi API is currently unreachable. Prices shown are indicative estimates and may not reflect today's market.</span>
+        <button onclick="this.parentElement.remove()" style="margin-left:auto; background:none; border:none; cursor:pointer; font-size:1rem; color:#92400e; flex-shrink:0;">✕</button>
+    </div>
+    <style>
+        @keyframes fadeInDown { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:translateY(0); } }
+    </style>
+    <script>
+        setTimeout(() => { const b = document.getElementById('mandi-fallback-banner'); if(b) b.style.transition = 'opacity 0.5s'; if(b) b.style.opacity = '0'; setTimeout(() => b && b.remove(), 500); }, 5000);
+    </script>
+    {% endif %}
+
 
     <!-- ==========================================
          TAB 1: CROPS 🌿

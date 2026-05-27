@@ -108,6 +108,7 @@ def dashboard(request):
     except Exception as e:
         print(f"Mandi prices error: {e}")
 
+    from core.mandi_api import prices_are_fallback as mandi_is_fallback
     news_items = get_agri_news()
 
     context = {
@@ -117,6 +118,7 @@ def dashboard(request):
         'active_crops_count': active_crops_count,
         'total_profit': total_profit,
         'mandi_prices': mandi_prices,
+        'mandi_is_fallback': mandi_is_fallback,
         'news_items': news_items,
     }
 

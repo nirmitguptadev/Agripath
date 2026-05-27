@@ -29,7 +29,14 @@ def tracker_dashboard(request):
     user_crops = list(active_crops.values_list('crop_name_custom', flat=True).distinct())
     user_crops = [c.strip().title() for c in user_crops if c and c.strip()]
     combined_mandi_crops = list(dict.fromkeys(user_crops + DEFAULT_CROPS))
-    mandi_prices = get_mandi_prices(combined_mandi_crops)
+    try:
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(get_mandi_prices, combined_mandi_crops)
+            mandi_prices = future.result(timeout=5)
+    except Exception:
+        mandi_prices = {}
+    from core.mandi_api import prices_are_fallback as mandi_is_fallback
     
     # Average yield in Quintals per Acre (used when unit is area-based)
     YIELD_PER_ACRE = {
@@ -404,6 +411,7 @@ def tracker_dashboard(request):
     context = {
         'active_crops': active_crops,
         'mandi_prices': mandi_prices,
+        'mandi_is_fallback': mandi_is_fallback,
         'supported_crops': SUPPORTED_CROP_META,
         
         'overdue_tasks': overdue_tasks,
@@ -582,10 +590,14 @@ def check_custom_crop(request):
         return JsonResponse({'found': False})
     
     from core.mandi_api import get_mandi_prices, COMMODITY_ALIASES
-    # Try the name directly and via alias
     lookup = COMMODITY_ALIASES.get(name, name)
-    prices = get_mandi_prices([lookup])
-    
+    try:
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(get_mandi_prices, [lookup])
+            prices = future.result(timeout=4)
+    except Exception:
+        prices = {}
     if lookup in prices:
         return JsonResponse({
             'found': True,
