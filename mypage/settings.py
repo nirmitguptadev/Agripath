@@ -228,10 +228,10 @@ else:
 # Security Settings for Production
 if not DEBUG:
     # CSRF Settings
-    CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
+    CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=['https://*.onrender.com'])
     
-    # Session Configuration for Persistence (signed cookies - no storage needed)
-    SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+    # Session Configuration — use DB-backed sessions to avoid 4KB signed-cookie size limit
+    SESSION_ENGINE = 'django.contrib.sessions.backends.db'
     SESSION_COOKIE_AGE = 1209600  # 2 weeks in seconds
     SESSION_SAVE_EVERY_REQUEST = True
     SESSION_EXPIRE_AT_BROWSER_CLOSE = False
