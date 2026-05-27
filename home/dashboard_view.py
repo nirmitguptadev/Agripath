@@ -98,7 +98,13 @@ def dashboard(request):
         )
         user_crops = [c.strip().title() for c in user_crops if c and c.strip()]
         combined = list(dict.fromkeys(user_crops + DEFAULT_CROPS))
-        mandi_prices = get_mandi_prices(combined)
+        from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeout
+        with ThreadPoolExecutor(max_workers=1) as executor:
+            future = executor.submit(get_mandi_prices, combined)
+            try:
+                mandi_prices = future.result(timeout=5)
+            except (FuturesTimeout, Exception):
+                mandi_prices = {}
     except Exception as e:
         print(f"Mandi prices error: {e}")
 

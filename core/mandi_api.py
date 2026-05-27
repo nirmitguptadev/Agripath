@@ -178,7 +178,7 @@ def get_mandi_prices(crop_names):
             'limit': 5,
         }
         try:
-            resp = requests.get(BASE_URL, params=params, timeout=6)
+            resp = requests.get(BASE_URL, params=params, timeout=2)
             if resp.status_code == 200:
                 records = resp.json().get('records', [])
                 if records:
